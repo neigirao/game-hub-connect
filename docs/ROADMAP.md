@@ -45,7 +45,7 @@
 - [x] Highlight da linha do usuário atual
 - [x] Toggle de temporada (global / mês atual `YYYY-MM`)
 - [x] Link para a pista do score (`blueprint_id` → compartilhar)
-- [ ] Atualização em tempo real com Supabase Realtime (opcional para MVP)
+- [x] Atualização em tempo real com Supabase Realtime (INSERT listener → refetch silencioso + badge "● AO VIVO")
 
 **Critério de aceite:** ✅ Tabela com top 50 scores mostrando ranking, username e métricas. Usuário atual destacado.
 
@@ -98,7 +98,7 @@
 - [x] Definir tabela de recompensas: corrida completa = +50 XP, crash = +10 XP (caos é recompensado), nova estrela = +100 coins
 - [x] Criar função Supabase `award_run_rewards(user_id, stars, crashed)` para calcular e atualizar atomicamente
 - [x] Chamar essa função ao `completeRun()` no `play.html`
-- [ ] Tela de perfil exibir a animação de ganho de XP/coins (flash verde) — V2
+- [x] Tela de perfil exibir a animação de ganho de XP/coins — RewardBanner com count-up animado (useCountUp hook + keyframes rewardSlide/rewardPop/rewardGlow)
 - [x] Definir limiares de level: 1 level = 500 XP (calculado na função)
 
 **Critério de aceite:** ✅ Após corrida, XP e coins são incrementados no banco e visíveis na tela de perfil.
@@ -114,8 +114,8 @@
 - [x] Navbar persistente no `__root.tsx` com links: Jogar, Campanha, Ranking, Perfil
 - [x] Navbar mostra avatar do usuário logado ou botão "Entrar" se não logado
 - [ ] Rota `/play` que serve o `play.html` num iframe ou redireciona para `/play.html`
-- [ ] Loading states com Skeleton para todas as queries de banco
-- [ ] Error boundary com mensagem amigável para falhas de rede
+- [x] Loading states com Skeleton (PulseSkeleton) para todas as queries de banco
+- [x] Error boundary com mensagem amigável para falhas de rede (PageError component + retryCount pattern)
 
 **Critério de aceite:** Usuário consegue navegar entre todas as telas sem usar URL manual.
 
@@ -233,7 +233,7 @@
 #### Dados estruturados (JSON-LD)
 - [x] `VideoGame` schema em `home.html` — nome, description, URL, applicationCategory, genre, offer price
 - [ ] `BreadcrumbList` nas páginas internas (`/campaign`, `/leaderboard`)
-- [ ] `FAQPage` opcional na home com perguntas sobre o jogo
+- [x] `FAQPage` JSON-LD na home com 5 perguntas sobre o jogo
 
 #### Performance e Core Web Vitals
 - [x] `<link rel="preload">` para a fonte Fredoka (carregamento não-bloqueante)
