@@ -1164,26 +1164,14 @@ function undo() {
 }
 
 // Starting demo track — a friendly looking coaster shape
-function defaultTrack(W, H){
-  const baseY = H * 0.62;
-  return [
-    {x: 80,           y: H*0.35, kind:'normal'},
-    {x: 220,          y: H*0.45, kind:'normal'},
-    {x: 340,          y: baseY,   kind:'booster'},
-    {x: 470,          y: H*0.55, kind:'normal'},
-    {x: 580,          y: H*0.30, kind:'normal'},
-    {x: 700,          y: H*0.50, kind:'normal'},
-    {x: 820,          y: H*0.40, kind:'normal'},
-    {x: 940,          y: H*0.58, kind:'brake'},
-    {x: 1060,         y: H*0.55, kind:'normal'},
-  ];
-}
-
 function initDefaultTrack(){
   resize();
   const r = stage.getBoundingClientRect();
-  state.nodes = defaultTrack(r.width, r.height);
-  state.closedLoop = true;
+  // Start with just the departure station placed at the center-left of the canvas
+  state.nodes = [
+    {x: r.width * 0.3, y: r.height * 0.6, kind: 'normal'},
+  ];
+  state.closedLoop = false;
   updateLoopBtn();
   _hist.length = 0; _histPtr = -1;
   pushHistory();
@@ -1547,9 +1535,14 @@ function drawNodes(){
 }
 
 function drawStations(){
-  if (state.nodes.length < 2) return;
+  if (state.nodes.length < 1) return;
   const first = state.nodes[0];
   const last = state.nodes[state.nodes.length-1];
+  // With only 1 node, draw the departure station and nothing else
+  if (state.nodes.length === 1) {
+    drawStation(first.x, first.y, 'EMBARQUE', '#FFA502');
+    return;
+  }
 
   // Station at the start ("EMBARQUE")
   drawStation(first.x, first.y, 'EMBARQUE', '#FFA502');
@@ -2559,7 +2552,7 @@ document.querySelectorAll('#tools .tool').forEach(b=>{
     const t = b.dataset.tool;
     if (t === 'clear'){
       if (confirm('Limpar toda a pista?')){
-        state.nodes = [];
+        initDefaultTrack();
         stopTest();
       }
       return;
