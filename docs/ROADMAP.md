@@ -236,16 +236,31 @@
 
 ---
 
+## 🐛 Bugs conhecidos
+
+### 🔴 Preview do Lovable não abre a aplicação
+
+**Contexto:** O preview integrado do Lovable não consegue carregar a aplicação. Provavelmente relacionado à configuração do Cloudflare Workers ou ao entrypoint do Vite/TanStack Start.
+
+- [ ] Investigar se o problema é no `wrangler.jsonc` (rota raiz `/` ou assets estáticos)
+- [ ] Verificar se o `vite.config.ts` está exportando corretamente para o worker
+- [ ] Testar se `npm run dev` local funciona e se o preview do Lovable aponta para o build correto
+- [ ] Verificar se o redirect de `/` → `/home.html` quebra o preview (pode precisar de fallback)
+
+**Critério de aceite:** Preview do Lovable abre e exibe a landing page ou a tela de login.
+
+---
+
 ## Decisão: Próxima sessão
 
-Sugestões de próximos passos baseadas no impacto para o jogador:
+Sugestões de próximos passos baseadas no impacto:
 
 | Opção | Impacto | Complexidade | Recomendação |
 |---|---|---|---|
-| Tela de Perfil | Alto (progresso visível) | Baixa (React + query simples) | ⭐ Começar aqui |
-| Ranking Global | Alto (competição) | Baixa (view já existe) | ⭐ Em seguida |
-| Campanha (fases) | Muito alto (loop de jogo) | Alta (integração play.html) | Depois do perfil |
-| Física melhorada | Médio (mais fun) | Média (só play.html) | A qualquer momento |
+| 🔴 Fix preview Lovable | Bloqueante (não consegue ver o app) | Média (debug de config) | ⭐ Urgente |
+| Admin: Blueprints `/admin/blueprints` | Médio (moderação) | Baixa | Em seguida |
+| Admin: Usuários `/admin/users` | Médio (gestão) | Baixa | Depois |
+| Admin: Dashboard `/admin` | Alto (visibilidade do jogo) | Média | Depois |
 
 ---
 
