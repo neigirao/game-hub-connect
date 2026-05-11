@@ -8,6 +8,47 @@
 
 ## [Não lançado] — Em desenvolvimento
 
+### Sessão 5 — 2026-05-11: Tela de Perfil do Usuário
+
+**Objetivo da sessão:** Criar a tela de perfil React conectada ao Supabase, mostrando dados reais do jogador.
+
+#### Adicionado — Rota `/profile` (`src/routes/profile.tsx`)
+- Layout completo com navbar, hero (avatar + level + XP bar), stat badges, lista de pistas salvas e histórico de corridas
+- **Avatar:** imagem do Google se disponível; fallback com iniciais sobre gradiente
+- **XPBar:** barra animada com `xp % 500 / 500` de preenchimento e label de XP restante para próximo level
+- **StatBadge:** componente reutilizável para coins, XP total, melhor score e contagem de pistas
+- **BlueprintRow:** linha com nome, contagem de nós, tipo de loop, data e botão "Jogar"
+- **ScoreRow:** linha com score total, breakdowns coloridos (S/A/C), velocidade máxima, G máximo e estrelas calculadas
+- **LoadingCard:** skeleton de loading com animação pulse enquanto queries executam
+- **Auth guard:** redireciona para `/login` se nenhuma sessão ativa for encontrada
+- **Queries paralelas:** `profiles`, `blueprints` (últimas 5) e `leaderboard_entries` (últimas 5) com `Promise.all`
+- **Visual:** paleta do jogo (`#0a0420`, `#2e1870`, `#4a2aa6`, gradientes candy) + fontes Fredoka + JetBrains Mono via Google Fonts
+
+#### Alterado — `src/routeTree.gen.ts`
+- Adicionada rota `/profile` ao file route tree do TanStack Router (import, update, augmentation de módulo, `rootRouteChildren`)
+
+---
+
+### Sessão 6 — 2026-05-11: Ranking Global (/leaderboard)
+
+**Objetivo da sessão:** Criar a tela de ranking usando a view `leaderboard_with_profiles` já disponível no banco.
+
+#### Adicionado — Rota `/leaderboard` (`src/routes/leaderboard.tsx`)
+- Tabela com top 50 corridas, ordenadas por `rank` da view `leaderboard_with_profiles`
+- **RankBadge:** medals 🥇🥈🥉 para top 3; `#N` para demais
+- **LeaderboardRow:** avatar com iniciais, username, breakdowns coloridos (S/A/C), velocidade e G máximos, estrelas calculadas
+- **Highlight do usuário atual:** borda rosa + fundo gradiente + label "(você)"
+- **SeasonToggle:** botões Global vs. mês atual (`YYYY-MM`); troca a query ao clicar
+- **Callout de posição:** se o usuário logado estiver fora do top 50, exibe sua posição abaixo do header
+- **Estado vazio:** card com CTA de jogar quando não há corridas
+- **Loading skeleton:** 8 linhas com animação pulse + slide-in animado ao carregar
+- Queries sem auth guard — ranking é público
+
+#### Alterado — `src/routeTree.gen.ts`
+- Adicionada rota `/leaderboard` ao file route tree
+
+---
+
 ### Sessão 2 — 2026-05-11: Infraestrutura de banco e integração do jogo
 
 **Objetivo da sessão:** Evoluir do MVP isolado (play.html sem backend) para uma aplicação conectada ao Supabase, com persistência real de pistas, ranking e compartilhamento.

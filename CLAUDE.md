@@ -219,11 +219,12 @@ A sessão OAuth já fica no localStorage do mesmo domínio — zero friction.
 - [x] Modal de resultado pós-corrida (score animado, estrelas, share, play again)
 - [x] Undo / Ctrl+Z no editor de pistas (stack de 60 snapshots)
 - [x] Auth chip (Google login) integrado ao bloco principal do Supabase
+- [x] Tela de Perfil `/profile` (React + auth guard + XP bar + blueprints + histórico de scores)
+- [x] Ranking Global `/leaderboard` (top 50, season toggle, highlight do usuário atual)
 
 ### Pendente (MVP restante)
-- [ ] Perfil de usuário com coins e XP (tela de perfil React)
 - [ ] Sistema de campanha com fases
-- [ ] Ranking global (página de leaderboard React)
+- [ ] Perfil: animação de ganho de XP/coins ao receber recompensas
 - [ ] Geração de GIF/replay
 - [ ] Som e música
 
@@ -289,14 +290,14 @@ npx wrangler deploy
 O backlog detalhado com critérios de aceite e dependências está em **`docs/ROADMAP.md`**.
 
 **Próximos passos recomendados (MVP):**
-1. Tela de Perfil (`/profile`) — React + query em `profiles` + histórico de pistas
-2. Ranking Global (`/leaderboard`) — view `leaderboard_with_profiles` já pronta
+1. ~~Tela de Perfil (`/profile`)~~ ✅
+2. ~~Ranking Global (`/leaderboard`)~~ ✅
 3. Campanha (`/campaign`) — grid de fases + integração `play.html?level=`
 4. Física melhorada — stall detection, novo nó lançador, sons via Web Audio API
 
 | Fase | Foco |
 |---|---|
-| **MVP** | Perfil, ranking, campanha, física melhorada, navegação React |
+| **MVP** | Campanha, física melhorada, navegação React |
 | **V2** | Replay/GIF, skins + gacha, PixiJS, temporadas |
 | **V3** | Creator economy, marketplace, mobile-first, desafios especiais |
 
