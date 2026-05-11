@@ -1879,41 +1879,35 @@ let saveTimer = null;
 async function saveProgress(){
   if (!currentUser) return;
   const total = Math.round(
-    (state.scores.survival + state.scores.adrenaline + state.scores.chaos +
-     state.scores.smoothness + state.scores.creativity)
+    state.scores.survival + state.scores.adrenaline + state.scores.chaos +
+    state.scores.smoothness + state.scores.creativity
   );
   const scenarioEl = document.querySelector('.scenario .name');
 
-  // lê linha atual para preservar/incrementar runs e best_score
-  const { data: existing } = await sb
-    .from('game_progress')
-    .select('best_score, runs')
-    .eq('user_id', currentUser.id)
-    .maybeSingle();
+  const { data, error } = await sb.rpc('record_run', {
+    p_total: total,
+    p_max_speed: Math.round(state.maxSpeed || 0),
+    p_max_g: Number((state.maxG || 0).toFixed(2)),
+    p_scenario: scenarioEl ? scenarioEl.textContent.trim() : null,
+    p_scores: state.scores,
+    p_track: state.nodes.map(n => ({ x: Math.round(n.x), y: Math.round(n.y), kind: n.kind })),
+  });
 
-  const prevBest = existing?.best_score ?? 0;
-  const prevRuns = existing?.runs ?? 0;
-  const newBest = Math.max(prevBest, state.bestScore || 0, total);
+  if (error){
+    console.warn('[cc] record_run', error);
+    flashSaved('⚠ falha ao salvar');
+    return;
+  }
 
-  const payload = {
-    user_id: currentUser.id,
-    best_score: newBest,
-    runs: prevRuns + 1,
-    max_speed: Math.round(state.maxSpeed || 0),
-    max_g: Number((state.maxG || 0).toFixed(2)),
-    scenario: scenarioEl ? scenarioEl.textContent.trim() : null,
-    last_scores: state.scores,
-    last_track: state.nodes.map(n => ({x:Math.round(n.x), y:Math.round(n.y), kind:n.kind})),
-  };
-  const { error } = await sb
-    .from('game_progress')
-    .upsert(payload, { onConflict: 'user_id' });
-  if (error){ console.warn('[cc] save progress', error); flashSaved('⚠ falha ao salvar'); return; }
-  if (newBest > (state.bestScore || 0)){
+  const prevBest = state.bestScore || 0;
+  const newBest = data?.best_score ?? prevBest;
+  if (newBest > prevBest){
     state.bestScore = newBest;
     document.getElementById('bestScore').textContent = newBest + ' pts';
   }
-  flashSaved(newBest > prevBest ? '★ novo recorde salvo' : '✓ progresso salvo');
+  flashSaved(newBest > prevBest
+    ? `★ novo recorde · ${data.runs} corridas`
+    : `✓ salvo · ${data?.runs ?? '?'} corridas`);
 }
 
 // hook into completeRun (chamado ao final de cada lançamento)
