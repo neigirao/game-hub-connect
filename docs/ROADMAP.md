@@ -55,20 +55,22 @@
 
 ---
 
-### 🟠 P2 — Tela de Campanha (Fases)
+### ✅ 🟠 P2 — Tela de Campanha (Fases)
 
 **Contexto:** A tabela `levels` existe com `title`, `objectives`, `star1/2/3_score`, `starter_track`. Falta a tela de seleção de fases e a integração com `play.html`.
 
-- [ ] `src/routes/campaign.tsx` — rota `/campaign` com grid de fases
-- [ ] Buscar `levels` com `is_published = true` ordenados por `order_index`
-- [ ] Card de fase: título, cenário, estrelas conquistadas, botão "Jogar"
-- [ ] Ao clicar "Jogar", redirecionar para `/play.html?level={id}` com a `starter_track` em base64
-- [ ] `play.html` — detectar `?level=` na URL e carregar `starter_track` + objetivos do nível
-- [ ] `play.html` — painel de objetivos dinâmico baseado nos objetivos do nível (JSON)
-- [ ] Admin: formulário simples para criar/publicar níveis (apenas para `is_admin = true`)
-- [ ] Seed: criar 3 fases iniciais com dificuldade crescente via migration SQL
+- [x] `src/routes/campaign.tsx` — rota `/campaign` com grid de fases
+- [x] Buscar `levels` com `is_published = true` ordenados por `order_index`
+- [x] Card de fase: título, cenário, preview SVG da pista, estrelas, botão "Jogar"
+- [x] Ao clicar "Jogar", redirecionar para `/play.html?level={id}`
+- [x] `play.html` — detectar `?level=` na URL, buscar no Supabase REST e carregar `starter_track`
+- [x] `play.html` — painel de objetivos lateral (`#levelPanel`) com título, objetivos e thresholds de estrelas
+- [ ] Admin: formulário para criar/publicar níveis (`is_admin = true`) — pós-MVP
+- [x] Seed: 3 fases criadas via migration SQL (`Primeira Descida`, `Loopings e Boosters`, `Caos Total`)
 
-**Critério de aceite:** Grid de 3 fases funcionais. Clicar em uma fase carrega a pista inicial e objetivos no play.html.
+**Critério de aceite:** ✅ Grid de 3 fases funcionais. Clicar carrega a pista e mostra painel de objetivos no play.html.
+
+**Concluído em:** Sessão 7 — 2026-05-11
 
 **Dependências:** Tabela `levels` ✅, `play.html` com suporte a URL params ✅
 
@@ -78,12 +80,12 @@
 
 **Contexto:** A física atual funciona mas tem edge cases e falta polish.
 
-- [ ] **Stall detection:** exibir "PARADO! 😴" se o carrinho ficar parado por >3s e encerrar o run
-- [ ] **Velocidade mínima reversa:** impedir que o carrinho volte indefinidamente com velocidade negativa alta
+- [x] **Stall detection:** exibir "PARADO! 😴" se o carrinho ficar parado por >3s e encerrar o run
+- [x] **Velocidade mínima reversa:** impedir que o carrinho volte indefinidamente com velocidade negativa alta
 - [ ] **Novo nó: Lançador** — catapulta que expulsa o carrinho para o ar propositalmente (kind: `launcher`)
 - [ ] **Looping 360°** — nó especial que força o carrinho a fazer uma volta completa sem crash (kind: `loop`)
 - [ ] **Efeito de túnel:** se o carrinho passa por um ponto muito rápido, deixar rastro de velocidade (motion blur simples)
-- [ ] **Sons** — Web Audio API com 3 sons: trilho normal, booster, crash (sem assets externos, gerado por síntese)
+- [x] **Sons** — Web Audio API com 3 sons: trilho normal, booster, crash (sem assets externos, gerado por síntese)
 
 **Critério de aceite:** Cada item verificado individualmente. Sons devem funcionar sem CORS e sem arquivos externos.
 
@@ -93,15 +95,15 @@
 
 **Contexto:** As colunas `coins` e `xp` existem em `profiles` mas nunca são atualizadas.
 
-- [ ] Definir tabela de recompensas: corrida completa = +50 XP, crash = +10 XP (caos é recompensado), nova estrela = +100 coins
-- [ ] Criar função Supabase `award_run_rewards(user_id, stars, crashed)` para calcular e atualizar atomicamente
-- [ ] Chamar essa função ao `completeRun()` no `play.html`
-- [ ] Tela de perfil exibir a animação de ganho de XP/coins (flash verde)
-- [ ] Definir limiares de level: level 1 = 0 XP, level 2 = 200 XP, level 3 = 500 XP...
+- [x] Definir tabela de recompensas: corrida completa = +50 XP, crash = +10 XP (caos é recompensado), nova estrela = +100 coins
+- [x] Criar função Supabase `award_run_rewards(user_id, stars, crashed)` para calcular e atualizar atomicamente
+- [x] Chamar essa função ao `completeRun()` no `play.html`
+- [ ] Tela de perfil exibir a animação de ganho de XP/coins (flash verde) — V2
+- [x] Definir limiares de level: 1 level = 500 XP (calculado na função)
 
-**Critério de aceite:** Após corrida, XP e coins são incrementados no banco e visíveis na tela de perfil.
+**Critério de aceite:** ✅ Após corrida, XP e coins são incrementados no banco e visíveis na tela de perfil.
 
-**Dependências:** Tela de perfil (P1)
+**Dependências:** Tela de perfil (P1) ✅
 
 ---
 
@@ -187,3 +189,5 @@ Sugestões de próximos passos baseadas no impacto para o jogador:
 | 2026-05-11 | Auth chip integrado | Sessão 3 |
 | 2026-05-11 | Tela de Perfil `/profile` (React + Supabase) | Sessão 5 |
 | 2026-05-11 | Ranking Global `/leaderboard` (top 50 + season toggle) | Sessão 6 |
+| 2026-05-11 | Campanha `/campaign` (3 fases seed + painel de objetivos no play.html) | Sessão 7 |
+| 2026-05-11 | Stall detection, sons Web Audio, sistema Coins/XP | Sessão 8 |
