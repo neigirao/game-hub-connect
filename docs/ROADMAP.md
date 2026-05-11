@@ -44,7 +44,7 @@
 - [x] Tabela com colunas: rank, avatar/username, total_score, max_speed_kmh, max_g_force, laps
 - [x] Highlight da linha do usuário atual
 - [x] Toggle de temporada (global / mês atual `YYYY-MM`)
-- [ ] Link para a pista do score (`blueprint_id` → compartilhar)
+- [x] Link para a pista do score (`blueprint_id` → compartilhar)
 - [ ] Atualização em tempo real com Supabase Realtime (opcional para MVP)
 
 **Critério de aceite:** ✅ Tabela com top 50 scores mostrando ranking, username e métricas. Usuário atual destacado.

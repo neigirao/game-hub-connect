@@ -19,6 +19,7 @@ type LeaderboardRow = {
   laps_completed: number;
   season: string;
   rank: number;
+  blueprint_id?: string | null;
 };
 
 const S = {
@@ -173,6 +174,25 @@ function LeaderboardRow({
         </div>
       </div>
 
+      {/* Blueprint link */}
+      {row.blueprint_id && (
+        <a
+          href={`/play.html?blueprint=${row.blueprint_id}`}
+          title="Jogar esta pista"
+          style={{
+            flexShrink: 0,
+            fontSize: 20,
+            textDecoration: "none",
+            opacity: 0.8,
+            transition: "opacity .15s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.8")}
+        >
+          🎢
+        </a>
+      )}
+
       {/* Score + stars */}
       <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
         <div style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 22, color: "#FFA502" }}>
@@ -234,8 +254,19 @@ export function LeaderboardPage() {
       .eq("season", season)
       .order("rank", { ascending: true })
       .limit(50)
-      .then(({ data }) => {
-        setRows((data ?? []) as LeaderboardRow[]);
+      .then(async ({ data }) => {
+        const base = (data ?? []) as LeaderboardRow[];
+        if (base.length === 0) { setRows([]); setLoading(false); return; }
+
+        const { data: entries } = await supabase
+          .from("leaderboard_entries")
+          .select("id, blueprint_id")
+          .in("id", base.map((r) => r.id));
+
+        const bpMap: Record<string, string | null> = {};
+        for (const e of entries ?? []) bpMap[e.id] = e.blueprint_id ?? null;
+
+        setRows(base.map((r) => ({ ...r, blueprint_id: bpMap[r.id] ?? null })));
         setLoading(false);
       });
   }, [season]);
