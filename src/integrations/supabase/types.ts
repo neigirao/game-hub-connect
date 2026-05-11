@@ -82,7 +82,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      record_run: {
+        Args: {
+          p_max_g: number
+          p_max_speed: number
+          p_scenario: string
+          p_scores: Json
+          p_total: number
+          p_track: Json
+        }
+        Returns: {
+          best_score: number
+          created_at: string
+          last_scores: Json | null
+          last_track: Json | null
+          max_g: number
+          max_speed: number
+          runs: number
+          scenario: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "game_progress"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never
