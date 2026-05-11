@@ -160,8 +160,8 @@ state = {
 
 ## 5. Banco de Dados (Supabase)
 
-**Project ID:** `sekuurohkxqktpllebdd`
-**URL:** `https://sekuurohkxqktpllebdd.supabase.co`
+**Project ID:** `hafxruwnggitvtyngedy`
+**URL:** `https://hafxruwnggitvtyngedy.supabase.co`
 
 ### Schema (migrations em `supabase/migrations/`)
 
@@ -176,8 +176,8 @@ state = {
 
 **Trigger:** `on_auth_user_created` — cria `profiles` automaticamente ao registrar usuário
 
-> Para aplicar: `npx supabase db push --project-id sekuurohkxqktpllebdd`
-> Para regenerar types: `npx supabase gen types typescript --project-id sekuurohkxqktpllebdd > src/integrations/supabase/types.ts`
+> Migrations já aplicadas ao projeto `hafxruwnggitvtyngedy` via MCP.
+> Para regenerar types: `npx supabase gen types typescript --project-id hafxruwnggitvtyngedy > src/integrations/supabase/types.ts`
 
 ### Como play.html acessa o Supabase
 
@@ -217,7 +217,6 @@ A sessão OAuth já fica no localStorage do mesmo domínio — zero friction.
 - [x] Documentação viva (CLAUDE.md, docs/)
 
 ### Pendente (MVP restante)
-- [ ] Aplicar migrations no Supabase (`supabase db push`)
 - [ ] Perfil de usuário com coins e XP (tela de perfil React)
 - [ ] Sistema de campanha com fases
 - [ ] Ranking global (página de leaderboard React)
@@ -296,7 +295,7 @@ npx wrangler deploy
 | Papel | Detalhe |
 |---|---|
 | Admin principal | `neigirao@gmail.com` |
-| Supabase project | `sekuurohkxqktpllebdd` |
+| Supabase project | `hafxruwnggitvtyngedy` |
 | Repositório | `neigirao/game-hub-connect` |
 | Branch de desenvolvimento | `claude/understand-application-WSjdS` |
 

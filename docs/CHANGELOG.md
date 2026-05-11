@@ -23,6 +23,8 @@
 - `supabase/migrations/20260511000003_create_levels.sql` — tabela de fases da campanha
 - `supabase/migrations/20260511000004_create_leaderboard.sql` — ranking global com view `leaderboard_with_profiles`
 - `src/integrations/supabase/types.ts` — tipos TypeScript completos para todas as tabelas
+- Todas as migrations aplicadas ao projeto Supabase `hafxruwnggitvtyngedy` (sa-east-1, Brasil)
+- `supabase/config.toml` atualizado para o project_id real
 
 ### Adicionado — Save / Load / Share em play.html
 - Botão "Salvar" abre modal com campo de nome + lista de pistas salvas
