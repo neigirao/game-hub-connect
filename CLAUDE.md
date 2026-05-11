@@ -222,6 +222,9 @@ A sessão OAuth já fica no localStorage do mesmo domínio — zero friction.
 - [x] Tela de Perfil `/profile` (React + auth guard + XP bar + blueprints + histórico de scores)
 - [x] Ranking Global `/leaderboard` (top 50, season toggle, highlight do usuário atual)
 - [x] Campanha `/campaign` (grid de fases, 3 fases seed, painel de objetivos no play.html via `?level=`)
+- [x] Stall detection (parado >3s encerra corrida), velocidade reversa limitada
+- [x] Sons Web Audio API — rail hum, boost burst, crash noise (síntese, zero assets externos)
+- [x] Sistema de Coins/XP — função `award_run_rewards` no Supabase, chamada após cada corrida
 
 ### Pendente (MVP restante)
 - [ ] Sistema de campanha com fases

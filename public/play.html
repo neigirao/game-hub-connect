@@ -763,6 +763,77 @@ function renderAuthChip(user) {
   }
 }
 
+// ---- WEB AUDIO SOUNDS (synthesized, no external files) ----
+let _ac = null;
+let _railOsc = null, _railGain = null;
+let _lastBoostT = 0;
+
+function getAC() {
+  if (!_ac) _ac = new (window.AudioContext || window.webkitAudioContext)();
+  if (_ac.state === 'suspended') _ac.resume();
+  return _ac;
+}
+
+function updateRailSound(speedKmh) {
+  const ac = getAC();
+  if (!_railOsc) {
+    _railOsc = ac.createOscillator();
+    _railGain = ac.createGain();
+    _railOsc.type = 'sawtooth';
+    _railOsc.connect(_railGain);
+    _railGain.connect(ac.destination);
+    _railOsc.start();
+  }
+  const freq = 40 + speedKmh * 1.8;
+  _railOsc.frequency.setTargetAtTime(freq, ac.currentTime, 0.1);
+  const vol = Math.min(0.12, speedKmh / 800);
+  _railGain.gain.setTargetAtTime(vol, ac.currentTime, 0.08);
+}
+
+function stopRailSound() {
+  if (_railGain) _railGain.gain.setTargetAtTime(0, getAC().currentTime, 0.15);
+  setTimeout(() => {
+    if (_railOsc) { try { _railOsc.stop(); } catch {} _railOsc = null; }
+    _railGain = null;
+  }, 400);
+}
+
+function playBoostSound() {
+  const now = performance.now();
+  if (now - _lastBoostT < 200) return; // throttle
+  _lastBoostT = now;
+  const ac = getAC();
+  const osc = ac.createOscillator();
+  const g = ac.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(520, ac.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(980, ac.currentTime + 0.12);
+  g.gain.setValueAtTime(0.18, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.25);
+  osc.connect(g); g.connect(ac.destination);
+  osc.start(); osc.stop(ac.currentTime + 0.25);
+}
+
+function playCrashSound() {
+  const ac = getAC();
+  // Noise burst via buffer
+  const bufSize = ac.sampleRate * 0.8;
+  const buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i/bufSize, 1.5);
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+  const g = ac.createGain();
+  const filter = ac.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(1200, ac.currentTime);
+  filter.frequency.exponentialRampToValueAtTime(80, ac.currentTime + 0.8);
+  g.gain.setValueAtTime(0.5, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.8);
+  src.connect(filter); filter.connect(g); g.connect(ac.destination);
+  src.start();
+}
+
 async function initSupabase() {
   renderAuthChip(null);
   const url = localStorage.getItem('cc_sb_url');
@@ -992,6 +1063,28 @@ async function submitScore(blueprintId = null) {
     laps_completed: state.laps,
     season: 'global',
   });
+}
+
+async function awardRewards(crashed) {
+  if (!sbClient || !currentUser) return;
+  const total = Math.round(
+    (state.scores.survival + state.scores.adrenaline + state.scores.chaos +
+     state.scores.smoothness + state.scores.creativity) / 5
+  );
+  const stars = total >= 75 ? 3 : total >= 55 ? 2 : total >= 25 ? 1 : 0;
+  try {
+    const { data } = await sbClient.rpc('award_run_rewards', {
+      p_user_id: currentUser.id,
+      p_stars: stars,
+      p_crashed: crashed,
+    });
+    if (data) {
+      const xp = data.xp_gained, coins = data.coins_gained;
+      showToast(`+${xp} XP  🪙 +${coins}`, '#FF6BD6');
+    }
+  } catch (e) {
+    console.warn('[CC] awardRewards failed:', e);
+  }
 }
 
 // Inicializa Supabase em background
@@ -1924,9 +2017,19 @@ function tick(){
 
       c.v += a * dt;
       if (c.v < 5 && Math.abs(slope) < 0.05 && sample.kind !== 'booster'){
-        // stall on flat ground -> tiny push back? keep alive but show
+        c.stallTime = (c.stallTime || 0) + dt;
+        if (c.stallTime > 3.0 && !c._stalledOut) {
+          c._stalledOut = true;
+          setStatus('PARADO! 😴', 'warn');
+          showToast('Carrinho parado — encerrando corrida...', '#FFA502');
+          stopRailSound();
+          state.scores.survival = Math.max(0, state.scores.survival - 30);
+          setTimeout(() => { completeRun(false); state.cart = null; }, 1500);
+        }
+      } else {
+        c.stallTime = 0;
       }
-      c.v = Math.max(-200, c.v);
+      c.v = Math.max(-80, c.v); // limit reverse speed
       c.s += c.v * dt;
 
       // Wrap negative arc-length backwards in closed loop
@@ -2031,8 +2134,10 @@ function tick(){
         }
       }
       // Stalled too long
-      if (c.s < 50 && c.v < 10) c.timeOnTrack += dt;
-      else c.timeOnTrack = 0;
+      // Booster sound
+      if (sample.kind === 'booster') playBoostSound();
+      // Rail hum
+      updateRailSound(speedKmh);
     } else {
       // flying physics (off-track)
       c.vy += 1400 * dt; // gravity
@@ -2187,12 +2292,15 @@ function toggleObj(el, ok){
   el.dataset.ok = String(!!ok);
 }
 function completeRun(crashed = false){
+  stopRailSound();
+  if (crashed) playCrashSound();
   const total = Math.round((state.scores.survival + state.scores.adrenaline + state.scores.chaos + state.scores.smoothness + state.scores.creativity) / 5);
   if (total > state.bestScore){
     state.bestScore = total;
     document.getElementById('bestScore').textContent = total + ' pts';
   }
   submitScore();
+  awardRewards(crashed);
   setTimeout(() => showRunComplete(crashed), crashed ? 1800 : 600);
 }
 
@@ -2360,6 +2468,7 @@ function setMode(m){
     launchBtn.classList.add('stop');
     launchBtn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> PARAR';
   } else {
+    stopRailSound();
     stopTest();
     launchBtn.classList.remove('stop');
     launchBtn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> LANÇAR!';
