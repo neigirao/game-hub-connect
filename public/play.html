@@ -341,6 +341,48 @@
   .toast-modal.show{display:block;animation:pop .2s ease}
   .toast-modal.error{border-color:var(--danger);color:var(--danger)}
 
+  /* ===== Auth chip ===== */
+  .auth-chip{
+    position:fixed;top:14px;right:18px;z-index:9999;display:flex;align-items:center;gap:8px;
+    background:rgba(10,4,32,.85);backdrop-filter:blur(8px);
+    border:2px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px;
+    font-family:'Fredoka',system-ui,sans-serif;font-size:13px;color:#fff;cursor:pointer;
+    box-shadow:0 6px 20px rgba(0,0,0,.35);transition:transform .15s ease;
+  }
+  .auth-chip:hover{transform:translateY(-1px)}
+
+  /* ===== Run Complete Modal ===== */
+  .rc-box{text-align:center}
+  .rc-emoji{font-size:52px;line-height:1;margin-bottom:6px}
+  .rc-title{
+    font-family:'Fredoka';font-weight:700;font-size:26px;margin-bottom:14px;
+    background:linear-gradient(90deg,#FFA502,#FF6BD6);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .rc-title.crashed{
+    background:linear-gradient(90deg,#FF4757,#FF7F50);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .rc-total-wrap{
+    margin:0 auto 14px;padding:12px 28px;background:rgba(0,0,0,.3);
+    border-radius:14px;border:2px solid rgba(255,255,255,.08);display:inline-block;
+  }
+  .rc-total-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-dim);font-weight:600;margin-bottom:4px}
+  .rc-total-score{
+    font-family:'JetBrains Mono';font-size:52px;font-weight:700;line-height:1;
+    background:linear-gradient(180deg,#fff,#FFE9A8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .rc-stars{display:flex;gap:10px;justify-content:center;margin:10px 0}
+  .rc-stars .star{width:34px;height:34px;transition:transform .2s ease}
+  .rc-stars .star.on{transform:scale(1.2)}
+  .rc-breakdown{display:flex;flex-direction:column;gap:7px;margin:12px 0;text-align:left}
+  .rc-row{display:flex;align-items:center;gap:10px;font-size:12px}
+  .rc-row-label{width:82px;font-family:'Fredoka';font-weight:600;flex-shrink:0;text-align:right;color:var(--ink-dim)}
+  .rc-row-bar{flex:1;height:8px;background:#1a0a48;border-radius:5px;overflow:hidden;border:1px solid #0a0420}
+  .rc-row-fill{height:100%;width:0%;border-radius:5px;transition:width .7s cubic-bezier(.22,1,.36,1)}
+  .rc-row-val{width:26px;font-family:'JetBrains Mono';font-size:11px;font-weight:700;text-align:right}
+  .rc-buttons{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+
   /* ===== Replay flash ===== */
   .replay{
     position:absolute; right:14px; top:14px;
@@ -618,6 +660,36 @@
   </div>
 </div>
 
+<!-- Modal: Resultado da corrida -->
+<div class="modal-overlay" id="runCompleteModal">
+  <div class="modal-box rc-box">
+    <div class="rc-emoji" id="rcEmoji">🏆</div>
+    <div class="rc-title" id="rcTitle">CORRIDA COMPLETA!</div>
+    <div class="rc-total-wrap">
+      <div class="rc-total-label">Score Total</div>
+      <div class="rc-total-score" id="rcTotalScore">0</div>
+    </div>
+    <div class="rc-stars" id="rcStars">
+      <div class="star"></div><div class="star"></div><div class="star"></div>
+    </div>
+    <div class="rc-breakdown" id="rcBreakdown"></div>
+    <div class="rc-buttons">
+      <button class="bbtn share" id="rcShareBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M8.5 10.5l7-3M8.5 13.5l7 3"/></svg>
+        Compartilhar
+      </button>
+      <button class="bbtn reset" id="rcBuildBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+        Editar Pista
+      </button>
+      <button class="bbtn launch" id="rcPlayAgainBtn">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Jogar de Novo!
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast de feedback global -->
 <div class="toast-modal" id="globalToast"></div>
 
@@ -631,7 +703,35 @@
 let sbClient = null;
 let currentUser = null;
 
+// Auth chip (top-right corner)
+const _authChip = document.createElement('div');
+_authChip.className = 'auth-chip';
+document.body.appendChild(_authChip);
+
+function renderAuthChip(user) {
+  if (!user) {
+    _authChip.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 48 48">
+        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.3 0-11.5-5.1-11.5-11.5S17.7 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.7 6.4 29.1 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5 43.5 34.8 43.5 24c0-1.2-.1-2.4-.4-3.5z"/>
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.7 6.4 29.1 4.5 24 4.5 16.3 4.5 9.7 8.9 6.3 14.7z"/>
+        <path fill="#4CAF50" d="M24 43.5c5 0 9.6-1.9 13.1-5l-6.1-5c-2 1.4-4.4 2.2-7 2.2-5.3 0-9.7-3.1-11.3-7.5l-6.5 5C9.6 39 16.3 43.5 24 43.5z"/>
+        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.1 5c-.4.4 6.7-4.9 6.7-14.5 0-1.2-.1-2.4-.4-3.5z"/>
+      </svg>
+      <span>Entrar com Google</span>`;
+    _authChip.onclick = () => sbClient?.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
+  } else {
+    const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'jogador';
+    const avatar = user.user_metadata?.avatar_url;
+    _authChip.innerHTML = `
+      ${avatar ? `<img src="${avatar}" alt="" style="width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.2)"/>` : ''}
+      <span style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+      <span style="opacity:.5;font-size:11px">· sair</span>`;
+    _authChip.onclick = () => sbClient?.auth.signOut().then(() => renderAuthChip(null));
+  }
+}
+
 async function initSupabase() {
+  renderAuthChip(null);
   const url = localStorage.getItem('cc_sb_url');
   const key = localStorage.getItem('cc_sb_key');
   if (!url || !key) return;
@@ -643,16 +743,14 @@ async function initSupabase() {
     });
     const { data: { user } } = await sbClient.auth.getUser();
     currentUser = user;
-    if (user) updateTopbarUser(user);
+    renderAuthChip(user);
+    sbClient.auth.onAuthStateChange((_ev, session) => {
+      currentUser = session?.user ?? null;
+      renderAuthChip(currentUser);
+    });
   } catch (e) {
     console.warn('[CC] Supabase init failed:', e);
   }
-}
-
-function updateTopbarUser(user) {
-  const name = user.user_metadata?.name || user.email?.split('@')[0] || 'Jogador';
-  const el = document.getElementById('userDisplay');
-  if (el) el.textContent = name;
 }
 
 function showToast(msg, isError = false) {
@@ -831,6 +929,8 @@ const ctx = canvas.getContext('2d');
 const stage = document.getElementById('stage');
 
 let DPR = Math.min(2, window.devicePixelRatio || 1);
+// Camera: follows cart in test mode
+const cam = { x: 0, y: 0, tx: 0, ty: 0, z: 1, tz: 1 };
 function resize() {
   const r = stage.getBoundingClientRect();
   canvas.width = r.width * DPR;
@@ -838,6 +938,9 @@ function resize() {
   canvas.style.width = r.width + 'px';
   canvas.style.height = r.height + 'px';
   ctx.setTransform(DPR,0,0,DPR,0,0);
+  // Re-center camera when viewport changes
+  cam.x = cam.tx = r.width / 2;
+  cam.y = cam.ty = r.height / 2;
 }
 window.addEventListener('resize', resize);
 
@@ -864,6 +967,25 @@ const state = {
   dragging: -1,
 };
 
+// ---------------------------- UNDO HISTORY
+const _hist = [];
+let _histPtr = -1;
+function pushHistory() {
+  _hist.splice(_histPtr + 1);
+  _hist.push({ nodes: JSON.parse(JSON.stringify(state.nodes)), loop: state.closedLoop });
+  if (_hist.length > 60) _hist.shift();
+  _histPtr = _hist.length - 1;
+}
+function undo() {
+  if (_histPtr <= 0) { showToast('Nada para desfazer', '#4a2aa6'); return; }
+  _histPtr--;
+  const snap = _hist[_histPtr];
+  state.nodes = JSON.parse(JSON.stringify(snap.nodes));
+  state.closedLoop = snap.loop;
+  updateLoopBtn();
+  showToast('↩ Desfeito', '#70A1FF');
+}
+
 // Starting demo track — a friendly looking coaster shape
 function defaultTrack(W, H){
   const baseY = H * 0.62;
@@ -884,9 +1006,10 @@ function initDefaultTrack(){
   resize();
   const r = stage.getBoundingClientRect();
   state.nodes = defaultTrack(r.width, r.height);
-  // Default: start the user with a closed loop so they see the station↔station flow
   state.closedLoop = true;
   updateLoopBtn();
+  _hist.length = 0; _histPtr = -1;
+  pushHistory();
 }
 function updateLoopBtn(){
   const b = document.getElementById('loopBtn');
@@ -1855,7 +1978,7 @@ function tick(){
         if (Math.abs(c.vy) < 20 && state.failLevel < 9){
           setFailLevel(9);
           spawnConfetti(c.x, c.y, 24);
-          setTimeout(()=>completeRun(), 1500);
+          setTimeout(()=>completeRun(true), 1500);
         }
       }
     }
@@ -1904,17 +2027,37 @@ function tick(){
   updateScoreUI();
   updateObjectives();
 
+  // ---------------------------- CAMERA
+  if (state.mode === 'test' && state.cart) {
+    cam.tx = state.cart.x;
+    cam.ty = state.cart.y;
+    cam.tz = 1.3;
+  } else {
+    cam.tx = W / 2;
+    cam.ty = H / 2;
+    cam.tz = 1;
+  }
+  cam.x += (cam.tx - cam.x) * 0.09;
+  cam.y += (cam.ty - cam.y) * 0.09;
+  cam.z += (cam.tz - cam.z) * 0.06;
+
   // ---------------------------- RENDER
   ctx.save();
   ctx.translate(state.cameraShake.x, state.cameraShake.y);
   ctx.clearRect(-30,-30, W+60, H+60);
   drawBackground(W, H);
+  // World transform: camera follows cart in test mode
+  ctx.save();
+  ctx.translate(W/2, H/2);
+  ctx.scale(cam.z, cam.z);
+  ctx.translate(-cam.x, -cam.y);
   drawTrack(path);
   drawNodes();
   drawDebris();
   drawCart(state.cart);
   drawParticles();
   drawGhosts();
+  ctx.restore();
   drawExplosionFlash();
   ctx.restore();
 
@@ -1970,12 +2113,64 @@ function toggleObj(el, ok){
   el.classList.toggle('done', !!ok);
   el.dataset.ok = String(!!ok);
 }
-function completeRun(){
-  const total = Math.round((state.scores.survival + state.scores.adrenaline + state.scores.chaos + state.scores.smoothness + state.scores.creativity));
+function completeRun(crashed = false){
+  const total = Math.round((state.scores.survival + state.scores.adrenaline + state.scores.chaos + state.scores.smoothness + state.scores.creativity) / 5);
   if (total > state.bestScore){
     state.bestScore = total;
     document.getElementById('bestScore').textContent = total + ' pts';
   }
+  submitScore();
+  setTimeout(() => showRunComplete(crashed), crashed ? 1800 : 600);
+}
+
+function showRunComplete(crashed = false){
+  const total = Math.round((state.scores.survival + state.scores.adrenaline + state.scores.chaos + state.scores.smoothness + state.scores.creativity) / 5);
+  const modal = document.getElementById('runCompleteModal');
+  const title = document.getElementById('rcTitle');
+  const emoji = document.getElementById('rcEmoji');
+  const scoreEl = document.getElementById('rcTotalScore');
+
+  emoji.textContent = crashed ? '💥' : (total > 75 ? '🏆' : total > 40 ? '🎢' : '😬');
+  title.textContent = crashed ? 'CRASH ESPETACULAR!' : 'CORRIDA COMPLETA!';
+  title.className = 'rc-title' + (crashed ? ' crashed' : '');
+  scoreEl.textContent = '0';
+
+  const cats = [
+    { key: 'survival',   label: 'Survival',    color: '#2ED573' },
+    { key: 'adrenaline', label: 'Adrenaline',  color: '#FF4757' },
+    { key: 'chaos',      label: 'Chaos',        color: '#FF7F50' },
+    { key: 'smoothness', label: 'Smoothness',   color: '#70A1FF' },
+    { key: 'creativity', label: 'Creativity',   color: '#FF6BD6' },
+  ];
+  document.getElementById('rcBreakdown').innerHTML = cats.map(c => `
+    <div class="rc-row">
+      <span class="rc-row-label">${c.label}</span>
+      <div class="rc-row-bar"><div class="rc-row-fill" style="background:${c.color}" data-w="${Math.round(state.scores[c.key])}"></div></div>
+      <span class="rc-row-val" style="color:${c.color}">${Math.round(state.scores[c.key])}</span>
+    </div>`).join('');
+
+  modal.classList.add('show');
+
+  // Animate score count-up
+  let cur = 0;
+  const step = Math.ceil(total / 28);
+  const iv = setInterval(() => {
+    cur = Math.min(total, cur + step);
+    scoreEl.textContent = cur;
+    if (cur >= total) clearInterval(iv);
+  }, 28);
+
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.rc-row-fill').forEach(el => { el.style.width = el.dataset.w + '%'; });
+  }, 150);
+
+  // Animate stars
+  const starEls = document.querySelectorAll('#rcStars .star');
+  starEls.forEach(s => s.classList.remove('on'));
+  if (total > 25) setTimeout(() => starEls[0]?.classList.add('on'), 500);
+  if (total > 55) setTimeout(() => starEls[1]?.classList.add('on'), 800);
+  if (total > 75) setTimeout(() => starEls[2]?.classList.add('on'), 1100);
 }
 
 // ---------------------------- INPUT
@@ -1990,22 +2185,28 @@ function nodeAt(p){
   }
   return -1;
 }
+let _dragMoved = false;
 canvas.addEventListener('mousedown', e=>{
   if (state.mode !== 'build') return;
   const p = canvasPoint(e);
   const idx = nodeAt(p);
+  _dragMoved = false;
   if (state.tool === 'add'){
     if (idx >= 0){ state.dragging = idx; return; }
     state.nodes.push({x:p.x, y:p.y, kind:'normal'});
     state.dragging = state.nodes.length - 1;
+    pushHistory();
   } else if (state.tool === 'move'){
     state.dragging = idx;
   } else if (state.tool === 'booster' && idx >= 0){
     state.nodes[idx].kind = state.nodes[idx].kind === 'booster' ? 'normal' : 'booster';
+    pushHistory();
   } else if (state.tool === 'brake' && idx >= 0){
     state.nodes[idx].kind = state.nodes[idx].kind === 'brake' ? 'normal' : 'brake';
+    pushHistory();
   } else if (state.tool === 'delete' && idx >= 0){
     state.nodes.splice(idx, 1);
+    pushHistory();
   }
 });
 canvas.addEventListener('mousemove', e=>{
@@ -2014,9 +2215,14 @@ canvas.addEventListener('mousemove', e=>{
   if (state.dragging >= 0 && state.mode === 'build'){
     state.nodes[state.dragging].x = p.x;
     state.nodes[state.dragging].y = Math.max(20, Math.min(canvas.clientHeight*0.82, p.y));
+    _dragMoved = true;
   }
 });
-window.addEventListener('mouseup', ()=>{ state.dragging = -1; });
+window.addEventListener('mouseup', ()=>{
+  if (_dragMoved && state.dragging >= 0) pushHistory();
+  state.dragging = -1;
+  _dragMoved = false;
+});
 
 // ---------------------------- TOOLBAR
 document.querySelectorAll('#tools .tool').forEach(b=>{
@@ -2032,19 +2238,25 @@ document.querySelectorAll('#tools .tool').forEach(b=>{
     if (t === 'loop'){
       state.closedLoop = !state.closedLoop;
       updateLoopBtn();
+      pushHistory();
       if (state.closedLoop) showToast('🔗 CIRCUITO FECHADO!', '#2ED573');
       else showToast('⛓ CIRCUITO ABERTO', '#FFA502');
       return;
     }
     state.tool = t;
     document.querySelectorAll('#tools .tool').forEach(x=>{
-      if (x.dataset.tool === 'loop') return; // loop toggle is independent
+      if (x.dataset.tool === 'loop') return;
       x.classList.remove('active');
     });
     b.classList.add('active');
   });
 });
 window.addEventListener('keydown', e=>{
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z'){
+    e.preventDefault();
+    if (state.mode === 'build') undo();
+    return;
+  }
   const map = {a:'add', m:'move', b:'booster', f:'brake', d:'delete'};
   if (map[e.key]){
     state.tool = map[e.key];
@@ -2116,161 +2328,34 @@ document.getElementById('saveCurrentBtn').addEventListener('click', ()=>{
   saveBlueprint(name);
 });
 
+// Run complete modal buttons
+document.getElementById('runCompleteModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+document.getElementById('rcShareBtn').addEventListener('click', ()=>{
+  const url = buildShareUrl();
+  navigator.clipboard.writeText(url)
+    .then(() => showToast('Link copiado!'))
+    .catch(() => showToast('URL: ' + url.slice(0,50), true));
+});
+document.getElementById('rcBuildBtn').addEventListener('click', ()=>{
+  document.getElementById('runCompleteModal').classList.remove('show');
+  setMode('build');
+});
+document.getElementById('rcPlayAgainBtn').addEventListener('click', ()=>{
+  document.getElementById('runCompleteModal').classList.remove('show');
+  setMode('build');
+  setTimeout(() => setMode('test'), 100);
+});
+
 // ---------------------------- BOOT
+resize(); // initialize canvas + cam before loading track
 const loadedFromUrl = loadTrackFromUrl();
-if (!loadedFromUrl) initDefaultTrack();
+if (loadedFromUrl) { pushHistory(); } else { initDefaultTrack(); }
 updateScoreUI();
 requestAnimationFrame(tick);
 
 </script>
-<script type="module">
-// ============================================================
-// Lovable Cloud — Auth + Salvamento de progresso
-// ============================================================
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const SUPABASE_URL = "https://sekuurohkxqktpllebdd.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNla3V1cm9oa3hxa3RwbGxlYmRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NDI2NjQsImV4cCI6MjA5NDAxODY2NH0._XOxaIgRtKYoMf8B1gYZwRv_OpZVUqsrT0BbJgplLDo";
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, storage: localStorage }
-});
-
-// --- UI: chip de usuário no canto superior direito
-const chip = document.createElement('div');
-chip.style.cssText = `
-  position:fixed;top:14px;right:18px;z-index:9999;display:flex;align-items:center;gap:8px;
-  background:rgba(10,4,32,.85);backdrop-filter:blur(8px);
-  border:2px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px;
-  font-family:'Fredoka',system-ui,sans-serif;font-size:13px;color:#fff;cursor:pointer;
-  box-shadow:0 6px 20px rgba(0,0,0,.35);transition:transform .15s ease;
-`;
-chip.onmouseenter = () => chip.style.transform = 'translateY(-1px)';
-chip.onmouseleave = () => chip.style.transform = 'translateY(0)';
-document.body.appendChild(chip);
-
-const saveBadge = document.createElement('div');
-saveBadge.style.cssText = `
-  position:fixed;top:60px;right:18px;z-index:9999;
-  background:#23c552;color:#04220e;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
-  padding:6px 10px;border-radius:8px;opacity:0;transition:opacity .25s ease;pointer-events:none;
-`;
-saveBadge.textContent = '✓ progresso salvo';
-document.body.appendChild(saveBadge);
-function flashSaved(text){
-  saveBadge.textContent = text || '✓ progresso salvo';
-  saveBadge.style.opacity = '1';
-  setTimeout(()=>{ saveBadge.style.opacity = '0'; }, 1600);
-}
-
-let currentUser = null;
-
-function renderChip(user){
-  if (!user){
-    chip.innerHTML = `
-      <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
-        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.3 0-11.5-5.1-11.5-11.5S17.7 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.7 6.4 29.1 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5 43.5 34.8 43.5 24c0-1.2-.1-2.4-.4-3.5z"/>
-        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.7 6.4 29.1 4.5 24 4.5 16.3 4.5 9.7 8.9 6.3 14.7z"/>
-        <path fill="#4CAF50" d="M24 43.5c5 0 9.6-1.9 13.1-5l-6.1-5c-2 1.4-4.4 2.2-7 2.2-5.3 0-9.7-3.1-11.3-7.5l-6.5 5C9.6 39 16.3 43.5 24 43.5z"/>
-        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.1 5c-.4.4 6.7-4.9 6.7-14.5 0-1.2-.1-2.4-.4-3.5z"/>
-      </svg>
-      <span>Entrar com Google</span>`;
-    chip.onclick = signIn;
-  } else {
-    const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'jogador';
-    const avatar = user.user_metadata?.avatar_url;
-    chip.innerHTML = `
-      ${avatar ? `<img src="${avatar}" alt="" style="width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.2)"/>` : ''}
-      <span style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
-      <span style="opacity:.5;font-size:11px">·sair</span>`;
-    chip.onclick = signOut;
-  }
-}
-
-async function signIn(){
-  const { error } = await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.href }
-  });
-  if (error) alert('Falha ao entrar: ' + error.message);
-}
-async function signOut(){
-  await sb.auth.signOut();
-  flashSaved('saiu da conta');
-}
-
-async function loadProgress(userId){
-  const { data, error } = await sb
-    .from('game_progress')
-    .select('best_score, max_speed, max_g, last_scores, last_track')
-    .eq('user_id', userId)
-    .maybeSingle();
-  if (error){ console.warn('[cc] load progress', error); return; }
-  if (!data) return;
-  if (data.best_score && data.best_score > (state.bestScore || 0)){
-    state.bestScore = data.best_score;
-    document.getElementById('bestScore').textContent = data.best_score + ' pts';
-  }
-  if (Array.isArray(data.last_track) && data.last_track.length >= 2){
-    state.nodes = data.last_track.map(n => ({x:+n.x, y:+n.y, kind:n.kind || 'normal'}));
-  }
-}
-
-let saveTimer = null;
-async function saveProgress(){
-  if (!currentUser) return;
-  const total = Math.round(
-    state.scores.survival + state.scores.adrenaline + state.scores.chaos +
-    state.scores.smoothness + state.scores.creativity
-  );
-  const scenarioEl = document.querySelector('.scenario .name');
-
-  const { data, error } = await sb.rpc('record_run', {
-    p_total: total,
-    p_max_speed: Math.round(state.maxSpeed || 0),
-    p_max_g: Number((state.maxG || 0).toFixed(2)),
-    p_scenario: scenarioEl ? scenarioEl.textContent.trim() : null,
-    p_scores: state.scores,
-    p_track: state.nodes.map(n => ({ x: Math.round(n.x), y: Math.round(n.y), kind: n.kind })),
-  });
-
-  if (error){
-    console.warn('[cc] record_run', error);
-    flashSaved('⚠ falha ao salvar');
-    return;
-  }
-
-  const prevBest = state.bestScore || 0;
-  const newBest = data?.best_score ?? prevBest;
-  if (newBest > prevBest){
-    state.bestScore = newBest;
-    document.getElementById('bestScore').textContent = newBest + ' pts';
-  }
-  flashSaved(newBest > prevBest
-    ? `★ novo recorde · ${data.runs} corridas`
-    : `✓ salvo · ${data?.runs ?? '?'} corridas`);
-}
-
-// hook into completeRun (chamado ao final de cada lançamento)
-const originalCompleteRun = window.completeRun || completeRun;
-window.completeRun = function patchedCompleteRun(){
-  originalCompleteRun.apply(this, arguments);
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveProgress, 250);
-};
-
-// inicialização: sessão + listener
-(async () => {
-  const { data: { session } } = await sb.auth.getSession();
-  currentUser = session?.user ?? null;
-  renderChip(currentUser);
-  if (currentUser) await loadProgress(currentUser.id);
-})();
-
-sb.auth.onAuthStateChange(async (_event, session) => {
-  currentUser = session?.user ?? null;
-  renderChip(currentUser);
-  if (currentUser) await loadProgress(currentUser.id);
-});
-</script>
 </body>
 </html>

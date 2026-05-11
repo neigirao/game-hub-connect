@@ -8,35 +8,92 @@
 
 ## [Não lançado] — Em desenvolvimento
 
-### Adicionado — Documentação viva
-- `CLAUDE.md` — documentação viva principal (lida automaticamente pelo Claude Code)
-- `docs/GDD.md` — Game Design Document condensado para consulta rápida
-- `docs/ARCHITECTURE.md` — arquitetura técnica detalhada com diagramas
-- `docs/DECISIONS.md` — log de decisões arquiteturais (ADRs 001–006)
-- `docs/CHANGELOG.md` — este arquivo
-- `.claude/settings.json` — configuração de hooks do Claude Code
-- `.claude/hooks/post-commit-docs.sh` — lembrete automático de atualização de docs pós-commit
+### Sessão 2 — 2026-05-11: Infraestrutura de banco e integração do jogo
 
-### Adicionado — Schema do banco de dados
-- `supabase/migrations/20260511000001_create_profiles.sql` — tabela de perfis com trigger automático de criação
-- `supabase/migrations/20260511000002_create_blueprints.sql` — tabela de pistas com RLS e índices
-- `supabase/migrations/20260511000003_create_levels.sql` — tabela de fases da campanha
-- `supabase/migrations/20260511000004_create_leaderboard.sql` — ranking global com view `leaderboard_with_profiles`
-- `src/integrations/supabase/types.ts` — tipos TypeScript completos para todas as tabelas
+**Objetivo da sessão:** Evoluir do MVP isolado (play.html sem backend) para uma aplicação conectada ao Supabase, com persistência real de pistas, ranking e compartilhamento.
 
-### Adicionado — Save / Load / Share em play.html
-- Botão "Salvar" abre modal com campo de nome + lista de pistas salvas
-- Botão "Pistas" abre a mesma modal com pistas do usuário logado
-- Carregar pista da lista (substitui a pista atual no editor)
-- Deletar pista da lista (com confirmação)
-- Botão "Compartilhar" gera URL com track data em base64 — carregada automaticamente ao abrir o link
-- Submit automático de score ao `leaderboard_entries` após completar corrida
-- `client.ts` grava `cc_sb_url` e `cc_sb_key` no localStorage para uso pelo `play.html`
-- `play.html` inicializa Supabase JS via CDN (ESM) e reutiliza sessão OAuth do React app
+#### Adicionado — Sistema de documentação viva (ADR-010)
+- `CLAUDE.md` — fonte primária de verdade do projeto, lida automaticamente pelo Claude Code a cada sessão; contém stack, estrutura de arquivos, estado atual (implementado vs. pendente), decisões e acessos
+- `docs/GDD.md` — Game Design Document condensado (conceito, pilares, física, score, progressão, monetização)
+- `docs/ARCHITECTURE.md` — arquitetura técnica com diagrama ASCII browser → Cloudflare → Supabase
+- `docs/DECISIONS.md` — log de decisões arquiteturais com contexto, alternativas e consequências (ADRs 001–010)
+- `docs/CHANGELOG.md` — este arquivo, com histórico versionado por sessão
+- `.claude/settings.json` — permissões e hooks do Claude Code
+- `.claude/hooks/post-commit-docs.sh` — script pós-commit que detecta quais arquivos mudaram e exibe lembretes contextuais específicos (CHANGELOG, ARCHITECTURE ou CLAUDE.md)
+
+#### Adicionado — Schema do banco de dados (projeto `hafxruwnggitvtyngedy`, sa-east-1)
+- `supabase/migrations/20260511000001_create_profiles.sql` — estende tabela existente com colunas CC (`username`, `coins`, `inventory`, `is_admin`, `updated_at`); mantém colunas legadas (`full_name`, `points`, etc.) via `ADD COLUMN IF NOT EXISTS`
+- `supabase/migrations/20260511000002_create_blueprints.sql` — pistas salvas pelos usuários; RLS completo (ver público, CRUD próprio); índices para queries de ranking
+- `supabase/migrations/20260511000003_create_levels.sql` — fases da campanha gerenciadas por admin; políticas separadas para admin vs. jogador
+- `supabase/migrations/20260511000004_create_leaderboard.sql` — ranking com `leaderboard_entries` + view `leaderboard_with_profiles` com `rank()` window function por temporada
+- Todas as migrations aplicadas via MCP ao projeto `hafxruwnggitvtyngedy`
+- `supabase/config.toml` corrigido para o project_id real (era `sekuurohkxqktpllebdd`, placeholder)
+- `src/integrations/supabase/types.ts` — tipos TypeScript completos para todas as tabelas e views
+
+#### Adicionado — Bridge Supabase para play.html (ADR-007)
+- `src/integrations/supabase/client.ts` — grava `cc_sb_url` e `cc_sb_key` no localStorage após inicializar, tornando as credenciais acessíveis ao `play.html` sem duplicação e sem hardcode
+- `play.html` — inicializa `@supabase/supabase-js@2` via CDN ESM; reutiliza sessão OAuth do React app automaticamente (mesmo domínio, mesmo localStorage)
+
+#### Adicionado — Save / Load / Share em play.html
+- Botão **Salvar** — abre modal com campo de nome e lista de pistas do usuário
+- Botão **Pistas** — abre a mesma modal diretamente na lista de pistas salvas
+- **Carregar pista** da lista com um clique (substitui trilha atual no editor)
+- **Deletar pista** com confirmação antes de remover do banco
+- Botão **Compartilhar** — codifica nós em `btoa(JSON.stringify({nodes, loop}))` e copia URL para clipboard; link funciona sem login (ADR-008)
+- **Submit automático de score** ao `leaderboard_entries` ao completar corrida (survival > 0)
+- Toast global de feedback para todas as operações (salvo, erro, copiado)
+
+### Sessão 4 — 2026-05-11: PR, roadmap e tarefas
+
+**Objetivo:** Consolidar o trabalho das sessões 1-3 em PR, criar backlog estruturado de tarefas.
+
+#### Adicionado
+- `docs/ROADMAP.md` — backlog priorizado por fase (MVP → V2 → V3) com critérios de aceite, dependências e recomendação de próximo passo para cada dev/IA que abrir o projeto
+- PR #2 criado: `feat: banco de dados, save/load/share, câmera, modal de resultado e undo`
+- `CLAUDE.md` seção 10 atualizada com referência ao ROADMAP e próximos passos recomendados
+
+---
+
+### Sessão 3 — 2026-05-11: Melhorias no jogo (play.html)
+
+**Objetivo da sessão:** Tornar o jogo mais cinematográfico, responsivo e polish — câmera que acompanha o carrinho, feedback de fim de corrida e undo no editor.
+
+#### Corrigido — Bug crítico
+- Removido segundo bloco `<script>` com URL Supabase obsoleta (`sekuurohkxqktpllebdd`) que chamava `game_progress` e RPC `record_run` inexistentes, gerando erros silenciosos a cada corrida
+
+#### Adicionado — Câmera dinâmica (test mode)
+- No modo Testar, a câmera faz zoom em 1.3x e segue o carrinho suavemente com interpolação (lerp 9%)
+- Ao voltar ao modo Construir, a câmera recua suavemente para visão geral
+- Background desenhado em screen-space (não scroll) para manter referência visual; objetos do mundo em world-space com transform de câmera
+
+#### Adicionado — Modal de resultado pós-corrida
+- Após cada corrida (sucesso ou crash), aparece modal com: emoji contextual, título animado, score total com count-up animado, barras de categoria preenchendo com transição CSS, 3 estrelas acendendo em sequência
+- Título e emoji variam: 🏆 (score > 75), 🎢 (score > 40), 😬 (score baixo), 💥 (crash)
+- Botões: Compartilhar (copia URL), Editar Pista (volta ao build), Jogar de Novo (reinicia test)
+- Crash espetacular (L9 com impacto no chão) abre o modal após 1.8s de drama
+
+#### Adicionado — Ctrl+Z / Undo no editor
+- Stack de histórico de até 60 snapshots de nós + estado de loop
+- Push automático após: adicionar nó, soltar drag, deletar nó, mudar tipo (booster/freio), toggle de loop
+- Ctrl+Z (ou Cmd+Z no Mac) desfaz a última operação com toast de confirmação
+- Undo desabilitado no modo Testar (não interfere na física)
+
+#### Adicionado — Auth chip integrado
+- Chip de login com Google (top-right) migrado para o bloco principal do Supabase bridge
+- Exibe avatar + nome do usuário logado; clique abre signOut
+- Não logado: exibe botão "Entrar com Google" com ícone oficial
+
+---
+
+### Sessão 1 — 2026-05-11: MVP inicial (pré-documentação)
+
+---
 
 ---
 
 ## [0.1.0] — MVP Inicial (2026-05-11)
+
+**Objetivo:** Criar o protótipo jogável e conectar a infraestrutura base (auth, hosting, banco).
 
 ### Adicionado
 - Engine do jogo em `public/play.html` (~1800 linhas, Canvas 2D + vanilla JS)

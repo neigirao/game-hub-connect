@@ -160,8 +160,8 @@ state = {
 
 ## 5. Banco de Dados (Supabase)
 
-**Project ID:** `sekuurohkxqktpllebdd`
-**URL:** `https://sekuurohkxqktpllebdd.supabase.co`
+**Project ID:** `hafxruwnggitvtyngedy`
+**URL:** `https://hafxruwnggitvtyngedy.supabase.co`
 
 ### Schema (migrations em `supabase/migrations/`)
 
@@ -176,8 +176,8 @@ state = {
 
 **Trigger:** `on_auth_user_created` — cria `profiles` automaticamente ao registrar usuário
 
-> Para aplicar: `npx supabase db push --project-id sekuurohkxqktpllebdd`
-> Para regenerar types: `npx supabase gen types typescript --project-id sekuurohkxqktpllebdd > src/integrations/supabase/types.ts`
+> Migrations já aplicadas ao projeto `hafxruwnggitvtyngedy` via MCP.
+> Para regenerar types: `npx supabase gen types typescript --project-id hafxruwnggitvtyngedy > src/integrations/supabase/types.ts`
 
 ### Como play.html acessa o Supabase
 
@@ -215,9 +215,12 @@ A sessão OAuth já fica no localStorage do mesmo domínio — zero friction.
 - [x] Compartilhar pista via URL (track data codificado em base64)
 - [x] Submit automático de score ao leaderboard após corrida
 - [x] Documentação viva (CLAUDE.md, docs/)
+- [x] Câmera dinâmica que segue o carrinho no modo Testar (zoom 1.3x + lerp)
+- [x] Modal de resultado pós-corrida (score animado, estrelas, share, play again)
+- [x] Undo / Ctrl+Z no editor de pistas (stack de 60 snapshots)
+- [x] Auth chip (Google login) integrado ao bloco principal do Supabase
 
 ### Pendente (MVP restante)
-- [ ] Aplicar migrations no Supabase (`supabase db push`)
 - [ ] Perfil de usuário com coins e XP (tela de perfil React)
 - [ ] Sistema de campanha com fases
 - [ ] Ranking global (página de leaderboard React)
@@ -281,13 +284,21 @@ npx wrangler deploy
 
 ---
 
-## 10. Roadmap Resumido
+## 10. Roadmap e Tarefas
+
+O backlog detalhado com critérios de aceite e dependências está em **`docs/ROADMAP.md`**.
+
+**Próximos passos recomendados (MVP):**
+1. Tela de Perfil (`/profile`) — React + query em `profiles` + histórico de pistas
+2. Ranking Global (`/leaderboard`) — view `leaderboard_with_profiles` já pronta
+3. Campanha (`/campaign`) — grid de fases + integração `play.html?level=`
+4. Física melhorada — stall detection, novo nó lançador, sons via Web Audio API
 
 | Fase | Foco |
 |---|---|
-| **MVP** | Editor, física, campanha, explosões, score, compartilhamento |
-| **V2** | Replay avançado, mais peças, ranking expandido, eventos |
-| **V3** | Creator economy, temporadas, marketplace, desafios especiais |
+| **MVP** | Perfil, ranking, campanha, física melhorada, navegação React |
+| **V2** | Replay/GIF, skins + gacha, PixiJS, temporadas |
+| **V3** | Creator economy, marketplace, mobile-first, desafios especiais |
 
 ---
 
@@ -296,7 +307,7 @@ npx wrangler deploy
 | Papel | Detalhe |
 |---|---|
 | Admin principal | `neigirao@gmail.com` |
-| Supabase project | `sekuurohkxqktpllebdd` |
+| Supabase project | `hafxruwnggitvtyngedy` |
 | Repositório | `neigirao/game-hub-connect` |
 | Branch de desenvolvimento | `claude/understand-application-WSjdS` |
 

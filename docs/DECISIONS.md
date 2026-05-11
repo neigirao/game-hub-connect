@@ -180,6 +180,121 @@ Manter arquivo único no MVP.
 
 ---
 
+## ADR-007 — Bridge play.html ↔ Supabase via localStorage
+
+**Data:** 2026-05-11
+**Status:** Aceito
+
+**Contexto:**
+`play.html` é vanilla JS sem acesso ao build do Vite, portanto não consegue ler variáveis de ambiente `VITE_*` em tempo de execução. Precisávamos que ele acessasse o Supabase sem duplicar credenciais.
+
+**Opções consideradas:**
+1. Hardcodar URL e chave no `play.html`
+2. Passar via URL params (`?sb_url=...&sb_key=...`)
+3. `client.ts` grava no localStorage → `play.html` lê (atual)
+4. Proxy via Cloudflare Worker que injeta as credenciais
+
+**Decisão:**
+`client.ts` grava `cc_sb_url` e `cc_sb_key` no localStorage após inicializar. `play.html` lê essas chaves e inicializa o `@supabase/supabase-js` via CDN ESM.
+
+**Motivo:**
+- Sem duplicação: as credenciais ficam em apenas um lugar (env vars do build)
+- localStorage é compartilhado entre páginas do mesmo domínio
+- Sessão OAuth do React app reutilizada automaticamente pelo play.html
+- Zero configuração extra para o usuário
+
+**Consequências:**
+- `client.ts` deve ser carregado antes de `play.html` (fluxo normal da app)
+- Se o usuário abrir `play.html` diretamente sem passar pela app React, `cc_sb_url` não estará no localStorage e o Supabase não inicializará
+- Solução futura: mover o jogo para dentro do React (ADR-003)
+
+---
+
+## ADR-008 — Compartilhamento de pistas via URL com base64
+
+**Data:** 2026-05-11
+**Status:** Aceito
+
+**Contexto:**
+Precisávamos permitir que usuários compartilhassem pistas sem necessariamente estar logados, e sem que o destinatário precisasse ter conta.
+
+**Opções consideradas:**
+1. Salvar no banco e compartilhar UUID da pista
+2. Codificar o JSON dos nós em base64 na URL (atual)
+3. Gerar link encurtado via serviço externo
+
+**Decisão:**
+`btoa(JSON.stringify({nodes, loop}))` no parâmetro `?track=` da URL.
+
+**Motivo:**
+- Zero backend: qualquer pessoa com o link abre a pista imediatamente
+- Funciona sem login
+- Pistas pequenas (< 30 nós) ficam dentro do limite seguro de URL (~2000 chars)
+- Compartilhável via qualquer canal (WhatsApp, Discord, redes sociais)
+
+**Consequências:**
+- URLs longas para pistas com muitos nós (> 50 nós pode ultrapassar 2000 chars em alguns browsers)
+- Sem controle de versão: se a estrutura do JSON mudar, links antigos quebram
+- Solução para V2: salvar no banco e usar UUID curto, com fallback para base64
+
+---
+
+## ADR-009 — Supabase project ID: reutilizar projeto existente
+
+**Data:** 2026-05-11
+**Status:** Aceito
+
+**Contexto:**
+Ao tentar criar um projeto Supabase novo para o Crash Coaster, o plano Free da Lovable/Supabase limita 2 projetos ativos. Ambos os slots já estavam ocupados.
+
+**Opções consideradas:**
+1. Pausar projeto não utilizado e criar novo
+2. Reutilizar projeto existente `hafxruwnggitvtyngedy` (atual)
+3. Fazer upgrade do plano Supabase
+
+**Decisão:**
+Reutilizar `hafxruwnggitvtyngedy` (sa-east-1, Brasil) — já existia com tabela `profiles` de outro contexto.
+
+**Motivo:**
+- Evita pausar projetos sem entender o impacto
+- `hafxruwnggitvtyngedy` já está na região sa-east-1 (Brasil) — ideal para o público-alvo
+- Migrations podem ser aplicadas via MCP sem alterar o que já existe
+
+**Consequências:**
+- Tabela `profiles` já existia com colunas diferentes (`full_name`, `points`, `experience`, `role`) → solução via `ALTER TABLE ADD COLUMN IF NOT EXISTS`
+- Colunas legadas mantidas para não quebrar dados existentes
+- `types.ts` deve incluir ambas as colunas legadas e as novas do CC
+
+---
+
+## ADR-010 — Sistema de documentação viva com hooks do Claude Code
+
+**Data:** 2026-05-11
+**Status:** Aceito
+
+**Contexto:**
+Projetos com IA (Claude Code) tendem a perder contexto entre sessões. Cada sessão recomeça do zero e o agente pode contradizer decisões anteriores ou ignorar o estado real do projeto.
+
+**Opções consideradas:**
+1. Atualizar docs manualmente quando lembrar
+2. Hook pós-commit que detecta mudanças e lembra de atualizar docs (atual)
+3. CI/CD que bloqueia merge sem atualização de changelog
+
+**Decisão:**
+`CLAUDE.md` como fonte primária de verdade + hook `post-commit-docs.sh` que detecta arquivos alterados e exibe lembretes contextuais específicos.
+
+**Motivo:**
+- `CLAUDE.md` é lido automaticamente pelo Claude Code a cada sessão
+- Hook diferencia o que mudou: `src/` → ARCHITECTURE, `supabase/` → CLAUDE.md, `public/` ou `src/routes/` → CHANGELOG
+- Custo zero: um script bash simples, sem CI extra
+- Garante que qualquer dev (humano ou IA) saiba exatamente o estado atual
+
+**Consequências:**
+- Docs só ficam atualizados se o dev (ou IA) responder ao lembrete — não é automático
+- Solução futura: CI que valida se `CHANGELOG.md` foi tocado em PRs que alteram rotas ou banco
+
+---
+
 ## Template para novas decisões
 
 ```markdown
