@@ -79,7 +79,24 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      leaderboard_with_profiles: {
+        Row: {
+          id: string | null
+          user_id: string | null
+          username: string | null
+          total_score: number | null
+          survival_rate: number | null
+          adrenaline_score: number | null
+          chaos_score: number | null
+          max_g_force: number | null
+          max_speed_kmh: number | null
+          laps_completed: number | null
+          season: string | null
+          submitted_at: string | null
+          rank: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       record_run: {

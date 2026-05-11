@@ -18,13 +18,21 @@ function createSupabaseClient() {
     throw new Error(message);
   }
 
-  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  const client = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {
       storage: typeof window !== 'undefined' ? localStorage : undefined,
       persistSession: true,
       autoRefreshToken: true,
     }
   });
+
+  // Expõe config para play.html (mesma origem, localStorage compartilhado)
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('cc_sb_url', SUPABASE_URL);
+    localStorage.setItem('cc_sb_key', SUPABASE_PUBLISHABLE_KEY);
+  }
+
+  return client;
 }
 
 let _supabase: ReturnType<typeof createSupabaseClient> | undefined;

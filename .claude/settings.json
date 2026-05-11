@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git status*)",
+      "Bash(git show*)",
+      "Bash(npm run lint)",
+      "Bash(npm run format)",
+      "Bash(npm run build*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/game-hub-connect/.claude/hooks/post-commit-docs.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

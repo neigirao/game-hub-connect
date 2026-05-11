@@ -261,6 +261,86 @@
   .bb-info .k{font-size:10px;color:var(--ink-dim);letter-spacing:.8px;text-transform:uppercase}
   .bb-info .v{font-size:15px}
 
+  /* ===== Botões salvar / pistas ===== */
+  .bbtn.save-track{background:linear-gradient(180deg,#2ED573,#1a8a46);border-color:#7fffc4}
+  .bbtn.my-tracks{background:linear-gradient(180deg,#FF6BD6,#a8329c);border-color:#ffb3ef}
+
+  /* ===== Modal overlay ===== */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(5,2,20,.82);
+    backdrop-filter:blur(6px);
+    display:none;align-items:center;justify-content:center;z-index:900;
+  }
+  .modal-overlay.show{display:flex;animation:pop .2s ease}
+  .modal-box{
+    background:linear-gradient(180deg,#2e1870,#1a0e50);
+    border:2px solid #5a35c0;border-radius:22px;
+    padding:24px;width:500px;max-width:92vw;
+    max-height:78vh;display:flex;flex-direction:column;gap:16px;
+    box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);
+  }
+  .modal-header{display:flex;align-items:center;justify-content:space-between}
+  .modal-header h2{font-family:'Fredoka';font-weight:700;font-size:22px;margin:0;
+    background:linear-gradient(90deg,#FF6BD6,#70A1FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .modal-close{appearance:none;border:0;background:rgba(255,255,255,.08);
+    color:#fff;width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:18px;
+    display:flex;align-items:center;justify-content:center;}
+  .modal-close:hover{background:rgba(255,71,87,.3)}
+
+  .save-form{display:flex;gap:10px}
+  .save-input{
+    flex:1;background:#0e0726;border:2px solid #4a2aa6;border-radius:12px;
+    color:#fff;font-family:'Fredoka';font-weight:600;font-size:15px;
+    padding:10px 14px;outline:none;
+  }
+  .save-input:focus{border-color:var(--candy)}
+  .save-input::placeholder{color:var(--ink-dim)}
+
+  .track-list{display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;min-height:0;
+    scrollbar-width:thin;scrollbar-color:#4a2aa6 transparent;}
+  .track-item{
+    display:flex;align-items:center;gap:12px;
+    background:rgba(0,0,0,.3);border:2px solid #4a2aa6;
+    border-radius:14px;padding:12px 14px;cursor:pointer;
+    transition:border-color .15s,background .15s;
+  }
+  .track-item:hover{border-color:var(--candy);background:rgba(255,107,214,.08)}
+  .track-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#4a2aa6,#231055);
+    display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .track-meta{flex:1;min-width:0}
+  .track-name{font-family:'Fredoka';font-weight:700;font-size:15px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .track-info{font-size:11px;color:var(--ink-dim);font-family:'JetBrains Mono';margin-top:2px}
+  .track-score-badge{
+    font-family:'JetBrains Mono';font-weight:700;font-size:12px;
+    padding:4px 8px;border-radius:8px;background:rgba(255,165,2,.15);
+    color:var(--boost);border:1px solid rgba(255,165,2,.3);white-space:nowrap;
+  }
+  .track-actions{display:flex;gap:6px;flex-shrink:0}
+  .track-load-btn,.track-del-btn{
+    appearance:none;border:0;border-radius:8px;cursor:pointer;
+    font-family:'Fredoka';font-weight:600;font-size:12px;
+    padding:6px 10px;color:#fff;transition:filter .1s;
+  }
+  .track-load-btn{background:linear-gradient(180deg,#FFA502,#c97a00)}
+  .track-del-btn{background:rgba(255,71,87,.2);color:var(--danger)}
+  .track-load-btn:hover,.track-del-btn:hover{filter:brightness(1.15)}
+
+  .modal-empty{text-align:center;padding:32px;color:var(--ink-dim);font-family:'Fredoka';font-size:16px}
+  .modal-empty .emoji{font-size:40px;display:block;margin-bottom:10px}
+
+  .modal-footer{display:flex;gap:10px;justify-content:flex-end}
+
+  .toast-modal{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:rgba(14,7,38,.92);border:2px solid var(--safe);
+    color:var(--safe);font-family:'Fredoka';font-weight:700;font-size:15px;
+    padding:10px 20px;border-radius:14px;display:none;z-index:1000;
+    box-shadow:0 4px 0 rgba(0,0,0,.4);white-space:nowrap;
+  }
+  .toast-modal.show{display:block;animation:pop .2s ease}
+  .toast-modal.error{border-color:var(--danger);color:var(--danger)}
+
   /* ===== Replay flash ===== */
   .replay{
     position:absolute; right:14px; top:14px;
@@ -490,9 +570,17 @@
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
       Resetar
     </button>
+    <button class="bbtn save-track" id="saveBtn" title="Salvar pista no banco">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Salvar
+    </button>
+    <button class="bbtn my-tracks" id="myTracksBtn" title="Ver minhas pistas salvas">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      Pistas
+    </button>
     <button class="bbtn share" id="shareBtn">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M8.5 10.5l7-3M8.5 13.5l7 3"/></svg>
-      Compartilhar GIF
+      Compartilhar
     </button>
     <button class="bbtn launch" id="launchBtn">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -501,11 +589,242 @@
   </footer>
 </div>
 
-<script>
+<!-- ====== MODAL: MINHAS PISTAS ====== -->
+<div class="modal-overlay" id="tracksModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Minhas Pistas</h2>
+      <button class="modal-close" id="closeTracksModal">✕</button>
+    </div>
+
+    <div class="save-form">
+      <input class="save-input" id="trackNameInput" placeholder="Nome da pista atual..." maxlength="40"/>
+      <button class="bbtn save-track" id="saveCurrentBtn" style="white-space:nowrap;padding:10px 16px">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Salvar
+      </button>
+    </div>
+
+    <div class="track-list" id="trackListContainer">
+      <div class="modal-empty">
+        <span class="emoji">🎢</span>
+        Carregando pistas...
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="bbtn" id="closeTracksModal2" style="background:rgba(255,255,255,.08)">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast de feedback global -->
+<div class="toast-modal" id="globalToast"></div>
+
+<script type="module">
 // ============================================================
-// CRASH COASTER — Protótipo MVP
+// CRASH COASTER — MVP
 // Editor de pista por waypoints + spline + física + fail states
 // ============================================================
+
+// ---- SUPABASE BRIDGE (lê config gravada pelo React app) ----
+let sbClient = null;
+let currentUser = null;
+
+async function initSupabase() {
+  const url = localStorage.getItem('cc_sb_url');
+  const key = localStorage.getItem('cc_sb_key');
+  if (!url || !key) return;
+
+  try {
+    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    sbClient = createClient(url, key, {
+      auth: { storage: localStorage, persistSession: true, autoRefreshToken: true }
+    });
+    const { data: { user } } = await sbClient.auth.getUser();
+    currentUser = user;
+    if (user) updateTopbarUser(user);
+  } catch (e) {
+    console.warn('[CC] Supabase init failed:', e);
+  }
+}
+
+function updateTopbarUser(user) {
+  const name = user.user_metadata?.name || user.email?.split('@')[0] || 'Jogador';
+  const el = document.getElementById('userDisplay');
+  if (el) el.textContent = name;
+}
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById('globalToast');
+  t.textContent = msg;
+  t.className = 'toast-modal show' + (isError ? ' error' : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ---- SHARE URL (sem banco — apenas URL com dados codificados) ----
+function buildShareUrl() {
+  const data = { nodes: state.nodes, loop: state.closedLoop };
+  const encoded = btoa(JSON.stringify(data));
+  return `${location.origin}/play.html?track=${encoded}`;
+}
+
+function loadTrackFromUrl() {
+  const params = new URLSearchParams(location.search);
+  const encoded = params.get('track');
+  if (!encoded) return false;
+  try {
+    const data = JSON.parse(atob(encoded));
+    if (Array.isArray(data.nodes) && data.nodes.length > 0) {
+      state.nodes = data.nodes;
+      state.closedLoop = !!data.loop;
+      updateLoopBtn();
+      return true;
+    }
+  } catch {}
+  return false;
+}
+
+// ---- SAVE ----
+async function saveBlueprint(name) {
+  if (!sbClient) { showToast('Faça login para salvar pistas!', true); return; }
+  if (!currentUser) { showToast('Faça login para salvar pistas!', true); return; }
+  if (state.nodes.length < 3) { showToast('Adicione pelo menos 3 nós antes de salvar!', true); return; }
+
+  const total = Math.round(
+    (state.scores.survival + state.scores.adrenaline + state.scores.chaos +
+     state.scores.smoothness + state.scores.creativity) / 5
+  );
+
+  const { error } = await sbClient.from('blueprints').insert({
+    creator_id: currentUser.id,
+    name: name || 'Minha Pista',
+    track_data: state.nodes,
+    closed_loop: state.closedLoop,
+    node_count: state.nodes.length,
+    survival_rate: state.scores.survival,
+    adrenaline_score: state.scores.adrenaline,
+    chaos_score: state.scores.chaos,
+    smoothness_score: state.scores.smoothness,
+    creativity_score: state.scores.creativity,
+    best_total_score: total,
+  });
+
+  if (error) { showToast('Erro ao salvar: ' + error.message, true); return; }
+  showToast('Pista salva com sucesso!');
+  loadTrackList();
+}
+
+// ---- LOAD LIST ----
+async function loadTrackList() {
+  const container = document.getElementById('trackListContainer');
+  if (!sbClient || !currentUser) {
+    container.innerHTML = '<div class="modal-empty"><span class="emoji">🔒</span>Faça login para ver suas pistas salvas.</div>';
+    return;
+  }
+
+  container.innerHTML = '<div class="modal-empty"><span class="emoji">⏳</span>Carregando...</div>';
+
+  const { data, error } = await sbClient
+    .from('blueprints')
+    .select('id, name, node_count, best_total_score, closed_loop, track_data, created_at')
+    .eq('creator_id', currentUser.id)
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  if (error || !data) {
+    container.innerHTML = '<div class="modal-empty"><span class="emoji">❌</span>Erro ao carregar pistas.</div>';
+    return;
+  }
+
+  if (data.length === 0) {
+    container.innerHTML = '<div class="modal-empty"><span class="emoji">🎢</span>Nenhuma pista salva ainda.<br/>Construa algo épico e salve!</div>';
+    return;
+  }
+
+  container.innerHTML = data.map(bp => `
+    <div class="track-item" data-id="${bp.id}">
+      <div class="track-icon">🎢</div>
+      <div class="track-meta">
+        <div class="track-name">${escapeHtml(bp.name)}</div>
+        <div class="track-info">${bp.node_count} nós · ${bp.closed_loop ? 'loop fechado' : 'aberto'} · ${formatDate(bp.created_at)}</div>
+      </div>
+      ${bp.best_total_score > 0 ? `<div class="track-score-badge">★ ${bp.best_total_score}</div>` : ''}
+      <div class="track-actions">
+        <button class="track-load-btn" data-id="${bp.id}" data-track='${JSON.stringify(bp.track_data)}' data-loop="${bp.closed_loop}">Carregar</button>
+        <button class="track-del-btn" data-id="${bp.id}">✕</button>
+      </div>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.track-load-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      try {
+        state.nodes = JSON.parse(btn.dataset.track);
+        state.closedLoop = btn.dataset.loop === 'true';
+        updateLoopBtn();
+        closeTracksModal();
+        showToast('Pista carregada!');
+      } catch { showToast('Erro ao carregar pista.', true); }
+    });
+  });
+
+  container.querySelectorAll('.track-del-btn').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      if (!confirm('Deletar esta pista permanentemente?')) return;
+      const { error } = await sbClient.from('blueprints').delete().eq('id', btn.dataset.id);
+      if (error) { showToast('Erro ao deletar.', true); return; }
+      showToast('Pista deletada.');
+      loadTrackList();
+    });
+  });
+}
+
+function escapeHtml(str) {
+  return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit' });
+}
+
+// ---- MODAL CONTROLS ----
+function openTracksModal() {
+  document.getElementById('tracksModal').classList.add('show');
+  loadTrackList();
+}
+function closeTracksModal() {
+  document.getElementById('tracksModal').classList.remove('show');
+}
+
+// ---- SUBMIT SCORE TO LEADERBOARD ----
+async function submitScore(blueprintId = null) {
+  if (!sbClient || !currentUser) return;
+  const total = Math.round(
+    (state.scores.survival + state.scores.adrenaline + state.scores.chaos +
+     state.scores.smoothness + state.scores.creativity) / 5
+  );
+  if (total === 0) return;
+  await sbClient.from('leaderboard_entries').insert({
+    user_id: currentUser.id,
+    blueprint_id: blueprintId,
+    total_score: total,
+    survival_rate: state.scores.survival,
+    adrenaline_score: state.scores.adrenaline,
+    chaos_score: state.scores.chaos,
+    smoothness_score: state.scores.smoothness,
+    creativity_score: state.scores.creativity,
+    max_g_force: parseFloat(state.maxG.toFixed(2)),
+    max_speed_kmh: Math.round(state.maxSpeed * 3.6),
+    laps_completed: state.laps,
+    season: 'global',
+  });
+}
+
+// Inicializa Supabase em background
+initSupabase();
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -1771,14 +2090,35 @@ document.getElementById('resetBtn').addEventListener('click', ()=>{
   initDefaultTrack();
 });
 document.getElementById('shareBtn').addEventListener('click', ()=>{
-  const el = document.getElementById('replay');
-  el.classList.add('show');
-  el.innerHTML = '<span class="recdot"></span>GIF COPIADO PARA ÁREA DE TRANSFERÊNCIA';
-  setTimeout(()=>{ el.classList.remove('show'); el.innerHTML = '<span class="recdot"></span>GIF CAPTURADO · QUASE-ACIDENTE'; }, 1800);
+  const url = buildShareUrl();
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('Link da pista copiado!');
+  }).catch(() => {
+    const el = document.getElementById('replay');
+    el.classList.add('show');
+    el.innerHTML = '<span class="recdot"></span>LINK: ' + url.slice(0, 40) + '...';
+    setTimeout(()=>{ el.classList.remove('show'); el.innerHTML = '<span class="recdot"></span>GIF CAPTURADO'; }, 2500);
+  });
+});
+
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  openTracksModal();
+});
+document.getElementById('myTracksBtn').addEventListener('click', openTracksModal);
+document.getElementById('closeTracksModal').addEventListener('click', closeTracksModal);
+document.getElementById('closeTracksModal2').addEventListener('click', closeTracksModal);
+document.getElementById('tracksModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeTracksModal();
+});
+
+document.getElementById('saveCurrentBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('trackNameInput').value.trim() || 'Minha Pista';
+  saveBlueprint(name);
 });
 
 // ---------------------------- BOOT
-initDefaultTrack();
+const loadedFromUrl = loadTrackFromUrl();
+if (!loadedFromUrl) initDefaultTrack();
 updateScoreUI();
 requestAnimationFrame(tick);
 
