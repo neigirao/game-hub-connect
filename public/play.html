@@ -1091,6 +1091,7 @@ async function awardRewards(crashed) {
     if (data) {
       const xp = data.xp_gained, coins = data.coins_gained;
       showToast(`+${xp} XP  🪙 +${coins}`, '#FF6BD6');
+      try { sessionStorage.setItem('cc_last_reward', JSON.stringify({ xp, coins, ts: Date.now() })); } catch(_){}
     }
   } catch (e) {
     console.warn('[CC] awardRewards failed:', e);
