@@ -218,6 +218,15 @@ export function AdminBlueprintsPage() {
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                  <a
+                    href={`/play.html?blueprint=${b.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ ...S.btn("linear-gradient(180deg,#70A1FF,#3a6fd8)"), textDecoration: "none", display: "inline-flex", alignItems: "center" }}
+                    title="Jogar esta pista"
+                  >
+                    ▶ Jogar
+                  </a>
                   <button onClick={() => toggleFeatured(b)} style={S.btn(b.is_featured ? "linear-gradient(180deg,#FFA502,#c97a00)" : "rgba(255,165,2,.15)")} title={b.is_featured ? "Remover destaque" : "Marcar como destaque"}>
                     {b.is_featured ? "★ Destaque" : "☆ Destacar"}
                   </button>
