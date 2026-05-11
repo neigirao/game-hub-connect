@@ -226,13 +226,6 @@
 - [ ] Benchmark: comparar FPS em pistas complexas entre Canvas e PixiJS
 - [ ] Migrar quando V2 atingir paridade de features com V1
 
-### 🟢 Temporadas e eventos
-
-- [ ] Temporada mensal: `season = 'YYYY-MM'` já suportado no banco
-- [ ] Reset automático do ranking mensal (cron no Supabase ou Edge Function)
-- [ ] Desafio semanal: fase especial com objetivos únicos e recompensa exclusiva
-- [ ] Badge de "Campeão da Temporada" no perfil
-
 ### 🟢 Mobile-first
 
 - [ ] Detectar touch events no `play.html`
