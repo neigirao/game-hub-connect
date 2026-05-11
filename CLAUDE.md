@@ -284,13 +284,21 @@ npx wrangler deploy
 
 ---
 
-## 10. Roadmap Resumido
+## 10. Roadmap e Tarefas
+
+O backlog detalhado com critérios de aceite e dependências está em **`docs/ROADMAP.md`**.
+
+**Próximos passos recomendados (MVP):**
+1. Tela de Perfil (`/profile`) — React + query em `profiles` + histórico de pistas
+2. Ranking Global (`/leaderboard`) — view `leaderboard_with_profiles` já pronta
+3. Campanha (`/campaign`) — grid de fases + integração `play.html?level=`
+4. Física melhorada — stall detection, novo nó lançador, sons via Web Audio API
 
 | Fase | Foco |
 |---|---|
-| **MVP** | Editor, física, campanha, explosões, score, compartilhamento |
-| **V2** | Replay avançado, mais peças, ranking expandido, eventos |
-| **V3** | Creator economy, temporadas, marketplace, desafios especiais |
+| **MVP** | Perfil, ranking, campanha, física melhorada, navegação React |
+| **V2** | Replay/GIF, skins + gacha, PixiJS, temporadas |
+| **V3** | Creator economy, marketplace, mobile-first, desafios especiais |
 
 ---
 

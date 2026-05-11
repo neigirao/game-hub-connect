@@ -43,6 +43,17 @@
 - **Submit automático de score** ao `leaderboard_entries` ao completar corrida (survival > 0)
 - Toast global de feedback para todas as operações (salvo, erro, copiado)
 
+### Sessão 4 — 2026-05-11: PR, roadmap e tarefas
+
+**Objetivo:** Consolidar o trabalho das sessões 1-3 em PR, criar backlog estruturado de tarefas.
+
+#### Adicionado
+- `docs/ROADMAP.md` — backlog priorizado por fase (MVP → V2 → V3) com critérios de aceite, dependências e recomendação de próximo passo para cada dev/IA que abrir o projeto
+- PR #2 criado: `feat: banco de dados, save/load/share, câmera, modal de resultado e undo`
+- `CLAUDE.md` seção 10 atualizada com referência ao ROADMAP e próximos passos recomendados
+
+---
+
 ### Sessão 3 — 2026-05-11: Melhorias no jogo (play.html)
 
 **Objetivo da sessão:** Tornar o jogo mais cinematográfico, responsivo e polish — câmera que acompanha o carrinho, feedback de fim de corrida e undo no editor.
