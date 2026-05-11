@@ -1783,5 +1783,160 @@ updateScoreUI();
 requestAnimationFrame(tick);
 
 </script>
+<script type="module">
+// ============================================================
+// Lovable Cloud — Auth + Salvamento de progresso
+// ============================================================
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const SUPABASE_URL = "https://sekuurohkxqktpllebdd.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNla3V1cm9oa3hxa3RwbGxlYmRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NDI2NjQsImV4cCI6MjA5NDAxODY2NH0._XOxaIgRtKYoMf8B1gYZwRv_OpZVUqsrT0BbJgplLDo";
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, storage: localStorage }
+});
+
+// --- UI: chip de usuário no canto superior direito
+const chip = document.createElement('div');
+chip.style.cssText = `
+  position:fixed;top:14px;right:18px;z-index:9999;display:flex;align-items:center;gap:8px;
+  background:rgba(10,4,32,.85);backdrop-filter:blur(8px);
+  border:2px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px;
+  font-family:'Fredoka',system-ui,sans-serif;font-size:13px;color:#fff;cursor:pointer;
+  box-shadow:0 6px 20px rgba(0,0,0,.35);transition:transform .15s ease;
+`;
+chip.onmouseenter = () => chip.style.transform = 'translateY(-1px)';
+chip.onmouseleave = () => chip.style.transform = 'translateY(0)';
+document.body.appendChild(chip);
+
+const saveBadge = document.createElement('div');
+saveBadge.style.cssText = `
+  position:fixed;top:60px;right:18px;z-index:9999;
+  background:#23c552;color:#04220e;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
+  padding:6px 10px;border-radius:8px;opacity:0;transition:opacity .25s ease;pointer-events:none;
+`;
+saveBadge.textContent = '✓ progresso salvo';
+document.body.appendChild(saveBadge);
+function flashSaved(text){
+  saveBadge.textContent = text || '✓ progresso salvo';
+  saveBadge.style.opacity = '1';
+  setTimeout(()=>{ saveBadge.style.opacity = '0'; }, 1600);
+}
+
+let currentUser = null;
+
+function renderChip(user){
+  if (!user){
+    chip.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
+        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.3 0-11.5-5.1-11.5-11.5S17.7 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.7 6.4 29.1 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5 43.5 34.8 43.5 24c0-1.2-.1-2.4-.4-3.5z"/>
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.7 6.4 29.1 4.5 24 4.5 16.3 4.5 9.7 8.9 6.3 14.7z"/>
+        <path fill="#4CAF50" d="M24 43.5c5 0 9.6-1.9 13.1-5l-6.1-5c-2 1.4-4.4 2.2-7 2.2-5.3 0-9.7-3.1-11.3-7.5l-6.5 5C9.6 39 16.3 43.5 24 43.5z"/>
+        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.1 5c-.4.4 6.7-4.9 6.7-14.5 0-1.2-.1-2.4-.4-3.5z"/>
+      </svg>
+      <span>Entrar com Google</span>`;
+    chip.onclick = signIn;
+  } else {
+    const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'jogador';
+    const avatar = user.user_metadata?.avatar_url;
+    chip.innerHTML = `
+      ${avatar ? `<img src="${avatar}" alt="" style="width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.2)"/>` : ''}
+      <span style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+      <span style="opacity:.5;font-size:11px">·sair</span>`;
+    chip.onclick = signOut;
+  }
+}
+
+async function signIn(){
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+  if (error) alert('Falha ao entrar: ' + error.message);
+}
+async function signOut(){
+  await sb.auth.signOut();
+  flashSaved('saiu da conta');
+}
+
+async function loadProgress(userId){
+  const { data, error } = await sb
+    .from('game_progress')
+    .select('best_score, max_speed, max_g, last_scores, last_track')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error){ console.warn('[cc] load progress', error); return; }
+  if (!data) return;
+  if (data.best_score && data.best_score > (state.bestScore || 0)){
+    state.bestScore = data.best_score;
+    document.getElementById('bestScore').textContent = data.best_score + ' pts';
+  }
+  if (Array.isArray(data.last_track) && data.last_track.length >= 2){
+    state.nodes = data.last_track.map(n => ({x:+n.x, y:+n.y, kind:n.kind || 'normal'}));
+  }
+}
+
+let saveTimer = null;
+async function saveProgress(){
+  if (!currentUser) return;
+  const total = Math.round(
+    (state.scores.survival + state.scores.adrenaline + state.scores.chaos +
+     state.scores.smoothness + state.scores.creativity)
+  );
+  const scenarioEl = document.querySelector('.scenario .name');
+
+  // lê linha atual para preservar/incrementar runs e best_score
+  const { data: existing } = await sb
+    .from('game_progress')
+    .select('best_score, runs')
+    .eq('user_id', currentUser.id)
+    .maybeSingle();
+
+  const prevBest = existing?.best_score ?? 0;
+  const prevRuns = existing?.runs ?? 0;
+  const newBest = Math.max(prevBest, state.bestScore || 0, total);
+
+  const payload = {
+    user_id: currentUser.id,
+    best_score: newBest,
+    runs: prevRuns + 1,
+    max_speed: Math.round(state.maxSpeed || 0),
+    max_g: Number((state.maxG || 0).toFixed(2)),
+    scenario: scenarioEl ? scenarioEl.textContent.trim() : null,
+    last_scores: state.scores,
+    last_track: state.nodes.map(n => ({x:Math.round(n.x), y:Math.round(n.y), kind:n.kind})),
+  };
+  const { error } = await sb
+    .from('game_progress')
+    .upsert(payload, { onConflict: 'user_id' });
+  if (error){ console.warn('[cc] save progress', error); flashSaved('⚠ falha ao salvar'); return; }
+  if (newBest > (state.bestScore || 0)){
+    state.bestScore = newBest;
+    document.getElementById('bestScore').textContent = newBest + ' pts';
+  }
+  flashSaved(newBest > prevBest ? '★ novo recorde salvo' : '✓ progresso salvo');
+}
+
+// hook into completeRun (chamado ao final de cada lançamento)
+const originalCompleteRun = window.completeRun || completeRun;
+window.completeRun = function patchedCompleteRun(){
+  originalCompleteRun.apply(this, arguments);
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveProgress, 250);
+};
+
+// inicialização: sessão + listener
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  currentUser = session?.user ?? null;
+  renderChip(currentUser);
+  if (currentUser) await loadProgress(currentUser.id);
+})();
+
+sb.auth.onAuthStateChange(async (_event, session) => {
+  currentUser = session?.user ?? null;
+  renderChip(currentUser);
+  if (currentUser) await loadProgress(currentUser.id);
+});
+</script>
 </body>
 </html>
