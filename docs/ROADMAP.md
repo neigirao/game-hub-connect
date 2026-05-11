@@ -203,6 +203,57 @@
 
 ## FASE V2 — Pós-MVP
 
+### 🟠 SEO — Indexação do Crash Coaster no Google
+
+**Contexto:** A `home.html` atual tem apenas `<title>` e `<meta viewport>`. Para ranquear bem no Google é preciso cobrir on-page SEO, dados estruturados, Core Web Vitals e sinais de autoridade.
+
+**Estado atual da `home.html`:**
+- ✅ `<title>` descritivo
+- ❌ Sem `<meta description>`
+- ❌ Sem Open Graph / Twitter Card
+- ❌ Sem canonical URL
+- ❌ Sem JSON-LD (Schema.org)
+- ❌ Sem `sitemap.xml`
+- ❌ Sem `robots.txt`
+- ❌ Imagens sem `alt` text
+- ❌ Sem preload de recursos críticos
+
+#### On-page básico (impacto imediato)
+- [ ] `<meta name="description">` — 150–160 chars descrevendo o jogo em PT-BR
+- [ ] Open Graph: `og:title`, `og:description`, `og:image` (screenshot 1200×630 do jogo), `og:url`, `og:type`
+- [ ] Twitter Card: `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image`
+- [ ] `<link rel="canonical" href="https://crashcoaster.com/">` (substituir pela URL real)
+- [ ] `<meta name="robots" content="index, follow">`
+- [ ] `<html lang="pt-BR">` — sinalizar idioma para o Google
+
+#### Arquivos de descoberta
+- [ ] `public/sitemap.xml` — listar `/`, `/campaign`, `/leaderboard` com `<lastmod>` e `<priority>`
+- [ ] `public/robots.txt` — `Allow: /`, apontar para sitemap
+
+#### Dados estruturados (JSON-LD)
+- [ ] `WebApplication` schema em `home.html` — nome, description, screenshot, URL, applicationCategory: "GameApplication"
+- [ ] `BreadcrumbList` nas páginas internas (`/campaign`, `/leaderboard`)
+- [ ] `FAQPage` opcional na home com perguntas sobre o jogo
+
+#### Performance e Core Web Vitals
+- [ ] `<link rel="preload">` para a fonte Fredoka e imagem hero
+- [ ] Substituir imagens por formato WebP e adicionar `width`/`height` para evitar CLS
+- [ ] Lazy loading em imagens abaixo do fold (`loading="lazy"`)
+- [ ] Minificar o CSS inline da `home.html` (atualmente tudo inline, pode ser crítico)
+- [ ] Verificar LCP < 2.5s, FID < 100ms, CLS < 0.1 via Lighthouse
+
+#### Conteúdo e autoridade
+- [ ] H1 único e descritivo na home ("Construa Montanhas-Russas, Destrua Tudo — Crash Coaster")
+- [ ] Seção de texto descritivo indexável (hoje a home é quase toda visual/CSS)
+- [ ] Links internos entre home, campanha e ranking
+- [ ] Meta description únicos por rota React (`/campaign`, `/leaderboard`, `/profile`)
+
+**Critério de aceite:** Lighthouse SEO score ≥ 90 na `home.html`. Página aparece indexada no Google Search Console em até 7 dias após deploy.
+
+**Dependências:** URL de produção definida, domínio configurado no Cloudflare.
+
+---
+
 ### 🟢 Replay e compartilhamento avançado
 
 - [ ] Gravar posições do carrinho a cada frame durante o run (array de {x, y, angle, t})
