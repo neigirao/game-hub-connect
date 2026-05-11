@@ -108,7 +108,7 @@ function StarBar({ score, s1, s2, s3 }: { score: number; s1: number; s2: number;
   );
 }
 
-function MiniTrack({ nodes, loop }: { nodes: Array<{ x: number; y: number }>; loop: boolean }) {
+function MiniTrack({ nodes, loop }: { nodes: Array<{ x: number; y: number; kind: string }>; loop: boolean }) {
   if (!nodes || nodes.length < 2) return null;
 
   const PAD = 8;
@@ -123,10 +123,17 @@ function MiniTrack({ nodes, loop }: { nodes: Array<{ x: number; y: number }>; lo
   const sx = (x: number) => PAD + ((x - minX) / rangeX) * (W - PAD * 2);
   const sy = (y: number) => PAD + ((y - minY) / rangeY) * (H - PAD * 2);
 
+  const nodeColor = (kind: string) =>
+    kind === "booster" ? "#FFA502"
+    : kind === "brake" ? "#FF4757"
+    : kind === "launcher" ? "#2ED573"
+    : kind === "loop" ? "#FF6BD6"
+    : "rgba(255,255,255,0.4)";
+
   const pts = nodes.map((n) => `${sx(n.x)},${sy(n.y)}`).join(" ");
 
   return (
-    <svg width={W} height={H} style={{ opacity: 0.7 }}>
+    <svg width={W} height={H} style={{ opacity: 0.8 }}>
       <polyline
         points={pts}
         fill="none"
@@ -142,6 +149,12 @@ function MiniTrack({ nodes, loop }: { nodes: Array<{ x: number; y: number }>; lo
           stroke="#FFE9A8" strokeWidth={1.5} strokeDasharray="4,3" opacity={0.5}
         />
       )}
+      {nodes.map((n, i) => {
+        const col = nodeColor(n.kind);
+        if (i === 0) return <circle key={i} cx={sx(n.x)} cy={sy(n.y)} r={4} fill="#FFA502" stroke="#0E0726" strokeWidth={1} />;
+        if (n.kind !== "normal") return <circle key={i} cx={sx(n.x)} cy={sy(n.y)} r={3} fill={col} stroke="#0E0726" strokeWidth={1} />;
+        return null;
+      })}
     </svg>
   );
 }
