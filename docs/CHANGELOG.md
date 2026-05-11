@@ -8,6 +8,29 @@
 
 ## [Não lançado] — Em desenvolvimento
 
+### Sessão 10 — 2026-05-11: Looping 360° e speed trail (motion blur)
+
+**Objetivo da sessão:** Adicionar o nó de looping 360° ao editor e efeito de rastro de velocidade (motion blur) ao carrinho.
+
+#### Adicionado — Nó de looping 360° (`play.html`)
+- Novo tipo de nó `kind: 'loop'` (rosa `#FF6BD6`) com ícone de seta circular
+- Atalho de teclado `G` ativa ferramenta de looping no editor; botão "360°" na toolbar
+- **Física:** ao passar sobre o nó com ≥50 km/h, inicia arco circular de 100px de raio
+- Padrão `do...while(false)` com `break` permite saída precoce da física on-track durante o loop
+- Gravidade real aplicada ao longo do arco: `dv/dt = -D * 900 * cos(θ) * dt`
+- G-force exibida dinamicamente durante o loop (centripetal + gravidade)
+- Conclusão ao percorrer 90% do círculo: +20 adrenaline, confetti, toast "LOOPING PERFEITO!"
+- Se velocidade insuficiente: toast de aviso sem crash
+- Sparks rosas contínuos durante a revolução
+
+#### Adicionado — Speed trail (motion blur, `play.html`)
+- 4 cópias semi-transparentes do carrinho desenhadas atrás na direção de movimento
+- Ativo acima de 70 km/h; opacidade máxima de 35% em velocidade máxima
+- Cor rosa abaixo de 110 km/h; amarelo dourado (cor do trilho) acima (ultra-velocidade)
+- Funciona tanto no modo on-track quanto no modo voando (launcher)
+
+---
+
 ### Sessão 9 — 2026-05-11: Nó lançador (catapulta) e navbar React global
 
 **Objetivo da sessão:** Adicionar o nó de catapulta ao editor de pistas e criar uma navbar React global compartilhada por todas as rotas.

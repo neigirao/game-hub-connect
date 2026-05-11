@@ -1668,6 +1668,26 @@ function drawStation(x, y, label, accent){
 
 function drawCart(c){
   if (!c) return;
+  // Speed trail (motion blur at high speed)
+  const trailSpeed = c.flying
+    ? Math.sqrt((c.vx||0)*(c.vx||0) + (c.vy||0)*(c.vy||0)) * 0.18
+    : Math.abs(c.v) * 0.18;
+  if (trailSpeed > 70) {
+    const steps = 4;
+    const maxAlpha = Math.min(0.35, (trailSpeed - 70) / 120);
+    for (let i = steps; i >= 1; i--) {
+      const offset = i * 11;
+      const a = maxAlpha * (1 - i / (steps + 1));
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.translate(c.x - Math.cos(c.angle) * offset, c.y - Math.sin(c.angle) * offset);
+      ctx.rotate(c.angle);
+      ctx.fillStyle = trailSpeed > 110 ? '#FFE9A8' : '#FF6BD6';
+      roundRect(ctx, -22, -16, 44, 22, 6);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
   ctx.save();
   ctx.translate(c.x, c.y);
   ctx.rotate(c.angle);
