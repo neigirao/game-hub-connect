@@ -126,31 +126,36 @@
 > **Admin principal:** `neigirao@gmail.com`
 > Autenticação: verificar `profiles.is_admin = true` (coluna a adicionar) para liberar acesso.
 
-### 🔴 P1 — Infraestrutura de admin
+### ✅ 🔴 P1 — Infraestrutura de admin
 
-- [ ] Adicionar coluna `is_admin BOOLEAN DEFAULT false` em `profiles`
-- [ ] Setar `is_admin = true` para o usuário `neigirao@gmail.com` via SQL
-- [ ] Criar RLS policy: somente `is_admin = true` pode INSERT/UPDATE/DELETE em `levels`
-- [ ] Middleware React: hook `useIsAdmin()` que lê `profiles.is_admin` da sessão atual
-- [ ] Guard de rota: `/admin/*` redireciona para `/` se não for admin
+- [x] Coluna `is_admin BOOLEAN DEFAULT false` já existia em `profiles` (migration 001)
+- [x] Setar `is_admin = true` para `neigirao@gmail.com` via migration SQL
+- [x] RLS policy: somente `is_admin = true` pode INSERT/UPDATE/DELETE em `levels` (migration 003)
+- [x] Hook `useIsAdmin()` — `src/hooks/use-is-admin.ts`
+- [x] Guard de rota: `beforeLoad` em `src/routes/admin.tsx` redireciona para `/` se não for admin
 
-**Critério de aceite:** Somente `neigirao@gmail.com` consegue acessar rotas `/admin`. Qualquer outro usuário (mesmo logado) é redirecionado.
+**Critério de aceite:** ✅ Somente `neigirao@gmail.com` consegue acessar `/admin`. Qualquer outro usuário é redirecionado.
+
+**Concluído em:** Sessão 11 — 2026-05-11
 
 ---
 
-### 🔴 P1 — Admin: Gerenciar Fases (`/admin/levels`)
+### ✅ 🔴 P1 — Admin: Gerenciar Fases (`/admin/levels`)
 
 **Contexto:** Hoje as fases são criadas via SQL direto. O admin precisa de uma UI para criar, editar e publicar fases sem precisar de acesso ao banco.
 
-- [ ] `src/routes/admin/levels.tsx` — listagem de todas as fases (publicadas e rascunhos)
-- [ ] Formulário de criação/edição: título, cenário (dropdown), objetivos (JSON ou lista dinâmica)
-- [ ] Editor visual de `starter_track`: usar o próprio `play.html` em modo embed ou um mini-editor
-- [ ] Campos: `star1_score`, `star2_score`, `star3_score`, `reward_coins`, `reward_xp`, `order_index`
-- [ ] Toggle `is_published`: draft/publicado
-- [ ] Preview da pista antes de publicar (MiniTrack SVG)
-- [ ] Salvar via Supabase client com RLS admin
+- [x] `src/routes/admin/levels.tsx` — listagem de todas as fases (publicadas e rascunhos)
+- [x] Formulário de criação/edição: título, cenário (dropdown), objetivos (JSON ou lista dinâmica)
+- [x] Campos: `star1_score`, `star2_score`, `star3_score`, `reward_coins`, `reward_xp`, `order_index`
+- [x] Toggle `is_published`: draft/publicado com toggle visual
+- [x] Preview da pista antes de publicar (MiniTrack SVG inline)
+- [x] Salvar via Supabase client com RLS admin
+- [x] Layout route `src/routes/admin.tsx` com sub-navbar admin
+- [x] Link "🔐 Admin" no GameNav (visível apenas para admins)
 
-**Critério de aceite:** Admin consegue criar uma nova fase, definir objetivos e publicar — sem tocar no banco diretamente.
+**Critério de aceite:** ✅ Admin consegue criar uma nova fase, definir objetivos e publicar — sem tocar no banco diretamente.
+
+**Concluído em:** Sessão 11 — 2026-05-11
 
 ---
 
@@ -262,3 +267,4 @@ Sugestões de próximos passos baseadas no impacto para o jogador:
 | 2026-05-11 | Stall detection, sons Web Audio, sistema Coins/XP | Sessão 8 |
 | 2026-05-11 | Nó lançador (catapulta) e navbar React global | Sessão 9 |
 | 2026-05-11 | Looping 360° (nó loop) e speed trail (motion blur) | Sessão 10 |
+| 2026-05-11 | Painel de Admin — infraestrutura + /admin/levels CRUD | Sessão 11 |

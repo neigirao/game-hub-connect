@@ -231,9 +231,9 @@ A sessão OAuth já fica no localStorage do mesmo domínio — zero friction.
 - [x] Speed trail (motion blur) — rastro de velocidade acima de 70 km/h, intensidade proporcional
 
 ### Pendente (MVP restante)
-- [ ] **Painel de Admin** `/admin` — admin: `neigirao@gmail.com`
-  - [ ] Coluna `is_admin` em `profiles` + RLS + guard de rota `/admin/*`
-  - [ ] `/admin/levels` — criar, editar e publicar fases via UI
+- [x] **Painel de Admin** `/admin` — admin: `neigirao@gmail.com`
+  - [x] Coluna `is_admin` em `profiles` + RLS + guard de rota `/admin/*`
+  - [x] `/admin/levels` — criar, editar e publicar fases via UI
   - [ ] `/admin/blueprints` — moderar pistas públicas
   - [ ] `/admin/users` — listar e gerenciar usuários (ban, promover admin)
   - [ ] `/admin` — dashboard de métricas do jogo
