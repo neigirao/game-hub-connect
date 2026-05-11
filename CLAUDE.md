@@ -230,13 +230,15 @@ A sessão OAuth já fica no localStorage do mesmo domínio — zero friction.
 - [x] Nó de looping 360° — `kind: 'loop'`, tecla G, arco circular com física de gravidade real
 - [x] Speed trail (motion blur) — rastro de velocidade acima de 70 km/h, intensidade proporcional
 
-### Pendente (MVP restante)
-- [x] **Painel de Admin** `/admin` — admin: `neigirao@gmail.com`
+- [x] **Painel de Admin** `/admin` completo — admin: `neigirao@gmail.com`
   - [x] Coluna `is_admin` em `profiles` + RLS + guard de rota `/admin/*`
+  - [x] `/admin` — dashboard: total users/runs/tracks, top score do mês, últimas corridas
   - [x] `/admin/levels` — criar, editar e publicar fases via UI
-  - [ ] `/admin/blueprints` — moderar pistas públicas
-  - [ ] `/admin/users` — listar e gerenciar usuários (ban, promover admin)
-  - [ ] `/admin` — dashboard de métricas do jogo
+  - [x] `/admin/blueprints` — moderar pistas públicas (remover, destacar como featured)
+  - [x] `/admin/users` — listar, buscar, banir e promover usuários
+- [x] Fix preview Lovable — rota `/` redireciona via TanStack Router (não mais `window.location`)
+
+### Pendente (MVP restante)
 - [ ] Perfil: animação de ganho de XP/coins ao receber recompensas
 - [ ] Geração de GIF/replay
 - [ ] Som e música (trilha de fundo)

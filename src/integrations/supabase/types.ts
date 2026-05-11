@@ -22,6 +22,7 @@ export type Database = {
           level: number
           inventory: Json
           is_admin: boolean
+          is_banned: boolean
           avatar_url: string | null
           created_at: string
           updated_at: string
@@ -35,6 +36,7 @@ export type Database = {
           level?: number
           inventory?: Json
           is_admin?: boolean
+          is_banned?: boolean
           avatar_url?: string | null
           created_at?: string
           updated_at?: string
@@ -48,6 +50,7 @@ export type Database = {
           level?: number
           inventory?: Json
           is_admin?: boolean
+          is_banned?: boolean
           avatar_url?: string | null
           created_at?: string
           updated_at?: string
@@ -63,6 +66,7 @@ export type Database = {
           node_count: number
           closed_loop: boolean
           is_public: boolean
+          is_featured: boolean
           best_total_score: number
           survival_rate: number
           adrenaline_score: number
@@ -82,6 +86,7 @@ export type Database = {
           node_count?: number
           closed_loop?: boolean
           is_public?: boolean
+          is_featured?: boolean
           best_total_score?: number
           survival_rate?: number
           adrenaline_score?: number
@@ -101,6 +106,7 @@ export type Database = {
           node_count?: number
           closed_loop?: boolean
           is_public?: boolean
+          is_featured?: boolean
           best_total_score?: number
           survival_rate?: number
           adrenaline_score?: number

@@ -1,17 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
-  component: Index,
+  beforeLoad: async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      throw redirect({ to: "/campaign" });
+    }
+    throw redirect({ to: "/login" });
+  },
+  component: () => null,
 });
-
-function Index() {
-  useEffect(() => {
-    window.location.replace("/home.html");
-  }, []);
-  return (
-    <div style={{ minHeight: "100vh", background: "#0a0420", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "system-ui" }}>
-      Carregando Crash Coaster…
-    </div>
-  );
-}

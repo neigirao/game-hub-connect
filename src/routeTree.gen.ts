@@ -15,7 +15,10 @@ import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminLevelsRouteImport } from './routes/admin/levels'
+import { Route as AdminBlueprintsRouteImport } from './routes/admin/blueprints'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
 
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
@@ -47,9 +50,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLevelsRoute = AdminLevelsRouteImport.update({
   id: '/admin/levels',
   path: '/levels',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBlueprintsRoute = AdminBlueprintsRouteImport.update({
+  id: '/admin/blueprints',
+  path: '/blueprints',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
 
@@ -60,7 +78,10 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof LeaderboardRoute
   '/campaign': typeof CampaignRoute
   '/admin': typeof AdminRoute
+  '/admin/': typeof AdminIndexRoute
   '/admin/levels': typeof AdminLevelsRoute
+  '/admin/blueprints': typeof AdminBlueprintsRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -69,7 +90,10 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof LeaderboardRoute
   '/campaign': typeof CampaignRoute
   '/admin': typeof AdminRoute
+  '/admin/': typeof AdminIndexRoute
   '/admin/levels': typeof AdminLevelsRoute
+  '/admin/blueprints': typeof AdminBlueprintsRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -79,14 +103,17 @@ export interface FileRoutesById {
   '/leaderboard': typeof LeaderboardRoute
   '/campaign': typeof CampaignRoute
   '/admin': typeof AdminRoute
+  '/admin/': typeof AdminIndexRoute
   '/admin/levels': typeof AdminLevelsRoute
+  '/admin/blueprints': typeof AdminBlueprintsRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/profile' | '/leaderboard' | '/campaign' | '/admin' | '/admin/levels'
+  fullPaths: '/' | '/login' | '/profile' | '/leaderboard' | '/campaign' | '/admin' | '/admin/' | '/admin/levels' | '/admin/blueprints' | '/admin/users'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/profile' | '/leaderboard' | '/campaign' | '/admin' | '/admin/levels'
-  id: '__root__' | '/' | '/login' | '/profile' | '/leaderboard' | '/campaign' | '/admin' | '/admin/levels'
+  to: '/' | '/login' | '/profile' | '/leaderboard' | '/campaign' | '/admin' | '/admin/' | '/admin/levels' | '/admin/blueprints' | '/admin/users'
+  id: '__root__' | '/' | '/login' | '/profile' | '/leaderboard' | '/campaign' | '/admin' | '/admin/' | '/admin/levels' | '/admin/blueprints' | '/admin/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -99,7 +126,10 @@ export interface RootRouteChildren {
 }
 
 const AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
   AdminLevelsRoute: AdminLevelsRoute,
+  AdminBlueprintsRoute: AdminBlueprintsRoute,
+  AdminUsersRoute: AdminUsersRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -148,11 +178,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteImport
+    }
     '/admin/levels': {
       id: '/admin/levels'
       path: '/levels'
       fullPath: '/admin/levels'
       preLoaderRoute: typeof AdminLevelsRouteImport
+      parentRoute: typeof AdminRouteImport
+    }
+    '/admin/blueprints': {
+      id: '/admin/blueprints'
+      path: '/blueprints'
+      fullPath: '/admin/blueprints'
+      preLoaderRoute: typeof AdminBlueprintsRouteImport
+      parentRoute: typeof AdminRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRouteImport
     }
   }

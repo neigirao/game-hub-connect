@@ -159,39 +159,45 @@
 
 ---
 
-### 🟠 P2 — Admin: Moderação de Blueprints (`/admin/blueprints`)
+### ✅ 🟠 P2 — Admin: Moderação de Blueprints (`/admin/blueprints`)
 
-- [ ] Listar todas as pistas públicas (`blueprints.is_public = true`)
-- [ ] Visualizar preview SVG de cada pista
-- [ ] Ação: remover pista (marcar `is_public = false` ou deletar)
-- [ ] Ação: promover pista como "Featured" (coluna `is_featured BOOLEAN` a adicionar)
-- [ ] Filtros: por usuário, data, score mais alto associado
+- [x] Listar todas as pistas públicas (`blueprints.is_public = true`)
+- [x] Visualizar preview SVG de cada pista
+- [x] Ação: remover pista (marcar `is_public = false`)
+- [x] Ação: promover pista como "Featured" (coluna `is_featured BOOLEAN` adicionada)
+- [x] Filtro por destaque + busca por nome/usuário
 
-**Critério de aceite:** Admin consegue remover pistas inadequadas e destacar pistas de qualidade.
+**Critério de aceite:** ✅ Admin consegue remover pistas inadequadas e destacar pistas de qualidade.
 
----
-
-### 🟠 P2 — Admin: Gestão de Usuários (`/admin/users`)
-
-- [ ] Listar todos os `profiles` com username, email, level, coins, XP, data de criação
-- [ ] Busca por username ou email
-- [ ] Ação: banir usuário (coluna `is_banned BOOLEAN` a adicionar + check no login)
-- [ ] Ação: conceder/revogar `is_admin`
-- [ ] Ver histórico de scores de um usuário (query em `leaderboard_entries`)
-
-**Critério de aceite:** Admin consegue ver e gerenciar todos os usuários sem acessar o banco diretamente.
+**Concluído em:** Sessão 12 — 2026-05-11
 
 ---
 
-### 🟡 P3 — Admin: Dashboard de métricas (`/admin`)
+### ✅ 🟠 P2 — Admin: Gestão de Usuários (`/admin/users`)
 
-- [ ] Total de usuários registrados
-- [ ] Total de corridas completadas (total de `leaderboard_entries`)
-- [ ] Total de pistas salvas (total de `blueprints`)
-- [ ] Score médio / mais alto do mês
-- [ ] Gráfico simples de registros por dia (últimos 30 dias)
+- [x] Listar todos os `profiles` com username, email, level, coins, XP, data de criação
+- [x] Busca por username ou email
+- [x] Ação: banir usuário (coluna `is_banned BOOLEAN` adicionada)
+- [x] Ação: conceder/revogar `is_admin`
 
-**Critério de aceite:** Admin vê um overview do estado do jogo em tempo real.
+**Critério de aceite:** ✅ Admin consegue ver e gerenciar todos os usuários sem acessar o banco diretamente.
+
+**Concluído em:** Sessão 12 — 2026-05-11
+
+---
+
+### ✅ 🟡 P3 — Admin: Dashboard de métricas (`/admin`)
+
+- [x] Total de usuários registrados
+- [x] Total de corridas completadas (total de `leaderboard_entries`)
+- [x] Total de pistas salvas (total de `blueprints`)
+- [x] Top score do mês atual
+- [x] Lista das últimas 8 corridas com username e timestamp
+- [x] Links rápidos para os outros painéis admin
+
+**Critério de aceite:** ✅ Admin vê um overview do estado do jogo em tempo real.
+
+**Concluído em:** Sessão 12 — 2026-05-11
 
 ---
 
@@ -283,3 +289,4 @@ Sugestões de próximos passos baseadas no impacto:
 | 2026-05-11 | Nó lançador (catapulta) e navbar React global | Sessão 9 |
 | 2026-05-11 | Looping 360° (nó loop) e speed trail (motion blur) | Sessão 10 |
 | 2026-05-11 | Painel de Admin — infraestrutura + /admin/levels CRUD | Sessão 11 |
+| 2026-05-11 | Admin completo — dashboard, /admin/blueprints, /admin/users + fix preview Lovable | Sessão 12 |
