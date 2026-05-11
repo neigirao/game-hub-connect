@@ -121,6 +121,75 @@
 
 ---
 
+## FASE MVP — Painel de Administração
+
+> **Admin principal:** `neigirao@gmail.com`
+> Autenticação: verificar `profiles.is_admin = true` (coluna a adicionar) para liberar acesso.
+
+### 🔴 P1 — Infraestrutura de admin
+
+- [ ] Adicionar coluna `is_admin BOOLEAN DEFAULT false` em `profiles`
+- [ ] Setar `is_admin = true` para o usuário `neigirao@gmail.com` via SQL
+- [ ] Criar RLS policy: somente `is_admin = true` pode INSERT/UPDATE/DELETE em `levels`
+- [ ] Middleware React: hook `useIsAdmin()` que lê `profiles.is_admin` da sessão atual
+- [ ] Guard de rota: `/admin/*` redireciona para `/` se não for admin
+
+**Critério de aceite:** Somente `neigirao@gmail.com` consegue acessar rotas `/admin`. Qualquer outro usuário (mesmo logado) é redirecionado.
+
+---
+
+### 🔴 P1 — Admin: Gerenciar Fases (`/admin/levels`)
+
+**Contexto:** Hoje as fases são criadas via SQL direto. O admin precisa de uma UI para criar, editar e publicar fases sem precisar de acesso ao banco.
+
+- [ ] `src/routes/admin/levels.tsx` — listagem de todas as fases (publicadas e rascunhos)
+- [ ] Formulário de criação/edição: título, cenário (dropdown), objetivos (JSON ou lista dinâmica)
+- [ ] Editor visual de `starter_track`: usar o próprio `play.html` em modo embed ou um mini-editor
+- [ ] Campos: `star1_score`, `star2_score`, `star3_score`, `reward_coins`, `reward_xp`, `order_index`
+- [ ] Toggle `is_published`: draft/publicado
+- [ ] Preview da pista antes de publicar (MiniTrack SVG)
+- [ ] Salvar via Supabase client com RLS admin
+
+**Critério de aceite:** Admin consegue criar uma nova fase, definir objetivos e publicar — sem tocar no banco diretamente.
+
+---
+
+### 🟠 P2 — Admin: Moderação de Blueprints (`/admin/blueprints`)
+
+- [ ] Listar todas as pistas públicas (`blueprints.is_public = true`)
+- [ ] Visualizar preview SVG de cada pista
+- [ ] Ação: remover pista (marcar `is_public = false` ou deletar)
+- [ ] Ação: promover pista como "Featured" (coluna `is_featured BOOLEAN` a adicionar)
+- [ ] Filtros: por usuário, data, score mais alto associado
+
+**Critério de aceite:** Admin consegue remover pistas inadequadas e destacar pistas de qualidade.
+
+---
+
+### 🟠 P2 — Admin: Gestão de Usuários (`/admin/users`)
+
+- [ ] Listar todos os `profiles` com username, email, level, coins, XP, data de criação
+- [ ] Busca por username ou email
+- [ ] Ação: banir usuário (coluna `is_banned BOOLEAN` a adicionar + check no login)
+- [ ] Ação: conceder/revogar `is_admin`
+- [ ] Ver histórico de scores de um usuário (query em `leaderboard_entries`)
+
+**Critério de aceite:** Admin consegue ver e gerenciar todos os usuários sem acessar o banco diretamente.
+
+---
+
+### 🟡 P3 — Admin: Dashboard de métricas (`/admin`)
+
+- [ ] Total de usuários registrados
+- [ ] Total de corridas completadas (total de `leaderboard_entries`)
+- [ ] Total de pistas salvas (total de `blueprints`)
+- [ ] Score médio / mais alto do mês
+- [ ] Gráfico simples de registros por dia (últimos 30 dias)
+
+**Critério de aceite:** Admin vê um overview do estado do jogo em tempo real.
+
+---
+
 ## FASE V2 — Pós-MVP
 
 ### 🟢 Replay e compartilhamento avançado
