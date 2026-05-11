@@ -215,6 +215,10 @@ A sessão OAuth já fica no localStorage do mesmo domínio — zero friction.
 - [x] Compartilhar pista via URL (track data codificado em base64)
 - [x] Submit automático de score ao leaderboard após corrida
 - [x] Documentação viva (CLAUDE.md, docs/)
+- [x] Câmera dinâmica que segue o carrinho no modo Testar (zoom 1.3x + lerp)
+- [x] Modal de resultado pós-corrida (score animado, estrelas, share, play again)
+- [x] Undo / Ctrl+Z no editor de pistas (stack de 60 snapshots)
+- [x] Auth chip (Google login) integrado ao bloco principal do Supabase
 
 ### Pendente (MVP restante)
 - [ ] Perfil de usuário com coins e XP (tela de perfil React)

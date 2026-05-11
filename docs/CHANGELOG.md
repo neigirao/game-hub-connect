@@ -43,6 +43,35 @@
 - **Submit automático de score** ao `leaderboard_entries` ao completar corrida (survival > 0)
 - Toast global de feedback para todas as operações (salvo, erro, copiado)
 
+### Sessão 3 — 2026-05-11: Melhorias no jogo (play.html)
+
+**Objetivo da sessão:** Tornar o jogo mais cinematográfico, responsivo e polish — câmera que acompanha o carrinho, feedback de fim de corrida e undo no editor.
+
+#### Corrigido — Bug crítico
+- Removido segundo bloco `<script>` com URL Supabase obsoleta (`sekuurohkxqktpllebdd`) que chamava `game_progress` e RPC `record_run` inexistentes, gerando erros silenciosos a cada corrida
+
+#### Adicionado — Câmera dinâmica (test mode)
+- No modo Testar, a câmera faz zoom em 1.3x e segue o carrinho suavemente com interpolação (lerp 9%)
+- Ao voltar ao modo Construir, a câmera recua suavemente para visão geral
+- Background desenhado em screen-space (não scroll) para manter referência visual; objetos do mundo em world-space com transform de câmera
+
+#### Adicionado — Modal de resultado pós-corrida
+- Após cada corrida (sucesso ou crash), aparece modal com: emoji contextual, título animado, score total com count-up animado, barras de categoria preenchendo com transição CSS, 3 estrelas acendendo em sequência
+- Título e emoji variam: 🏆 (score > 75), 🎢 (score > 40), 😬 (score baixo), 💥 (crash)
+- Botões: Compartilhar (copia URL), Editar Pista (volta ao build), Jogar de Novo (reinicia test)
+- Crash espetacular (L9 com impacto no chão) abre o modal após 1.8s de drama
+
+#### Adicionado — Ctrl+Z / Undo no editor
+- Stack de histórico de até 60 snapshots de nós + estado de loop
+- Push automático após: adicionar nó, soltar drag, deletar nó, mudar tipo (booster/freio), toggle de loop
+- Ctrl+Z (ou Cmd+Z no Mac) desfaz a última operação com toast de confirmação
+- Undo desabilitado no modo Testar (não interfere na física)
+
+#### Adicionado — Auth chip integrado
+- Chip de login com Google (top-right) migrado para o bloco principal do Supabase bridge
+- Exibe avatar + nome do usuário logado; clique abre signOut
+- Não logado: exibe botão "Entrar com Google" com ícone oficial
+
 ---
 
 ### Sessão 1 — 2026-05-11: MVP inicial (pré-documentação)
