@@ -35,19 +35,21 @@
 
 ---
 
-### 🔴 P1 — Ranking Global (Leaderboard)
+### ✅ 🔴 P1 — Ranking Global (Leaderboard)
 
 **Contexto:** A view `leaderboard_with_profiles` já existe no banco com `rank()`, username e métricas. Falta a tela React.
 
-- [ ] `src/routes/leaderboard.tsx` — rota `/leaderboard`
-- [ ] Query na view `leaderboard_with_profiles` com filtro de `season = 'global'`
-- [ ] Tabela com colunas: rank, avatar/username, total_score, max_speed_kmh, max_g_force, laps
-- [ ] Highlight da linha do usuário atual
-- [ ] Toggle de temporada (global / mês atual `YYYY-MM`)
+- [x] `src/routes/leaderboard.tsx` — rota `/leaderboard`
+- [x] Query na view `leaderboard_with_profiles` com filtro de `season = 'global'`
+- [x] Tabela com colunas: rank, avatar/username, total_score, max_speed_kmh, max_g_force, laps
+- [x] Highlight da linha do usuário atual
+- [x] Toggle de temporada (global / mês atual `YYYY-MM`)
 - [ ] Link para a pista do score (`blueprint_id` → compartilhar)
 - [ ] Atualização em tempo real com Supabase Realtime (opcional para MVP)
 
-**Critério de aceite:** Tabela com top 50 scores mostrando ranking, username e métricas. Usuário atual destacado.
+**Critério de aceite:** ✅ Tabela com top 50 scores mostrando ranking, username e métricas. Usuário atual destacado.
+
+**Concluído em:** Sessão 6 — 2026-05-11
 
 **Dependências:** `leaderboard_with_profiles` view ✅, `submitScore` funcionando ✅
 
@@ -184,3 +186,4 @@ Sugestões de próximos passos baseadas no impacto para o jogador:
 | 2026-05-11 | Ctrl+Z undo no editor | Sessão 3 |
 | 2026-05-11 | Auth chip integrado | Sessão 3 |
 | 2026-05-11 | Tela de Perfil `/profile` (React + Supabase) | Sessão 5 |
+| 2026-05-11 | Ranking Global `/leaderboard` (top 50 + season toggle) | Sessão 6 |
