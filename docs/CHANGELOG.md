@@ -8,6 +8,33 @@
 
 ## [Não lançado] — Em desenvolvimento
 
+### Sessão 9 — 2026-05-11: Nó lançador (catapulta) e navbar React global
+
+**Objetivo da sessão:** Adicionar o nó de catapulta ao editor de pistas e criar uma navbar React global compartilhada por todas as rotas.
+
+#### Adicionado — Nó lançador (`play.html`)
+- Novo tipo de nó `kind: 'launcher'` (verde `#2ED573`) com ícone de seta para cima
+- Atalho de teclado `N` ativa ferramenta de lançador no editor
+- Botão "CATAP" adicionado à toolbar entre freio e deletar
+- **Física:** ao passar sobre o nó, `c.flying = true`, velocidade vertical `c.vy = -700`, velocidade horizontal amplificada em 1.2× (mín 350 px/s)
+- Flag `_launchCool` previne re-disparo enquanto o carrinho permanece sobre o nó; resetada ao sair
+- Efeito visual: faíscas verdes + confetti ao ser catapultado
+- Toast "🚀 CATAPULTADO!" + som de boost ao disparar
+
+#### Adicionado — Navbar React global (`src/components/game-nav.tsx`)
+- Componente `GameNav` com sticky positioning (z-index 100), paleta do jogo
+- Links: 🎢 Jogar, 🗺️ Campanha, 🏆 Ranking, 👤 Perfil — link ativo destacado em rosa
+- Avatar do usuário logado (Google img ou iniciais sobre gradiente) + primeiro nome
+- Botão "Entrar" para usuários não autenticados
+- Oculta automaticamente nas rotas `/` e `/login` via `useRouterState`
+- Escuta `onAuthStateChange` para atualizar em tempo real
+
+#### Alterado — Layout raiz (`src/routes/__root.tsx`)
+- `GameNav` adicionado ao `RootComponent` antes do `<Outlet />`
+- Navbars duplicadas removidas de `profile.tsx`, `leaderboard.tsx` e `campaign.tsx`
+
+---
+
 ### Sessão 5 — 2026-05-11: Tela de Perfil do Usuário
 
 **Objetivo da sessão:** Criar a tela de perfil React conectada ao Supabase, mostrando dados reais do jogador.
