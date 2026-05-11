@@ -236,17 +236,17 @@
 - [ ] `FAQPage` opcional na home com perguntas sobre o jogo
 
 #### Performance e Core Web Vitals
-- [ ] `<link rel="preload">` para a fonte Fredoka e imagem hero
+- [x] `<link rel="preload">` para a fonte Fredoka (carregamento não-bloqueante)
 - [ ] Substituir imagens por formato WebP e adicionar `width`/`height` para evitar CLS
 - [ ] Lazy loading em imagens abaixo do fold (`loading="lazy"`)
 - [ ] Minificar o CSS inline da `home.html` (atualmente tudo inline, pode ser crítico)
 - [ ] Verificar LCP < 2.5s, FID < 100ms, CLS < 0.1 via Lighthouse
 
 #### Conteúdo e autoridade
-- [ ] H1 único e descritivo na home ("Construa Montanhas-Russas, Destrua Tudo — Crash Coaster")
-- [ ] Seção de texto descritivo indexável (hoje a home é quase toda visual/CSS)
-- [ ] Links internos entre home, campanha e ranking
-- [ ] Meta description únicos por rota React (`/campaign`, `/leaderboard`, `/profile`)
+- [x] H1 único: nav `<h1>` virou `<span class="brand">`, hero mantém o único H1
+- [x] Seção "Comece a jogar agora" com texto indexável e links para /campaign, /leaderboard, /play.html
+- [x] Links internos: nav e footer apontam para /campaign, /leaderboard, /login
+- [x] Meta description únicos por rota React (`/campaign`, `/leaderboard`, `/profile`)
 
 **Critério de aceite:** Lighthouse SEO score ≥ 90 na `home.html`. Página aparece indexada no Google Search Console em até 7 dias após deploy.
 
