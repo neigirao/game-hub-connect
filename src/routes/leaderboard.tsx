@@ -4,6 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageError } from "@/components/page-error";
 
 export const Route = createFileRoute("/leaderboard")({
+  head: () => ({
+    meta: [
+      { title: "Ranking Global — Crash Coaster" },
+      { name: "description", content: "Top 50 corridas mais épicas do Crash Coaster. Veja score, velocidade máxima, G-force e as pistas usadas por cada jogador." },
+    ],
+  }),
   component: LeaderboardPage,
 });
 

@@ -1,16 +1,40 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { PageError } from "@/components/page-error";
 
 export const Route = createFileRoute("/profile")({
+  head: () => ({
+    meta: [
+      { title: "Meu Perfil — Crash Coaster" },
+      { name: "description", content: "Seu perfil no Crash Coaster: nível, XP, coins, pistas salvas e histórico de corridas." },
+    ],
+  }),
   component: ProfilePage,
 });
 
 type Profile = Tables<"profiles">;
 type Blueprint = Pick<Tables<"blueprints">, "id" | "name" | "node_count" | "best_total_score" | "created_at" | "closed_loop">;
 type ScoreEntry = Pick<Tables<"leaderboard_entries">, "id" | "total_score" | "survival_rate" | "adrenaline_score" | "chaos_score" | "max_g_force" | "max_speed_kmh" | "laps_completed" | "submitted_at">;
+
+function useCountUp(target: number, duration = 1100, active = true) {
+  const [value, setValue] = useState(0);
+  const rafRef = useRef<number>(0);
+  useEffect(() => {
+    if (!active || target === 0) { setValue(target); return; }
+    const start = Date.now();
+    const step = () => {
+      const t = Math.min((Date.now() - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setValue(Math.round(target * eased));
+      if (t < 1) rafRef.current = requestAnimationFrame(step);
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [target, active, duration]);
+  return value;
+}
 
 const XP_PER_LEVEL = 500;
 
@@ -138,8 +162,17 @@ function Avatar({ name, url, size = 72 }: { name: string; url?: string | null; s
   );
 }
 
-function XPBar({ xp, level }: { xp: number; level: number }) {
-  const xpInLevel = xp % XP_PER_LEVEL;
+function XPBar({ xp, level, animateFromXp }: { xp: number; level: number; animateFromXp?: number }) {
+  const [displayXp, setDisplayXp] = useState(animateFromXp ?? xp);
+
+  useEffect(() => {
+    if (animateFromXp == null) { setDisplayXp(xp); return; }
+    setDisplayXp(animateFromXp);
+    const t = setTimeout(() => setDisplayXp(xp), 120);
+    return () => clearTimeout(t);
+  }, [xp, animateFromXp]);
+
+  const xpInLevel = displayXp % XP_PER_LEVEL;
   const pct = Math.round((xpInLevel / XP_PER_LEVEL) * 100);
   const xpToNext = XP_PER_LEVEL - xpInLevel;
 
@@ -156,9 +189,61 @@ function XPBar({ xp, level }: { xp: number; level: number }) {
             width: `${pct}%`,
             background: "linear-gradient(90deg,#FF6BD6,#70A1FF)",
             borderRadius: 4,
-            transition: "width .6s cubic-bezier(.22,1,.36,1)",
+            transition: "width .8s cubic-bezier(.22,1,.36,1)",
           }}
         />
+      </div>
+    </div>
+  );
+}
+
+function RewardBanner({ xp, coins }: { xp: number; coins: number }) {
+  const countedXp = useCountUp(xp, 1100);
+  const countedCoins = useCountUp(coins, 1100);
+
+  return (
+    <div style={{
+      background: "linear-gradient(90deg,rgba(46,213,115,.18),rgba(255,165,2,.12))",
+      border: "2px solid #2ED573",
+      borderRadius: 18,
+      padding: "18px 24px",
+      display: "flex", alignItems: "center", gap: 20,
+      animation: "rewardSlide .45s cubic-bezier(.22,1,.36,1) both, rewardGlow 1.8s ease .5s 2",
+    }}>
+      <span style={{
+        fontSize: 48, lineHeight: 1, flexShrink: 0,
+        animation: "rewardPop .5s cubic-bezier(.34,1.56,.64,1) .1s both",
+        display: "block",
+      }}>🎉</span>
+
+      <div style={{ flex: 1 }}>
+        <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 16, color: "#2ED573", marginBottom: 12 }}>
+          Recompensas da última corrida!
+        </div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
+          <div style={{
+            display: "flex", flexDirection: "column" as const, alignItems: "center",
+            background: "rgba(255,107,214,.15)", border: "2px solid #FF6BD6",
+            borderRadius: 14, padding: "8px 20px", minWidth: 90,
+            animation: "rewardPop .5s cubic-bezier(.34,1.56,.64,1) .2s both",
+          }}>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 28, color: "#FF6BD6", lineHeight: 1 }}>
+              +{countedXp}
+            </div>
+            <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontSize: 13, color: "#FF6BD6", marginTop: 3 }}>✨ XP</div>
+          </div>
+          <div style={{
+            display: "flex", flexDirection: "column" as const, alignItems: "center",
+            background: "rgba(255,165,2,.15)", border: "2px solid #FFA502",
+            borderRadius: 14, padding: "8px 20px", minWidth: 90,
+            animation: "rewardPop .5s cubic-bezier(.34,1.56,.64,1) .3s both",
+          }}>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 28, color: "#FFA502", lineHeight: 1 }}>
+              +{countedCoins}
+            </div>
+            <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontSize: 13, color: "#FFA502", marginTop: 3 }}>🪙 Coins</div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -346,33 +431,13 @@ export function ProfilePage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
         @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:.9} }
-        @keyframes rewardSlide { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes rewardSlide { from{opacity:0;transform:translateY(-16px) scale(.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+        @keyframes rewardPop { 0%{transform:scale(0);opacity:0} 60%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1} }
+        @keyframes rewardGlow { 0%,100%{box-shadow:0 0 0 0 rgba(46,213,115,0)} 50%{box-shadow:0 0 24px 4px rgba(46,213,115,.35)} }
       `}</style>
 
       <div style={S.content}>
-        {/* Reward flash banner */}
-        {reward && (
-          <div style={{
-            background: "linear-gradient(90deg,rgba(46,213,115,.2),rgba(255,165,2,.15))",
-            border: "2px solid #2ED573",
-            borderRadius: 16,
-            padding: "14px 20px",
-            display: "flex", alignItems: "center", gap: 14,
-            animation: "rewardSlide .4s ease both",
-          }}>
-            <span style={{ fontSize: 28 }}>🎉</span>
-            <div>
-              <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 16, color: "#2ED573" }}>
-                Recompensas da última corrida!
-              </div>
-              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: "#fff", marginTop: 2 }}>
-                <span style={{ color: "#FF6BD6" }}>✨ +{reward.xp} XP</span>
-                {"  "}
-                <span style={{ color: "#FFA502" }}>🪙 +{reward.coins} moedas</span>
-              </div>
-            </div>
-          </div>
-        )}
+        {reward && <RewardBanner xp={reward.xp} coins={reward.coins} />}
         {error ? (
           <PageError message={error} onRetry={() => setRetryCount((c) => c + 1)} />
         ) : loading ? (
@@ -406,7 +471,11 @@ export function ProfilePage() {
                     LVL {profile.level}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <XPBar xp={profile.xp} level={profile.level} />
+                    <XPBar
+                      xp={profile.xp}
+                      level={profile.level}
+                      animateFromXp={reward ? Math.max(0, profile.xp - reward.xp) : undefined}
+                    />
                   </div>
                 </div>
               </div>

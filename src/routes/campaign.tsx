@@ -4,6 +4,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/campaign")({
+  head: () => ({
+    meta: [
+      { title: "Campanha — Crash Coaster" },
+      { name: "description", content: "Jogue as fases da campanha de Crash Coaster. Construa pistas para cada desafio, lance o carrinho e conquiste até 3 estrelas por fase." },
+    ],
+  }),
   component: CampaignPage,
 });
 
