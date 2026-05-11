@@ -221,6 +221,7 @@ A sessão OAuth já fica no localStorage do mesmo domínio — zero friction.
 - [x] Auth chip (Google login) integrado ao bloco principal do Supabase
 - [x] Tela de Perfil `/profile` (React + auth guard + XP bar + blueprints + histórico de scores)
 - [x] Ranking Global `/leaderboard` (top 50, season toggle, highlight do usuário atual)
+- [x] Campanha `/campaign` (grid de fases, 3 fases seed, painel de objetivos no play.html via `?level=`)
 
 ### Pendente (MVP restante)
 - [ ] Sistema de campanha com fases

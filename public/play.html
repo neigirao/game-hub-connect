@@ -396,6 +396,29 @@
   .replay .recdot{width:10px;height:10px;background:var(--danger);border-radius:50%;animation:blink 1s infinite}
   @keyframes blink{50%{opacity:.3}}
 
+  /* ---- level objectives panel ---- */
+  #levelPanel{
+    position:fixed;left:12px;top:80px;width:220px;
+    background:linear-gradient(180deg,#2e1870ee,#1a0e50ee);
+    border:2px solid #4a2aa6;border-radius:16px;padding:14px;
+    z-index:90;box-shadow:0 6px 0 rgba(0,0,0,.3);
+    display:none;flex-direction:column;gap:10px;
+    backdrop-filter:blur(6px);
+  }
+  #levelPanel.show{display:flex;animation:slideIn .3s ease}
+  .lp-title{font-family:'Fredoka';font-weight:700;font-size:15px;color:#fff;line-height:1.2}
+  .lp-obj{font-size:11px;color:#B7AEE0;display:flex;flex-direction:column;gap:4px}
+  .lp-obj-item{display:flex;gap:6px;align-items:flex-start}
+  .lp-obj-item span{color:#FF6BD6;flex-shrink:0}
+  .lp-stars{display:flex;gap:6px;font-size:11px;font-family:'JetBrains Mono',monospace;color:#B7AEE0}
+  .lp-btn{
+    font-family:'Fredoka';font-weight:700;font-size:12px;
+    padding:6px 10px;border-radius:10px;border:none;cursor:pointer;
+    background:rgba(255,255,255,.1);color:#B7AEE0;text-align:center;
+    text-decoration:none;display:block;transition:background .15s;
+  }
+  .lp-btn:hover{background:rgba(255,107,214,.2);color:#FF6BD6}
+
 </style>
 </head>
 <body>
@@ -693,6 +716,16 @@
 <!-- Toast de feedback global -->
 <div class="toast-modal" id="globalToast"></div>
 
+<!-- Level objectives panel (shown when ?level= param is present) -->
+<div id="levelPanel">
+  <div style="display:flex;align-items:center;gap:8px">
+    <a href="/campaign" style="font-size:11px;color:#B7AEE0;text-decoration:none;flex-shrink:0">← Campanha</a>
+  </div>
+  <div class="lp-title" id="lpTitle"></div>
+  <div class="lp-obj" id="lpObjectives"></div>
+  <div class="lp-stars" id="lpStars"></div>
+</div>
+
 <script type="module">
 // ============================================================
 // CRASH COASTER — MVP
@@ -782,6 +815,46 @@ function loadTrackFromUrl() {
     }
   } catch {}
   return false;
+}
+
+// ---- LOAD FROM ?level= URL PARAM ----
+async function loadLevelFromUrl() {
+  const params = new URLSearchParams(location.search);
+  const levelId = params.get('level');
+  if (!levelId) return;
+
+  try {
+    const url = localStorage.getItem('cc_sb_url');
+    const key = localStorage.getItem('cc_sb_key');
+    if (!url || !key) return;
+
+    const res = await fetch(
+      `${url}/rest/v1/levels?id=eq.${encodeURIComponent(levelId)}&select=title,objectives,star1_score,star2_score,star3_score,starter_track&is_published=eq.true`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` } }
+    );
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) return;
+
+    const level = rows[0];
+    if (level.starter_track?.nodes?.length > 0) {
+      state.nodes = level.starter_track.nodes;
+      state.closedLoop = !!level.starter_track.loop;
+      updateLoopBtn();
+      pushHistory();
+    }
+
+    // Render objectives panel
+    document.getElementById('lpTitle').textContent = level.title;
+    const objEl = document.getElementById('lpObjectives');
+    objEl.innerHTML = (level.objectives || []).map(o =>
+      `<div class="lp-obj-item"><span>▸</span>${o.label}</div>`
+    ).join('');
+    document.getElementById('lpStars').innerHTML =
+      `<span>⭐ ${level.star1_score}+</span><span>⭐⭐ ${level.star2_score}+</span><span>⭐⭐⭐ ${level.star3_score}+</span>`;
+    document.getElementById('levelPanel').classList.add('show');
+  } catch (e) {
+    console.warn('[CC] loadLevelFromUrl failed:', e);
+  }
 }
 
 // ---- SAVE ----
@@ -2352,6 +2425,7 @@ document.getElementById('rcPlayAgainBtn').addEventListener('click', ()=>{
 resize(); // initialize canvas + cam before loading track
 const loadedFromUrl = loadTrackFromUrl();
 if (loadedFromUrl) { pushHistory(); } else { initDefaultTrack(); }
+loadLevelFromUrl(); // async: fetches level data and shows objectives panel if ?level= present
 updateScoreUI();
 requestAnimationFrame(tick);
 

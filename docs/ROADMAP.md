@@ -55,20 +55,22 @@
 
 ---
 
-### 🟠 P2 — Tela de Campanha (Fases)
+### ✅ 🟠 P2 — Tela de Campanha (Fases)
 
 **Contexto:** A tabela `levels` existe com `title`, `objectives`, `star1/2/3_score`, `starter_track`. Falta a tela de seleção de fases e a integração com `play.html`.
 
-- [ ] `src/routes/campaign.tsx` — rota `/campaign` com grid de fases
-- [ ] Buscar `levels` com `is_published = true` ordenados por `order_index`
-- [ ] Card de fase: título, cenário, estrelas conquistadas, botão "Jogar"
-- [ ] Ao clicar "Jogar", redirecionar para `/play.html?level={id}` com a `starter_track` em base64
-- [ ] `play.html` — detectar `?level=` na URL e carregar `starter_track` + objetivos do nível
-- [ ] `play.html` — painel de objetivos dinâmico baseado nos objetivos do nível (JSON)
-- [ ] Admin: formulário simples para criar/publicar níveis (apenas para `is_admin = true`)
-- [ ] Seed: criar 3 fases iniciais com dificuldade crescente via migration SQL
+- [x] `src/routes/campaign.tsx` — rota `/campaign` com grid de fases
+- [x] Buscar `levels` com `is_published = true` ordenados por `order_index`
+- [x] Card de fase: título, cenário, preview SVG da pista, estrelas, botão "Jogar"
+- [x] Ao clicar "Jogar", redirecionar para `/play.html?level={id}`
+- [x] `play.html` — detectar `?level=` na URL, buscar no Supabase REST e carregar `starter_track`
+- [x] `play.html` — painel de objetivos lateral (`#levelPanel`) com título, objetivos e thresholds de estrelas
+- [ ] Admin: formulário para criar/publicar níveis (`is_admin = true`) — pós-MVP
+- [x] Seed: 3 fases criadas via migration SQL (`Primeira Descida`, `Loopings e Boosters`, `Caos Total`)
 
-**Critério de aceite:** Grid de 3 fases funcionais. Clicar em uma fase carrega a pista inicial e objetivos no play.html.
+**Critério de aceite:** ✅ Grid de 3 fases funcionais. Clicar carrega a pista e mostra painel de objetivos no play.html.
+
+**Concluído em:** Sessão 7 — 2026-05-11
 
 **Dependências:** Tabela `levels` ✅, `play.html` com suporte a URL params ✅
 
@@ -187,3 +189,4 @@ Sugestões de próximos passos baseadas no impacto para o jogador:
 | 2026-05-11 | Auth chip integrado | Sessão 3 |
 | 2026-05-11 | Tela de Perfil `/profile` (React + Supabase) | Sessão 5 |
 | 2026-05-11 | Ranking Global `/leaderboard` (top 50 + season toggle) | Sessão 6 |
+| 2026-05-11 | Campanha `/campaign` (3 fases seed + painel de objetivos no play.html) | Sessão 7 |

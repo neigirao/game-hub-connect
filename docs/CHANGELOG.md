@@ -29,6 +29,35 @@
 
 ---
 
+### Sessão 7 — 2026-05-11: Tela de Campanha (/campaign)
+
+**Objetivo da sessão:** Criar a tela de seleção de fases, seed com 3 níveis e integração com play.html via `?level=`.
+
+#### Adicionado — Rota `/campaign` (`src/routes/campaign.tsx`)
+- Grid responsivo de cards de fase com banner colorido por cenário (parque/montanha/vulcão)
+- **MiniTrack:** preview SVG da pista starter gerado a partir dos nós do `starter_track`
+- **LevelCard:** emoji de cenário, badge de dificuldade, título, descrição, lista de objetivos, thresholds de estrelas (⭐⭐⭐), recompensas (coins + XP) e botão "Jogar"
+- **StarBar:** estrelas com glow baseadas no melhor score do jogador vs. thresholds
+- Botão "Jogar" redireciona para `/play.html?level={id}`
+- Estado vazio com card "Fases em construção"
+- CTA de login para usuários não autenticados
+
+#### Adicionado — Seed de 3 fases (`migration: seed_starter_levels`)
+- **Fase 1 — Primeira Descida** (Fácil, cenário `parque`): 7 nós, objetivos de sobrevivência e 60km/h, recompensa 50🪙 +100XP
+- **Fase 2 — Loopings e Boosters** (Médio, cenário `montanha`): 8 nós com boosters, objetivos de 100km/h e G-force, recompensa 100🪙 +200XP
+- **Fase 3 — Caos Total** (Difícil, cenário `vulcao`): 9 nós com boosters e freio, objetivos de 120km/h e quase-mortes, recompensa 200🪙 +400XP
+
+#### Adicionado — Suporte a `?level=` no `play.html`
+- `loadLevelFromUrl()` async: busca o nível via Supabase REST API (sem dependência do init do cliente JS)
+- Carrega `starter_track` no estado e chama `pushHistory()` para registrar no undo stack
+- Painel `#levelPanel` fixo à esquerda com: link "← Campanha", título da fase, lista de objetivos e thresholds de estrelas
+- CSS do painel com backdrop-filter, animação slideIn e tema da paleta do jogo
+
+#### Alterado — `src/routeTree.gen.ts`
+- Adicionada rota `/campaign` ao file route tree
+
+---
+
 ### Sessão 6 — 2026-05-11: Ranking Global (/leaderboard)
 
 **Objetivo da sessão:** Criar a tela de ranking usando a view `leaderboard_with_profiles` já disponível no banco.
