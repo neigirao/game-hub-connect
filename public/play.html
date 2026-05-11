@@ -745,6 +745,7 @@
 // ---- SUPABASE BRIDGE (lê config gravada pelo React app) ----
 let sbClient = null;
 let currentUser = null;
+let currentLevelId = null; // set when loaded via ?level= param
 
 // Auth chip (top-right corner)
 const _authChip = document.createElement('div');
@@ -914,8 +915,12 @@ async function loadLevelFromUrl() {
       { headers: { apikey: key, Authorization: `Bearer ${key}` } }
     );
     const rows = await res.json();
-    if (!Array.isArray(rows) || rows.length === 0) return;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      showToast('Fase não encontrada. Jogando em modo livre.', true);
+      return;
+    }
 
+    currentLevelId = parseInt(levelId, 10);
     const level = rows[0];
     if (level.starter_track?.nodes?.length > 0) {
       state.nodes = level.starter_track.nodes;
@@ -1062,6 +1067,7 @@ async function submitScore(blueprintId = null) {
   await sbClient.from('leaderboard_entries').insert({
     user_id: currentUser.id,
     blueprint_id: blueprintId,
+    level_id: currentLevelId,
     total_score: total,
     survival_rate: state.scores.survival,
     adrenaline_score: state.scores.adrenaline,
@@ -1100,6 +1106,9 @@ async function awardRewards(crashed) {
 
 // Inicializa Supabase em background
 initSupabase();
+
+window.addEventListener('offline', () => showToast('Sem conexão — score não será salvo', true));
+window.addEventListener('online', () => showToast('Conexão restaurada ✓', false));
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');

@@ -283,3 +283,4 @@ Sugestões de próximos passos baseadas no impacto:
 | 2026-05-11 | Looping 360° (nó loop) e speed trail (motion blur) | Sessão 10 |
 | 2026-05-11 | Painel de Admin — infraestrutura + /admin/levels CRUD | Sessão 11 |
 | 2026-05-11 | Admin completo — dashboard, /admin/blueprints, /admin/users + fix preview Lovable | Sessão 12 |
+| 2026-05-11 | QA fixes — level_id em leaderboard, stars por fase na campanha, feedback offline | Sessão 13 |

@@ -133,6 +133,7 @@ export type Database = {
           id: string
           user_id: string
           blueprint_id: string | null
+          level_id: number | null
           total_score: number
           survival_rate: number
           adrenaline_score: number
@@ -149,6 +150,7 @@ export type Database = {
           id?: string
           user_id: string
           blueprint_id?: string | null
+          level_id?: number | null
           total_score: number
           survival_rate?: number
           adrenaline_score?: number
@@ -165,6 +167,7 @@ export type Database = {
           id?: string
           user_id?: string
           blueprint_id?: string | null
+          level_id?: number | null
           total_score?: number
           survival_rate?: number
           adrenaline_score?: number
