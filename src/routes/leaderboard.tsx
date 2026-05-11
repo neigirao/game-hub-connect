@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { PageError } from "@/components/page-error";
 
 export const Route = createFileRoute("/leaderboard")({
   component: LeaderboardPage,
@@ -238,6 +239,8 @@ export function LeaderboardPage() {
   const [rows, setRows] = useState<LeaderboardRow[]>([]);
   const [season, setSeason] = useState("global");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -248,13 +251,18 @@ export function LeaderboardPage() {
 
   useEffect(() => {
     setLoading(true);
-    supabase
-      .from("leaderboard_with_profiles")
-      .select("*")
-      .eq("season", season)
-      .order("rank", { ascending: true })
-      .limit(50)
-      .then(async ({ data }) => {
+    setError(null);
+    (async () => {
+      try {
+        const { data, error: fetchError } = await supabase
+          .from("leaderboard_with_profiles")
+          .select("*")
+          .eq("season", season)
+          .order("rank", { ascending: true })
+          .limit(50);
+
+        if (fetchError) throw fetchError;
+
         const base = (data ?? []) as LeaderboardRow[];
         if (base.length === 0) { setRows([]); setLoading(false); return; }
 
@@ -268,8 +276,12 @@ export function LeaderboardPage() {
 
         setRows(base.map((r) => ({ ...r, blueprint_id: bpMap[r.id] ?? null })));
         setLoading(false);
-      });
-  }, [season]);
+      } catch {
+        setError("Não foi possível carregar o ranking. Verifique sua conexão.");
+        setLoading(false);
+      }
+    })();
+  }, [season, retryCount]);
 
   const currentUserRank = rows.find((r) => r.user_id === currentUserId);
 
@@ -313,7 +325,9 @@ export function LeaderboardPage() {
 
         {/* Leaderboard table */}
         <div style={S.card}>
-          {loading ? (
+          {error ? (
+            <PageError message={error} onRetry={() => setRetryCount((c) => c + 1)} />
+          ) : loading ? (
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} style={{ height: 62, borderRadius: 14, background: "rgba(255,255,255,.06)", animation: "pulse 1.5s ease-in-out infinite", animationDelay: `${i * 0.08}s` }} />

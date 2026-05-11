@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { PageError, PulseSkeleton } from "@/components/page-error";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,
@@ -58,41 +59,63 @@ function StatCard({ label, value, icon }: { label: string; value: number | strin
 export function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     async function load() {
-      const [usersRes, runsRes, tracksRes, topRes, recentRes] = await Promise.all([
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("leaderboard_entries").select("id", { count: "exact", head: true }),
-        supabase.from("blueprints").select("id", { count: "exact", head: true }),
-        supabase.from("leaderboard_entries")
-          .select("total_score")
-          .eq("season", new Date().toISOString().slice(0, 7))
-          .order("total_score", { ascending: false })
-          .limit(1),
-        supabase.from("leaderboard_with_profiles")
-          .select("username,total_score,submitted_at")
-          .order("submitted_at", { ascending: false })
-          .limit(8),
-      ]);
+      setLoading(true);
+      setError(null);
+      try {
+        const [usersRes, runsRes, tracksRes, topRes, recentRes] = await Promise.all([
+          supabase.from("profiles").select("id", { count: "exact", head: true }),
+          supabase.from("leaderboard_entries").select("id", { count: "exact", head: true }),
+          supabase.from("blueprints").select("id", { count: "exact", head: true }),
+          supabase.from("leaderboard_entries")
+            .select("total_score")
+            .eq("season", new Date().toISOString().slice(0, 7))
+            .order("total_score", { ascending: false })
+            .limit(1),
+          supabase.from("leaderboard_with_profiles")
+            .select("username,total_score,submitted_at")
+            .order("submitted_at", { ascending: false })
+            .limit(8),
+        ]);
 
-      setStats({
-        totalUsers: usersRes.count ?? 0,
-        totalRuns: runsRes.count ?? 0,
-        totalTracks: tracksRes.count ?? 0,
-        topScoreMonth: topRes.data?.[0]?.total_score ?? 0,
-        recentRuns: recentRes.data ?? [],
-      });
-      setLoading(false);
+        setStats({
+          totalUsers: usersRes.count ?? 0,
+          totalRuns: runsRes.count ?? 0,
+          totalTracks: tracksRes.count ?? 0,
+          topScoreMonth: topRes.data?.[0]?.total_score ?? 0,
+          recentRuns: recentRes.data ?? [],
+        });
+        setLoading(false);
+      } catch {
+        setError("Não foi possível carregar as métricas do dashboard.");
+        setLoading(false);
+      }
     }
     load();
-  }, []);
+  }, [retryCount]);
+
+  if (error) {
+    return (
+      <div style={S.content}>
+        <PageError message={error} onRetry={() => setRetryCount((c) => c + 1)} />
+      </div>
+    );
+  }
 
   if (loading) {
     return (
       <div style={S.content}>
-        <div style={{ ...S.card, textAlign: "center", padding: 48 }}>
-          <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontSize: 18, color: "#B7AEE0" }}>Carregando métricas…</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 16 }}>
+          {[0, 1, 2, 3].map((i) => <PulseSkeleton key={i} height={90} borderRadius={16} delay={i * 0.1} />)}
+        </div>
+        <div style={S.card}>
+          <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
+            {[0, 1, 2, 3, 4].map((i) => <PulseSkeleton key={i} height={44} delay={i * 0.08} />)}
+          </div>
         </div>
       </div>
     );

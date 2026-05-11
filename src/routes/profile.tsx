@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { PageError } from "@/components/page-error";
 
 export const Route = createFileRoute("/profile")({
   component: ProfilePage,
@@ -280,52 +281,62 @@ export function ProfilePage() {
   const [blueprints, setBlueprints] = useState<Blueprint[]>([]);
   const [scores, setScores] = useState<ScoreEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [reward, setReward] = useState<LastReward>(null);
 
   useEffect(() => {
     async function load() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        window.location.href = "/login";
-        return;
-      }
-
-      setAvatarUrl(session.user.user_metadata?.avatar_url ?? null);
-
-      const [profileRes, bpRes, scoreRes] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", session.user.id).single(),
-        supabase
-          .from("blueprints")
-          .select("id, name, node_count, best_total_score, created_at, closed_loop")
-          .eq("creator_id", session.user.id)
-          .order("created_at", { ascending: false })
-          .limit(5),
-        supabase
-          .from("leaderboard_entries")
-          .select("id, total_score, survival_rate, adrenaline_score, chaos_score, max_g_force, max_speed_kmh, laps_completed, submitted_at")
-          .eq("user_id", session.user.id)
-          .order("submitted_at", { ascending: false })
-          .limit(5),
-      ]);
-
-      setProfile(profileRes.data ?? null);
-      setBlueprints((bpRes.data ?? []) as Blueprint[]);
-      setScores((scoreRes.data ?? []) as ScoreEntry[]);
-      setLoading(false);
-
-      // Check for recent reward from play.html (written to sessionStorage)
+      setLoading(true);
+      setError(null);
       try {
-        const raw = sessionStorage.getItem("cc_last_reward");
-        if (raw) {
-          const r = JSON.parse(raw) as { xp: number; coins: number; ts: number };
-          if (Date.now() - r.ts < 60_000) setReward({ xp: r.xp, coins: r.coins });
-          sessionStorage.removeItem("cc_last_reward");
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          window.location.href = "/login";
+          return;
         }
-      } catch (_) {}
+
+        setAvatarUrl(session.user.user_metadata?.avatar_url ?? null);
+
+        const [profileRes, bpRes, scoreRes] = await Promise.all([
+          supabase.from("profiles").select("*").eq("id", session.user.id).single(),
+          supabase
+            .from("blueprints")
+            .select("id, name, node_count, best_total_score, created_at, closed_loop")
+            .eq("creator_id", session.user.id)
+            .order("created_at", { ascending: false })
+            .limit(5),
+          supabase
+            .from("leaderboard_entries")
+            .select("id, total_score, survival_rate, adrenaline_score, chaos_score, max_g_force, max_speed_kmh, laps_completed, submitted_at")
+            .eq("user_id", session.user.id)
+            .order("submitted_at", { ascending: false })
+            .limit(5),
+        ]);
+
+        if (profileRes.error) throw profileRes.error;
+
+        setProfile(profileRes.data ?? null);
+        setBlueprints((bpRes.data ?? []) as Blueprint[]);
+        setScores((scoreRes.data ?? []) as ScoreEntry[]);
+        setLoading(false);
+
+        try {
+          const raw = sessionStorage.getItem("cc_last_reward");
+          if (raw) {
+            const r = JSON.parse(raw) as { xp: number; coins: number; ts: number };
+            if (Date.now() - r.ts < 60_000) setReward({ xp: r.xp, coins: r.coins });
+            sessionStorage.removeItem("cc_last_reward");
+          }
+        } catch (_) {}
+      } catch {
+        setError("Não foi possível carregar seu perfil. Verifique sua conexão.");
+        setLoading(false);
+      }
     }
     load();
-  }, []);
+  }, [retryCount]);
 
   const displayName = profile?.username ?? profile?.email?.split("@")[0] ?? "Jogador";
   const bestScore = scores.length > 0 ? Math.max(...scores.map((s) => s.total_score)) : 0;
@@ -362,7 +373,9 @@ export function ProfilePage() {
             </div>
           </div>
         )}
-        {loading ? (
+        {error ? (
+          <PageError message={error} onRetry={() => setRetryCount((c) => c + 1)} />
+        ) : loading ? (
           <>
             <LoadingCard />
             <LoadingCard />

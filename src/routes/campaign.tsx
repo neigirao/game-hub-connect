@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageError, PulseSkeleton } from "@/components/page-error";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -288,43 +289,53 @@ export function CampaignPage() {
   const [levels, setLevels] = useState<Level[]>([]);
   const [bestScores, setBestScores] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
-      const { data: { session } } = await supabase.auth.getSession();
-      const uid = session?.user.id ?? null;
-      setUserId(uid);
+      setLoading(true);
+      setError(null);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const uid = session?.user.id ?? null;
+        setUserId(uid);
 
-      const [lvlsRes, scoresRes] = await Promise.all([
-        supabase
-          .from("levels")
-          .select("*")
-          .eq("is_published", true)
-          .order("order_index", { ascending: true }),
-        uid
-          ? supabase
-              .from("leaderboard_entries")
-              .select("level_id, total_score")
-              .eq("user_id", uid)
-              .not("level_id", "is", null)
-          : Promise.resolve({ data: [] }),
-      ]);
+        const [lvlsRes, scoresRes] = await Promise.all([
+          supabase
+            .from("levels")
+            .select("*")
+            .eq("is_published", true)
+            .order("order_index", { ascending: true }),
+          uid
+            ? supabase
+                .from("leaderboard_entries")
+                .select("level_id, total_score")
+                .eq("user_id", uid)
+                .not("level_id", "is", null)
+            : Promise.resolve({ data: [] }),
+        ]);
 
-      setLevels((lvlsRes.data ?? []) as Level[]);
+        if (lvlsRes.error) throw lvlsRes.error;
 
-      // Build map: level_id → best total_score for this user
-      const map: Record<number, number> = {};
-      for (const row of (scoresRes.data ?? []) as Array<{ level_id: number; total_score: number }>) {
-        if (row.level_id != null) {
-          map[row.level_id] = Math.max(map[row.level_id] ?? 0, row.total_score);
+        setLevels((lvlsRes.data ?? []) as Level[]);
+
+        const map: Record<number, number> = {};
+        for (const row of (scoresRes.data ?? []) as Array<{ level_id: number; total_score: number }>) {
+          if (row.level_id != null) {
+            map[row.level_id] = Math.max(map[row.level_id] ?? 0, row.total_score);
+          }
         }
+        setBestScores(map);
+        setLoading(false);
+      } catch {
+        setError("Não foi possível carregar as fases. Verifique sua conexão.");
+        setLoading(false);
       }
-      setBestScores(map);
-      setLoading(false);
     }
     load();
-  }, []);
+  }, [retryCount]);
 
   return (
     <div style={S.page}>
@@ -346,10 +357,12 @@ export function CampaignPage() {
         </div>
 
         {/* Level grid */}
-        {loading ? (
+        {error ? (
+          <PageError message={error} onRetry={() => setRetryCount((c) => c + 1)} />
+        ) : loading ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 24 }}>
             {[0, 1, 2].map((i) => (
-              <div key={i} style={{ height: 380, borderRadius: 24, background: "rgba(255,255,255,.06)", animation: "pulse 1.5s ease-in-out infinite", animationDelay: `${i * 0.15}s` }} />
+              <PulseSkeleton key={i} height={380} borderRadius={24} delay={i * 0.15} />
             ))}
           </div>
         ) : levels.length === 0 ? (

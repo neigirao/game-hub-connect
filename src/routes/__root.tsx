@@ -38,29 +38,44 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+    <div style={{
+      minHeight: "100vh",
+      background: "linear-gradient(180deg,#1c0d52 0%,#0b052b 100%)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: "0 24px",
+      fontFamily: "'Inter',system-ui,sans-serif",
+      color: "#fff",
+    }}>
+      <div style={{ maxWidth: 420, textAlign: "center" }}>
+        <div style={{ fontSize: 64, marginBottom: 16 }}>💥</div>
+        <h1 style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 28, margin: "0 0 8px" }}>
+          Algo descarrilou
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+        <p style={{ color: "#B7AEE0", fontSize: 14, lineHeight: 1.6, marginBottom: 28 }}>
+          Um erro inesperado aconteceu. Tente novamente ou volte para a página inicial.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <button
-            onClick={() => {
-              router.invalidate();
-              reset();
+            onClick={() => { router.invalidate(); reset(); }}
+            style={{
+              fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 15,
+              background: "linear-gradient(180deg,#FFA502,#c97a00)",
+              border: "2px solid #FFCB6B", borderRadius: 14, padding: "10px 24px",
+              color: "#fff", cursor: "pointer", boxShadow: "0 4px 0 #6e3f00",
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            Tentar novamente
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            style={{
+              fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 15,
+              background: "transparent", border: "2px solid #4a2aa6", borderRadius: 14,
+              padding: "10px 24px", color: "#B7AEE0", cursor: "pointer",
+              textDecoration: "none", display: "inline-flex", alignItems: "center",
+            }}
           >
-            Go home
+            Início
           </a>
         </div>
       </div>
