@@ -250,18 +250,6 @@ export function LeaderboardPage() {
         @keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
 
-      {/* Navbar */}
-      <nav style={S.navbar}>
-        <a href="/home.html" style={S.navLogo}>
-          <div style={S.navBadge} />
-          <span>CRASH COASTER</span>
-        </a>
-        <div style={S.navSpacer} />
-        <a href="/play.html" style={S.navLink}>🎢 Jogar</a>
-        <a href="/profile" style={S.navLink}>👤 Perfil</a>
-        <a href="/leaderboard" style={{ ...S.navLink, ...S.navLinkActive }}>🏆 Ranking</a>
-      </nav>
-
       <div style={S.content}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 16 }}>

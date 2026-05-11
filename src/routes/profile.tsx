@@ -324,18 +324,6 @@ export function ProfilePage() {
         @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:.9} }
       `}</style>
 
-      {/* Navbar */}
-      <nav style={S.navbar}>
-        <a href="/home.html" style={S.navLogo}>
-          <div style={S.navBadge} />
-          <span>CRASH COASTER</span>
-        </a>
-        <div style={S.navSpacer} />
-        <NavLink href="/play.html" label="🎢 Jogar" />
-        <NavLink href="/profile" label="👤 Perfil" active />
-        <NavLink href="/login" label="Sair" />
-      </nav>
-
       <div style={S.content}>
         {loading ? (
           <>

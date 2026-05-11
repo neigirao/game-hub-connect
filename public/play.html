@@ -121,6 +121,7 @@
   .tool.active{background:linear-gradient(180deg,#FF6BD6,#a8329c);border-color:#FF6BD6}
   .tool[data-tool="booster"].active{background:linear-gradient(180deg,#FFA502,#a86a00);border-color:#FFA502}
   .tool[data-tool="brake"].active{background:linear-gradient(180deg,#FF4757,#a82828);border-color:#FF4757}
+  .tool[data-tool="launcher"].active{background:linear-gradient(180deg,#2ED573,#1a7a42);border-color:#2ED573}
   .tool[data-tool="delete"].active{background:linear-gradient(180deg,#70A1FF,#3b6acc);border-color:#70A1FF}
   .tool:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
   .tool svg{width:26px;height:26px;display:block}
@@ -483,6 +484,10 @@
     <button class="tool" data-tool="brake" title="Freio (F)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 8l8 8M8 16l8-8"/></svg>
       <span class="label">FREIO</span>
+    </button>
+    <button class="tool" data-tool="launcher" title="Lançador (N)">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7h-2v8h-2V9H9z"/><ellipse cx="12" cy="19" rx="4" ry="2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      <span class="label">CATAP</span>
     </button>
     <div class="divider"></div>
     <button class="tool" data-tool="delete" title="Deletar nó (D)">
@@ -1478,6 +1483,7 @@ function drawNodes(){
     let col = '#FFE9A8';
     if (n.kind === 'booster') col = '#FFA502';
     else if (n.kind === 'brake') col = '#FF4757';
+    else if (n.kind === 'launcher') col = '#2ED573';
     ctx.fillStyle = col;
     ctx.beginPath();
     ctx.arc(n.x, n.y, isDrag?14:(isHover?12:10), 0, Math.PI*2);
@@ -1493,6 +1499,18 @@ function drawNodes(){
     ctx.beginPath();
     ctx.arc(n.x, n.y, 3, 0, Math.PI*2);
     ctx.fill();
+    // launcher: draw upward arrow
+    if (n.kind === 'launcher'){
+      ctx.strokeStyle = '#0E0726';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(n.x, n.y + 5);
+      ctx.lineTo(n.x, n.y - 6);
+      ctx.moveTo(n.x - 4, n.y - 2);
+      ctx.lineTo(n.x, n.y - 7);
+      ctx.lineTo(n.x + 4, n.y - 2);
+      ctx.stroke();
+    }
     // index label for first / last
     if (i === 0 || i === state.nodes.length-1){
       ctx.fillStyle = '#fff';
@@ -2100,6 +2118,20 @@ function tick(){
       if (sample.kind === 'booster' && Math.random() < 0.7){
         spawnSparks(c.x, c.y, 2, '#FFA502');
       }
+      // Launcher catapult
+      if (sample.kind === 'launcher' && !c._launchCool){
+        c._launchCool = true;
+        c.flying = true;
+        const dir = c.lastDir || {x:1, y:0};
+        c.vx = dir.x * Math.max(Math.abs(c.v), 350) * 1.2;
+        c.vy = -700;
+        spawnSparks(c.x, c.y, 10, '#2ED573');
+        spawnConfetti(c.x, c.y, 12);
+        showToast('🚀 CATAPULTADO!', '#2ED573');
+        playBoostSound();
+      }
+      // Reset launch cooldown when far from launcher zone
+      if (c._launchCool && sample.kind !== 'launcher') c._launchCool = false;
 
       // End of track
       if (c.s >= path.totalLen){
@@ -2385,6 +2417,9 @@ canvas.addEventListener('mousedown', e=>{
   } else if (state.tool === 'brake' && idx >= 0){
     state.nodes[idx].kind = state.nodes[idx].kind === 'brake' ? 'normal' : 'brake';
     pushHistory();
+  } else if (state.tool === 'launcher' && idx >= 0){
+    state.nodes[idx].kind = state.nodes[idx].kind === 'launcher' ? 'normal' : 'launcher';
+    pushHistory();
   } else if (state.tool === 'delete' && idx >= 0){
     state.nodes.splice(idx, 1);
     pushHistory();
@@ -2438,7 +2473,7 @@ window.addEventListener('keydown', e=>{
     if (state.mode === 'build') undo();
     return;
   }
-  const map = {a:'add', m:'move', b:'booster', f:'brake', d:'delete'};
+  const map = {a:'add', m:'move', b:'booster', f:'brake', n:'launcher', d:'delete'};
   if (map[e.key]){
     state.tool = map[e.key];
     document.querySelectorAll('#tools .tool').forEach(x=>{

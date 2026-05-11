@@ -307,19 +307,6 @@ export function CampaignPage() {
         @keyframes slideIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
 
-      {/* Navbar */}
-      <nav style={S.navbar}>
-        <a href="/home.html" style={S.navLogo}>
-          <div style={S.navBadge} />
-          <span>CRASH COASTER</span>
-        </a>
-        <div style={{ flex: 1 }} />
-        <a href="/play.html" style={S.navLink}>🎢 Jogar Livre</a>
-        <a href="/campaign" style={{ ...S.navLink, ...S.navLinkActive }}>🗺️ Campanha</a>
-        <a href="/leaderboard" style={S.navLink}>🏆 Ranking</a>
-        <a href="/profile" style={S.navLink}>👤 Perfil</a>
-      </nav>
-
       <div style={S.content}>
         {/* Header */}
         <div>
