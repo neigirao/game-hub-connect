@@ -41,9 +41,10 @@ function AdminLayout() {
         </span>
         <div style={{ width: 1, height: 20, background: "rgba(255,71,87,.3)" }} />
         {[
+          { href: "/admin", label: "📊 Dashboard" },
           { href: "/admin/levels", label: "🗺️ Fases" },
-          // { href: "/admin/blueprints", label: "🎢 Pistas" },
-          // { href: "/admin/users", label: "👥 Usuários" },
+          { href: "/admin/blueprints", label: "🎢 Pistas" },
+          { href: "/admin/users", label: "👥 Usuários" },
         ].map((l) => (
           <a
             key={l.href}

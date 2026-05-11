@@ -293,24 +293,38 @@ export function CampaignPage() {
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession();
-      setUserId(session?.user.id ?? null);
+      const uid = session?.user.id ?? null;
+      setUserId(uid);
 
-      const { data: lvls } = await supabase
-        .from("levels")
-        .select("*")
-        .eq("is_published", true)
-        .order("order_index", { ascending: true });
+      const [lvlsRes, scoresRes] = await Promise.all([
+        supabase
+          .from("levels")
+          .select("*")
+          .eq("is_published", true)
+          .order("order_index", { ascending: true }),
+        uid
+          ? supabase
+              .from("leaderboard_entries")
+              .select("level_id, total_score")
+              .eq("user_id", uid)
+              .not("level_id", "is", null)
+          : Promise.resolve({ data: [] }),
+      ]);
 
-      setLevels((lvls ?? []) as Level[]);
+      setLevels((lvlsRes.data ?? []) as Level[]);
+
+      // Build map: level_id → best total_score for this user
+      const map: Record<number, number> = {};
+      for (const row of (scoresRes.data ?? []) as Array<{ level_id: number; total_score: number }>) {
+        if (row.level_id != null) {
+          map[row.level_id] = Math.max(map[row.level_id] ?? 0, row.total_score);
+        }
+      }
+      setBestScores(map);
       setLoading(false);
     }
     load();
   }, []);
-
-  // Fetch best scores per level for logged-in user
-  // For now, best score is derived from leaderboard_entries (no level_id FK yet)
-  // so we show stars based on total_score from profile's best
-  // This will be refined when level_id is added to leaderboard_entries
 
   return (
     <div style={S.page}>

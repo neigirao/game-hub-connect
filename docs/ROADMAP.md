@@ -159,43 +159,100 @@
 
 ---
 
-### 🟠 P2 — Admin: Moderação de Blueprints (`/admin/blueprints`)
+### ✅ 🟠 P2 — Admin: Moderação de Blueprints (`/admin/blueprints`)
 
-- [ ] Listar todas as pistas públicas (`blueprints.is_public = true`)
-- [ ] Visualizar preview SVG de cada pista
-- [ ] Ação: remover pista (marcar `is_public = false` ou deletar)
-- [ ] Ação: promover pista como "Featured" (coluna `is_featured BOOLEAN` a adicionar)
-- [ ] Filtros: por usuário, data, score mais alto associado
+- [x] Listar todas as pistas públicas (`blueprints.is_public = true`)
+- [x] Visualizar preview SVG de cada pista
+- [x] Ação: remover pista (marcar `is_public = false`)
+- [x] Ação: promover pista como "Featured" (coluna `is_featured BOOLEAN` adicionada)
+- [x] Filtro por destaque + busca por nome/usuário
 
-**Critério de aceite:** Admin consegue remover pistas inadequadas e destacar pistas de qualidade.
+**Critério de aceite:** ✅ Admin consegue remover pistas inadequadas e destacar pistas de qualidade.
 
----
-
-### 🟠 P2 — Admin: Gestão de Usuários (`/admin/users`)
-
-- [ ] Listar todos os `profiles` com username, email, level, coins, XP, data de criação
-- [ ] Busca por username ou email
-- [ ] Ação: banir usuário (coluna `is_banned BOOLEAN` a adicionar + check no login)
-- [ ] Ação: conceder/revogar `is_admin`
-- [ ] Ver histórico de scores de um usuário (query em `leaderboard_entries`)
-
-**Critério de aceite:** Admin consegue ver e gerenciar todos os usuários sem acessar o banco diretamente.
+**Concluído em:** Sessão 12 — 2026-05-11
 
 ---
 
-### 🟡 P3 — Admin: Dashboard de métricas (`/admin`)
+### ✅ 🟠 P2 — Admin: Gestão de Usuários (`/admin/users`)
 
-- [ ] Total de usuários registrados
-- [ ] Total de corridas completadas (total de `leaderboard_entries`)
-- [ ] Total de pistas salvas (total de `blueprints`)
-- [ ] Score médio / mais alto do mês
-- [ ] Gráfico simples de registros por dia (últimos 30 dias)
+- [x] Listar todos os `profiles` com username, email, level, coins, XP, data de criação
+- [x] Busca por username ou email
+- [x] Ação: banir usuário (coluna `is_banned BOOLEAN` adicionada)
+- [x] Ação: conceder/revogar `is_admin`
 
-**Critério de aceite:** Admin vê um overview do estado do jogo em tempo real.
+**Critério de aceite:** ✅ Admin consegue ver e gerenciar todos os usuários sem acessar o banco diretamente.
+
+**Concluído em:** Sessão 12 — 2026-05-11
+
+---
+
+### ✅ 🟡 P3 — Admin: Dashboard de métricas (`/admin`)
+
+- [x] Total de usuários registrados
+- [x] Total de corridas completadas (total de `leaderboard_entries`)
+- [x] Total de pistas salvas (total de `blueprints`)
+- [x] Top score do mês atual
+- [x] Lista das últimas 8 corridas com username e timestamp
+- [x] Links rápidos para os outros painéis admin
+
+**Critério de aceite:** ✅ Admin vê um overview do estado do jogo em tempo real.
+
+**Concluído em:** Sessão 12 — 2026-05-11
 
 ---
 
 ## FASE V2 — Pós-MVP
+
+### 🟠 SEO — Indexação do Crash Coaster no Google
+
+**Contexto:** A `home.html` atual tem apenas `<title>` e `<meta viewport>`. Para ranquear bem no Google é preciso cobrir on-page SEO, dados estruturados, Core Web Vitals e sinais de autoridade.
+
+**Estado atual da `home.html`:**
+- ✅ `<title>` descritivo
+- ✅ `<meta description>`
+- ✅ Open Graph / Twitter Card
+- ✅ Canonical URL
+- ✅ JSON-LD VideoGame schema
+- ✅ `sitemap.xml`
+- ✅ `robots.txt`
+- ❌ Imagens sem `alt` text
+- ❌ Sem preload de recursos críticos
+
+#### On-page básico (impacto imediato)
+- [x] `<meta name="description">` — 150–160 chars descrevendo o jogo em PT-BR
+- [x] Open Graph: `og:title`, `og:description`, `og:image` (screenshot 1200×630 do jogo), `og:url`, `og:type`
+- [x] Twitter Card: `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image`
+- [x] `<link rel="canonical" href="https://crashcoaster.app/">` (atualizar para URL real de produção)
+- [x] `<meta name="robots" content="index, follow">`
+- [x] `<html lang="pt-BR">` — sinalizar idioma para o Google
+
+#### Arquivos de descoberta
+- [x] `public/sitemap.xml` — listar `/`, `/campaign`, `/leaderboard` com `<lastmod>` e `<priority>`
+- [x] `public/robots.txt` — `Allow: /`, apontar para sitemap
+
+#### Dados estruturados (JSON-LD)
+- [x] `VideoGame` schema em `home.html` — nome, description, URL, applicationCategory, genre, offer price
+- [ ] `BreadcrumbList` nas páginas internas (`/campaign`, `/leaderboard`)
+- [ ] `FAQPage` opcional na home com perguntas sobre o jogo
+
+#### Performance e Core Web Vitals
+- [ ] `<link rel="preload">` para a fonte Fredoka e imagem hero
+- [ ] Substituir imagens por formato WebP e adicionar `width`/`height` para evitar CLS
+- [ ] Lazy loading em imagens abaixo do fold (`loading="lazy"`)
+- [ ] Minificar o CSS inline da `home.html` (atualmente tudo inline, pode ser crítico)
+- [ ] Verificar LCP < 2.5s, FID < 100ms, CLS < 0.1 via Lighthouse
+
+#### Conteúdo e autoridade
+- [ ] H1 único e descritivo na home ("Construa Montanhas-Russas, Destrua Tudo — Crash Coaster")
+- [ ] Seção de texto descritivo indexável (hoje a home é quase toda visual/CSS)
+- [ ] Links internos entre home, campanha e ranking
+- [ ] Meta description únicos por rota React (`/campaign`, `/leaderboard`, `/profile`)
+
+**Critério de aceite:** Lighthouse SEO score ≥ 90 na `home.html`. Página aparece indexada no Google Search Console em até 7 dias após deploy.
+
+**Dependências:** URL de produção definida, domínio configurado no Cloudflare.
+
+---
 
 ### 🟢 Replay e compartilhamento avançado
 
@@ -220,13 +277,6 @@
 - [ ] Benchmark: comparar FPS em pistas complexas entre Canvas e PixiJS
 - [ ] Migrar quando V2 atingir paridade de features com V1
 
-### 🟢 Temporadas e eventos
-
-- [ ] Temporada mensal: `season = 'YYYY-MM'` já suportado no banco
-- [ ] Reset automático do ranking mensal (cron no Supabase ou Edge Function)
-- [ ] Desafio semanal: fase especial com objetivos únicos e recompensa exclusiva
-- [ ] Badge de "Campeão da Temporada" no perfil
-
 ### 🟢 Mobile-first
 
 - [ ] Detectar touch events no `play.html`
@@ -236,16 +286,31 @@
 
 ---
 
+## 🐛 Bugs conhecidos
+
+### 🔴 Preview do Lovable não abre a aplicação
+
+**Contexto:** O preview integrado do Lovable não consegue carregar a aplicação. Provavelmente relacionado à configuração do Cloudflare Workers ou ao entrypoint do Vite/TanStack Start.
+
+- [ ] Investigar se o problema é no `wrangler.jsonc` (rota raiz `/` ou assets estáticos)
+- [ ] Verificar se o `vite.config.ts` está exportando corretamente para o worker
+- [ ] Testar se `npm run dev` local funciona e se o preview do Lovable aponta para o build correto
+- [ ] Verificar se o redirect de `/` → `/home.html` quebra o preview (pode precisar de fallback)
+
+**Critério de aceite:** Preview do Lovable abre e exibe a landing page ou a tela de login.
+
+---
+
 ## Decisão: Próxima sessão
 
-Sugestões de próximos passos baseadas no impacto para o jogador:
+Sugestões de próximos passos baseadas no impacto:
 
 | Opção | Impacto | Complexidade | Recomendação |
 |---|---|---|---|
-| Tela de Perfil | Alto (progresso visível) | Baixa (React + query simples) | ⭐ Começar aqui |
-| Ranking Global | Alto (competição) | Baixa (view já existe) | ⭐ Em seguida |
-| Campanha (fases) | Muito alto (loop de jogo) | Alta (integração play.html) | Depois do perfil |
-| Física melhorada | Médio (mais fun) | Média (só play.html) | A qualquer momento |
+| 🔴 Fix preview Lovable | Bloqueante (não consegue ver o app) | Média (debug de config) | ⭐ Urgente |
+| Admin: Blueprints `/admin/blueprints` | Médio (moderação) | Baixa | Em seguida |
+| Admin: Usuários `/admin/users` | Médio (gestão) | Baixa | Depois |
+| Admin: Dashboard `/admin` | Alto (visibilidade do jogo) | Média | Depois |
 
 ---
 
@@ -268,3 +333,5 @@ Sugestões de próximos passos baseadas no impacto para o jogador:
 | 2026-05-11 | Nó lançador (catapulta) e navbar React global | Sessão 9 |
 | 2026-05-11 | Looping 360° (nó loop) e speed trail (motion blur) | Sessão 10 |
 | 2026-05-11 | Painel de Admin — infraestrutura + /admin/levels CRUD | Sessão 11 |
+| 2026-05-11 | Admin completo — dashboard, /admin/blueprints, /admin/users + fix preview Lovable | Sessão 12 |
+| 2026-05-11 | QA fixes — level_id em leaderboard, stars por fase na campanha, feedback offline | Sessão 13 |
