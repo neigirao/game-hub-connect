@@ -1,8 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { PageError } from "@/components/page-error";
 
 export const Route = createFileRoute("/leaderboard")({
+  head: () => ({
+    meta: [
+      { title: "Ranking Global — Crash Coaster" },
+      { name: "description", content: "Top 50 corridas mais épicas do Crash Coaster. Veja score, velocidade máxima, G-force e as pistas usadas por cada jogador." },
+    ],
+  }),
   component: LeaderboardPage,
 });
 
@@ -19,6 +26,7 @@ type LeaderboardRow = {
   laps_completed: number;
   season: string;
   rank: number;
+  blueprint_id?: string | null;
 };
 
 const S = {
@@ -173,6 +181,25 @@ function LeaderboardRow({
         </div>
       </div>
 
+      {/* Blueprint link */}
+      {row.blueprint_id && (
+        <a
+          href={`/play.html?blueprint=${row.blueprint_id}`}
+          title="Jogar esta pista"
+          style={{
+            flexShrink: 0,
+            fontSize: 20,
+            textDecoration: "none",
+            opacity: 0.8,
+            transition: "opacity .15s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.8")}
+        >
+          🎢
+        </a>
+      )}
+
       {/* Score + stars */}
       <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
         <div style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 22, color: "#FFA502" }}>
@@ -218,6 +245,8 @@ export function LeaderboardPage() {
   const [rows, setRows] = useState<LeaderboardRow[]>([]);
   const [season, setSeason] = useState("global");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -228,17 +257,37 @@ export function LeaderboardPage() {
 
   useEffect(() => {
     setLoading(true);
-    supabase
-      .from("leaderboard_with_profiles")
-      .select("*")
-      .eq("season", season)
-      .order("rank", { ascending: true })
-      .limit(50)
-      .then(({ data }) => {
-        setRows((data ?? []) as LeaderboardRow[]);
+    setError(null);
+    (async () => {
+      try {
+        const { data, error: fetchError } = await supabase
+          .from("leaderboard_with_profiles")
+          .select("*")
+          .eq("season", season)
+          .order("rank", { ascending: true })
+          .limit(50);
+
+        if (fetchError) throw fetchError;
+
+        const base = (data ?? []) as LeaderboardRow[];
+        if (base.length === 0) { setRows([]); setLoading(false); return; }
+
+        const { data: entries } = await supabase
+          .from("leaderboard_entries")
+          .select("id, blueprint_id")
+          .in("id", base.map((r) => r.id));
+
+        const bpMap: Record<string, string | null> = {};
+        for (const e of entries ?? []) bpMap[e.id] = e.blueprint_id ?? null;
+
+        setRows(base.map((r) => ({ ...r, blueprint_id: bpMap[r.id] ?? null })));
         setLoading(false);
-      });
-  }, [season]);
+      } catch {
+        setError("Não foi possível carregar o ranking. Verifique sua conexão.");
+        setLoading(false);
+      }
+    })();
+  }, [season, retryCount]);
 
   const currentUserRank = rows.find((r) => r.user_id === currentUserId);
 
@@ -282,7 +331,9 @@ export function LeaderboardPage() {
 
         {/* Leaderboard table */}
         <div style={S.card}>
-          {loading ? (
+          {error ? (
+            <PageError message={error} onRetry={() => setRetryCount((c) => c + 1)} />
+          ) : loading ? (
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} style={{ height: 62, borderRadius: 14, background: "rgba(255,255,255,.06)", animation: "pulse 1.5s ease-in-out infinite", animationDelay: `${i * 0.08}s` }} />

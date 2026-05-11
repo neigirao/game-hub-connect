@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { PageError } from "@/components/page-error";
 
 export const Route = createFileRoute("/admin/blueprints")({
   component: AdminBlueprintsPage,
@@ -96,30 +97,39 @@ function MiniTrack({ data }: { data: unknown }) {
 export function AdminBlueprintsPage() {
   const [blueprints, setBlueprints] = useState<Blueprint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "featured">("all");
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
   async function fetchBlueprints() {
-    const { data } = await supabase
-      .from("blueprints")
-      .select("*")
-      .eq("is_public", true)
-      .order("created_at", { ascending: false })
-      .limit(100);
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("blueprints")
+        .select("*")
+        .eq("is_public", true)
+        .order("created_at", { ascending: false })
+        .limit(100);
 
-    if (!data) { setLoading(false); return; }
+      if (fetchError) throw fetchError;
+      if (!data) { setLoading(false); return; }
 
-    const userIds = [...new Set(data.map((b) => b.creator_id))];
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id,username")
-      .in("id", userIds);
+      const userIds = [...new Set(data.map((b) => b.creator_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id,username")
+        .in("id", userIds);
 
-    const usernameMap = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.username]));
-    const enriched = data.map((b) => ({ ...b, creator_username: usernameMap[b.creator_id] ?? null }));
-    setBlueprints(enriched as Blueprint[]);
-    setLoading(false);
+      const usernameMap = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.username]));
+      const enriched = data.map((b) => ({ ...b, creator_username: usernameMap[b.creator_id] ?? null }));
+      setBlueprints(enriched as Blueprint[]);
+      setLoading(false);
+    } catch {
+      setError("Não foi possível carregar as pistas públicas.");
+      setLoading(false);
+    }
   }
 
   useEffect(() => { fetchBlueprints(); }, []);
@@ -180,7 +190,9 @@ export function AdminBlueprintsPage() {
       </div>
 
       <div style={S.card}>
-        {loading ? (
+        {error ? (
+          <PageError message={error} onRetry={fetchBlueprints} />
+        ) : loading ? (
           <div style={{ textAlign: "center", padding: 48, color: "#B7AEE0", fontFamily: "'Fredoka',system-ui,sans-serif", fontSize: 18 }}>Carregando pistas…</div>
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: 48 }}>

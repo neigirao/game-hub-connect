@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageError } from "@/components/page-error";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -74,16 +75,25 @@ const S = {
 export function AdminUsersPage() {
   const [users, setUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
   async function fetchUsers() {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setUsers((data ?? []) as Profile[]);
-    setLoading(false);
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (fetchError) throw fetchError;
+      setUsers((data ?? []) as Profile[]);
+      setLoading(false);
+    } catch {
+      setError("Não foi possível carregar os usuários.");
+      setLoading(false);
+    }
   }
 
   useEffect(() => { fetchUsers(); }, []);
@@ -141,7 +151,9 @@ export function AdminUsersPage() {
       </div>
 
       <div style={S.card}>
-        {loading ? (
+        {error ? (
+          <PageError message={error} onRetry={fetchUsers} />
+        ) : loading ? (
           <div style={{ textAlign: "center", padding: 48, color: "#B7AEE0", fontFamily: "'Fredoka',system-ui,sans-serif", fontSize: 18 }}>Carregando usuários…</div>
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: 48 }}>

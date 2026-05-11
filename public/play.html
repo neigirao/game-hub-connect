@@ -745,7 +745,8 @@
 // ---- SUPABASE BRIDGE (lê config gravada pelo React app) ----
 let sbClient = null;
 let currentUser = null;
-let currentLevelId = null; // set when loaded via ?level= param
+let currentLevelId = null;    // set when loaded via ?level= param
+let currentBlueprintId = null; // set when a blueprint is saved or loaded
 
 // Auth chip (top-right corner)
 const _authChip = document.createElement('div');
@@ -899,6 +900,40 @@ function loadTrackFromUrl() {
   return false;
 }
 
+// ---- LOAD FROM ?blueprint= URL PARAM (by UUID from leaderboard) ----
+async function loadBlueprintFromUrl() {
+  const params = new URLSearchParams(location.search);
+  const blueprintId = params.get('blueprint');
+  if (!blueprintId) return;
+
+  const url = localStorage.getItem('cc_sb_url');
+  const key = localStorage.getItem('cc_sb_key');
+  if (!url || !key) return;
+
+  try {
+    const res = await fetch(
+      `${url}/rest/v1/blueprints?id=eq.${encodeURIComponent(blueprintId)}&select=id,track_data,closed_loop,name`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` } }
+    );
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) {
+      showToast('Pista não encontrada.', true);
+      return;
+    }
+    const bp = rows[0];
+    if (Array.isArray(bp.track_data) && bp.track_data.length > 0) {
+      state.nodes = bp.track_data;
+      state.closedLoop = !!bp.closed_loop;
+      currentBlueprintId = bp.id;
+      updateLoopBtn();
+      pushHistory();
+      showToast(`Pista "${bp.name}" carregada!`);
+    }
+  } catch (e) {
+    console.warn('[CC] loadBlueprintFromUrl failed:', e);
+  }
+}
+
 // ---- LOAD FROM ?level= URL PARAM ----
 async function loadLevelFromUrl() {
   const params = new URLSearchParams(location.search);
@@ -954,7 +989,7 @@ async function saveBlueprint(name) {
      state.scores.smoothness + state.scores.creativity) / 5
   );
 
-  const { error } = await sbClient.from('blueprints').insert({
+  const { data: bpData, error } = await sbClient.from('blueprints').insert({
     creator_id: currentUser.id,
     name: name || 'Minha Pista',
     track_data: state.nodes,
@@ -966,9 +1001,10 @@ async function saveBlueprint(name) {
     smoothness_score: state.scores.smoothness,
     creativity_score: state.scores.creativity,
     best_total_score: total,
-  });
+  }).select('id');
 
   if (error) { showToast('Erro ao salvar: ' + error.message, true); return; }
+  currentBlueprintId = bpData?.[0]?.id ?? null;
   showToast('Pista salva com sucesso!');
   loadTrackList();
 }
@@ -1021,6 +1057,7 @@ async function loadTrackList() {
       try {
         state.nodes = JSON.parse(btn.dataset.track);
         state.closedLoop = btn.dataset.loop === 'true';
+        currentBlueprintId = btn.dataset.id;
         updateLoopBtn();
         closeTracksModal();
         showToast('Pista carregada!');
@@ -2443,7 +2480,7 @@ function completeRun(crashed = false){
     state.bestScore = total;
     document.getElementById('bestScore').textContent = total + ' pts';
   }
-  submitScore();
+  submitScore(currentBlueprintId);
   awardRewards(crashed);
   setTimeout(() => showRunComplete(crashed), crashed ? 1800 : 600);
 }
@@ -2684,7 +2721,8 @@ document.getElementById('rcPlayAgainBtn').addEventListener('click', ()=>{
 resize(); // initialize canvas + cam before loading track
 const loadedFromUrl = loadTrackFromUrl();
 if (loadedFromUrl) { pushHistory(); } else { initDefaultTrack(); }
-loadLevelFromUrl(); // async: fetches level data and shows objectives panel if ?level= present
+loadLevelFromUrl();    // async: fetches level data and shows objectives panel if ?level= present
+loadBlueprintFromUrl(); // async: loads blueprint by UUID if ?blueprint= param present
 updateScoreUI();
 requestAnimationFrame(tick);
 
