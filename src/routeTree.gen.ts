@@ -9,12 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CampaignRouteImport } from './routes/campaign'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminLevelsRouteImport } from './routes/admin/levels'
 
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CampaignRoute = CampaignRouteImport.update({
   id: '/campaign',
   path: '/campaign',
@@ -40,6 +47,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminLevelsRoute = AdminLevelsRouteImport.update({
+  id: '/admin/levels',
+  path: '/levels',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +59,8 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/leaderboard': typeof LeaderboardRoute
   '/campaign': typeof CampaignRoute
+  '/admin': typeof AdminRoute
+  '/admin/levels': typeof AdminLevelsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +68,8 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/leaderboard': typeof LeaderboardRoute
   '/campaign': typeof CampaignRoute
+  '/admin': typeof AdminRoute
+  '/admin/levels': typeof AdminLevelsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +78,15 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/leaderboard': typeof LeaderboardRoute
   '/campaign': typeof CampaignRoute
+  '/admin': typeof AdminRoute
+  '/admin/levels': typeof AdminLevelsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/profile' | '/leaderboard' | '/campaign'
+  fullPaths: '/' | '/login' | '/profile' | '/leaderboard' | '/campaign' | '/admin' | '/admin/levels'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/profile' | '/leaderboard' | '/campaign'
-  id: '__root__' | '/' | '/login' | '/profile' | '/leaderboard' | '/campaign'
+  to: '/' | '/login' | '/profile' | '/leaderboard' | '/campaign' | '/admin' | '/admin/levels'
+  id: '__root__' | '/' | '/login' | '/profile' | '/leaderboard' | '/campaign' | '/admin' | '/admin/levels'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,7 +95,14 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   LeaderboardRoute: typeof LeaderboardRoute
   CampaignRoute: typeof CampaignRoute
+  AdminRoute: typeof AdminRoute
 }
+
+const AdminRouteChildren = {
+  AdminLevelsRoute: AdminLevelsRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
@@ -116,6 +141,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampaignRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/levels': {
+      id: '/admin/levels'
+      path: '/levels'
+      fullPath: '/admin/levels'
+      preLoaderRoute: typeof AdminLevelsRouteImport
+      parentRoute: typeof AdminRouteImport
+    }
   }
 }
 
@@ -125,6 +164,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   LeaderboardRoute: LeaderboardRoute,
   CampaignRoute: CampaignRoute,
+  AdminRoute: AdminRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

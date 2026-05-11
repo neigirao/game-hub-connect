@@ -121,6 +121,80 @@
 
 ---
 
+## FASE MVP — Painel de Administração
+
+> **Admin principal:** `neigirao@gmail.com`
+> Autenticação: verificar `profiles.is_admin = true` (coluna a adicionar) para liberar acesso.
+
+### ✅ 🔴 P1 — Infraestrutura de admin
+
+- [x] Coluna `is_admin BOOLEAN DEFAULT false` já existia em `profiles` (migration 001)
+- [x] Setar `is_admin = true` para `neigirao@gmail.com` via migration SQL
+- [x] RLS policy: somente `is_admin = true` pode INSERT/UPDATE/DELETE em `levels` (migration 003)
+- [x] Hook `useIsAdmin()` — `src/hooks/use-is-admin.ts`
+- [x] Guard de rota: `beforeLoad` em `src/routes/admin.tsx` redireciona para `/` se não for admin
+
+**Critério de aceite:** ✅ Somente `neigirao@gmail.com` consegue acessar `/admin`. Qualquer outro usuário é redirecionado.
+
+**Concluído em:** Sessão 11 — 2026-05-11
+
+---
+
+### ✅ 🔴 P1 — Admin: Gerenciar Fases (`/admin/levels`)
+
+**Contexto:** Hoje as fases são criadas via SQL direto. O admin precisa de uma UI para criar, editar e publicar fases sem precisar de acesso ao banco.
+
+- [x] `src/routes/admin/levels.tsx` — listagem de todas as fases (publicadas e rascunhos)
+- [x] Formulário de criação/edição: título, cenário (dropdown), objetivos (JSON ou lista dinâmica)
+- [x] Campos: `star1_score`, `star2_score`, `star3_score`, `reward_coins`, `reward_xp`, `order_index`
+- [x] Toggle `is_published`: draft/publicado com toggle visual
+- [x] Preview da pista antes de publicar (MiniTrack SVG inline)
+- [x] Salvar via Supabase client com RLS admin
+- [x] Layout route `src/routes/admin.tsx` com sub-navbar admin
+- [x] Link "🔐 Admin" no GameNav (visível apenas para admins)
+
+**Critério de aceite:** ✅ Admin consegue criar uma nova fase, definir objetivos e publicar — sem tocar no banco diretamente.
+
+**Concluído em:** Sessão 11 — 2026-05-11
+
+---
+
+### 🟠 P2 — Admin: Moderação de Blueprints (`/admin/blueprints`)
+
+- [ ] Listar todas as pistas públicas (`blueprints.is_public = true`)
+- [ ] Visualizar preview SVG de cada pista
+- [ ] Ação: remover pista (marcar `is_public = false` ou deletar)
+- [ ] Ação: promover pista como "Featured" (coluna `is_featured BOOLEAN` a adicionar)
+- [ ] Filtros: por usuário, data, score mais alto associado
+
+**Critério de aceite:** Admin consegue remover pistas inadequadas e destacar pistas de qualidade.
+
+---
+
+### 🟠 P2 — Admin: Gestão de Usuários (`/admin/users`)
+
+- [ ] Listar todos os `profiles` com username, email, level, coins, XP, data de criação
+- [ ] Busca por username ou email
+- [ ] Ação: banir usuário (coluna `is_banned BOOLEAN` a adicionar + check no login)
+- [ ] Ação: conceder/revogar `is_admin`
+- [ ] Ver histórico de scores de um usuário (query em `leaderboard_entries`)
+
+**Critério de aceite:** Admin consegue ver e gerenciar todos os usuários sem acessar o banco diretamente.
+
+---
+
+### 🟡 P3 — Admin: Dashboard de métricas (`/admin`)
+
+- [ ] Total de usuários registrados
+- [ ] Total de corridas completadas (total de `leaderboard_entries`)
+- [ ] Total de pistas salvas (total de `blueprints`)
+- [ ] Score médio / mais alto do mês
+- [ ] Gráfico simples de registros por dia (últimos 30 dias)
+
+**Critério de aceite:** Admin vê um overview do estado do jogo em tempo real.
+
+---
+
 ## FASE V2 — Pós-MVP
 
 ### 🟢 Replay e compartilhamento avançado
@@ -193,3 +267,4 @@ Sugestões de próximos passos baseadas no impacto para o jogador:
 | 2026-05-11 | Stall detection, sons Web Audio, sistema Coins/XP | Sessão 8 |
 | 2026-05-11 | Nó lançador (catapulta) e navbar React global | Sessão 9 |
 | 2026-05-11 | Looping 360° (nó loop) e speed trail (motion blur) | Sessão 10 |
+| 2026-05-11 | Painel de Admin — infraestrutura + /admin/levels CRUD | Sessão 11 |

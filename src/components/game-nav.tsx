@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 const S = {
   navbar: {
@@ -78,7 +79,7 @@ const S = {
 
 type NavUser = { name: string; avatar: string | null };
 
-const LINKS = [
+const BASE_LINKS = [
   { href: "/play.html", label: "🎢 Jogar" },
   { href: "/campaign", label: "🗺️ Campanha" },
   { href: "/leaderboard", label: "🏆 Ranking" },
@@ -91,6 +92,11 @@ const HIDDEN_PATHS = new Set(["/", "/login"]);
 export function GameNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [user, setUser] = useState<NavUser | null>(null);
+  const { isAdmin } = useIsAdmin();
+
+  const LINKS = isAdmin
+    ? [...BASE_LINKS, { href: "/admin/levels", label: "🔐 Admin" }]
+    : BASE_LINKS;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
