@@ -15,19 +15,21 @@
 
 ## FASE MVP — O que falta para ter um jogo completo
 
-### 🔴 P1 — Tela de Perfil do Usuário
+### ✅ 🔴 P1 — Tela de Perfil do Usuário
 
 **Contexto:** O banco já tem `profiles` com `coins`, `xp`, `level`. Não existe nenhuma tela React mostrando esses dados ao jogador.
 
-- [ ] `src/routes/profile.tsx` — rota `/profile` com layout React
-- [ ] Buscar `profiles` do Supabase pelo `user.id` da sessão atual
-- [ ] Exibir: avatar (Google), username, level, XP (barra de progresso), coins
-- [ ] Listar as últimas 5 pistas salvas do jogador (query em `blueprints`)
-- [ ] Listar os últimos 5 scores no leaderboard (query em `leaderboard_entries`)
-- [ ] Botão "Jogar" que leva para `/play.html`
-- [ ] Proteger rota: redirecionar para `/login` se não autenticado
+- [x] `src/routes/profile.tsx` — rota `/profile` com layout React
+- [x] Buscar `profiles` do Supabase pelo `user.id` da sessão atual
+- [x] Exibir: avatar (Google), username, level, XP (barra de progresso), coins
+- [x] Listar as últimas 5 pistas salvas do jogador (query em `blueprints`)
+- [x] Listar os últimos 5 scores no leaderboard (query em `leaderboard_entries`)
+- [x] Botão "Jogar" que leva para `/play.html`
+- [x] Proteger rota: redirecionar para `/login` se não autenticado
 
-**Critério de aceite:** Usuário logado vê seu perfil com dados reais do banco. Não logado é redirecionado.
+**Critério de aceite:** ✅ Usuário logado vê seu perfil com dados reais do banco. Não logado é redirecionado.
+
+**Concluído em:** Sessão 5 — 2026-05-11
 
 **Dependências:** Auth funcionando ✅, tabela `profiles` ✅
 
@@ -181,3 +183,4 @@ Sugestões de próximos passos baseadas no impacto para o jogador:
 | 2026-05-11 | Modal de resultado pós-corrida | Sessão 3 |
 | 2026-05-11 | Ctrl+Z undo no editor | Sessão 3 |
 | 2026-05-11 | Auth chip integrado | Sessão 3 |
+| 2026-05-11 | Tela de Perfil `/profile` (React + Supabase) | Sessão 5 |

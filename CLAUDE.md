@@ -219,11 +219,12 @@ A sessão OAuth já fica no localStorage do mesmo domínio — zero friction.
 - [x] Modal de resultado pós-corrida (score animado, estrelas, share, play again)
 - [x] Undo / Ctrl+Z no editor de pistas (stack de 60 snapshots)
 - [x] Auth chip (Google login) integrado ao bloco principal do Supabase
+- [x] Tela de Perfil `/profile` (React + auth guard + XP bar + blueprints + histórico de scores)
 
 ### Pendente (MVP restante)
-- [ ] Perfil de usuário com coins e XP (tela de perfil React)
+- [ ] Ranking global (página de leaderboard React — view `leaderboard_with_profiles` já pronta)
 - [ ] Sistema de campanha com fases
-- [ ] Ranking global (página de leaderboard React)
+- [ ] Perfil: animação de ganho de XP/coins ao receber recompensas
 - [ ] Geração de GIF/replay
 - [ ] Som e música
 
