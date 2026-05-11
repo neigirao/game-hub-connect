@@ -209,29 +209,29 @@
 
 **Estado atual da `home.html`:**
 - ✅ `<title>` descritivo
-- ❌ Sem `<meta description>`
-- ❌ Sem Open Graph / Twitter Card
-- ❌ Sem canonical URL
-- ❌ Sem JSON-LD (Schema.org)
-- ❌ Sem `sitemap.xml`
-- ❌ Sem `robots.txt`
+- ✅ `<meta description>`
+- ✅ Open Graph / Twitter Card
+- ✅ Canonical URL
+- ✅ JSON-LD VideoGame schema
+- ✅ `sitemap.xml`
+- ✅ `robots.txt`
 - ❌ Imagens sem `alt` text
 - ❌ Sem preload de recursos críticos
 
 #### On-page básico (impacto imediato)
-- [ ] `<meta name="description">` — 150–160 chars descrevendo o jogo em PT-BR
-- [ ] Open Graph: `og:title`, `og:description`, `og:image` (screenshot 1200×630 do jogo), `og:url`, `og:type`
-- [ ] Twitter Card: `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image`
-- [ ] `<link rel="canonical" href="https://crashcoaster.com/">` (substituir pela URL real)
-- [ ] `<meta name="robots" content="index, follow">`
-- [ ] `<html lang="pt-BR">` — sinalizar idioma para o Google
+- [x] `<meta name="description">` — 150–160 chars descrevendo o jogo em PT-BR
+- [x] Open Graph: `og:title`, `og:description`, `og:image` (screenshot 1200×630 do jogo), `og:url`, `og:type`
+- [x] Twitter Card: `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image`
+- [x] `<link rel="canonical" href="https://crashcoaster.app/">` (atualizar para URL real de produção)
+- [x] `<meta name="robots" content="index, follow">`
+- [x] `<html lang="pt-BR">` — sinalizar idioma para o Google
 
 #### Arquivos de descoberta
-- [ ] `public/sitemap.xml` — listar `/`, `/campaign`, `/leaderboard` com `<lastmod>` e `<priority>`
-- [ ] `public/robots.txt` — `Allow: /`, apontar para sitemap
+- [x] `public/sitemap.xml` — listar `/`, `/campaign`, `/leaderboard` com `<lastmod>` e `<priority>`
+- [x] `public/robots.txt` — `Allow: /`, apontar para sitemap
 
 #### Dados estruturados (JSON-LD)
-- [ ] `WebApplication` schema em `home.html` — nome, description, screenshot, URL, applicationCategory: "GameApplication"
+- [x] `VideoGame` schema em `home.html` — nome, description, URL, applicationCategory, genre, offer price
 - [ ] `BreadcrumbList` nas páginas internas (`/campaign`, `/leaderboard`)
 - [ ] `FAQPage` opcional na home com perguntas sobre o jogo
 
