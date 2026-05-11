@@ -1883,26 +1883,37 @@ async function saveProgress(){
      state.scores.smoothness + state.scores.creativity)
   );
   const scenarioEl = document.querySelector('.scenario .name');
+
+  // lê linha atual para preservar/incrementar runs e best_score
+  const { data: existing } = await sb
+    .from('game_progress')
+    .select('best_score, runs')
+    .eq('user_id', currentUser.id)
+    .maybeSingle();
+
+  const prevBest = existing?.best_score ?? 0;
+  const prevRuns = existing?.runs ?? 0;
+  const newBest = Math.max(prevBest, state.bestScore || 0, total);
+
   const payload = {
     user_id: currentUser.id,
-    best_score: Math.max(state.bestScore || 0, total),
+    best_score: newBest,
+    runs: prevRuns + 1,
     max_speed: Math.round(state.maxSpeed || 0),
     max_g: Number((state.maxG || 0).toFixed(2)),
     scenario: scenarioEl ? scenarioEl.textContent.trim() : null,
     last_scores: state.scores,
     last_track: state.nodes.map(n => ({x:Math.round(n.x), y:Math.round(n.y), kind:n.kind})),
   };
-  const { error } = await sb.from('game_progress').upsert(payload, { onConflict: 'user_id' });
-  // increment runs separately via RPC-less update
-  await sb.rpc; // noop guard
-  const { error: e2 } = await sb
+  const { error } = await sb
     .from('game_progress')
-    .update({ runs: undefined }) // placeholder to avoid lint; runs handled below
-    .eq('user_id', currentUser.id)
-    .select()
-    .limit(0);
+    .upsert(payload, { onConflict: 'user_id' });
   if (error){ console.warn('[cc] save progress', error); flashSaved('⚠ falha ao salvar'); return; }
-  flashSaved('✓ progresso salvo');
+  if (newBest > (state.bestScore || 0)){
+    state.bestScore = newBest;
+    document.getElementById('bestScore').textContent = newBest + ' pts';
+  }
+  flashSaved(newBest > prevBest ? '★ novo recorde salvo' : '✓ progresso salvo');
 }
 
 // hook into completeRun (chamado ao final de cada lançamento)
