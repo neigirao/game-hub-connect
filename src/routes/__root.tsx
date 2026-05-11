@@ -7,6 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { GameNav } from "@/components/game-nav";
 
 import appCss from "../styles.css?url";
 
@@ -117,6 +118,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <GameNav />
       <Outlet />
     </QueryClientProvider>
   );

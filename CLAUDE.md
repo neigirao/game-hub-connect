@@ -225,12 +225,15 @@ A sessão OAuth já fica no localStorage do mesmo domínio — zero friction.
 - [x] Stall detection (parado >3s encerra corrida), velocidade reversa limitada
 - [x] Sons Web Audio API — rail hum, boost burst, crash noise (síntese, zero assets externos)
 - [x] Sistema de Coins/XP — função `award_run_rewards` no Supabase, chamada após cada corrida
+- [x] Navbar React global (`GameNav`) — sticky, ocultada em `/` e `/login`, avatar + auth state
+- [x] Nó lançador (catapulta) — `kind: 'launcher'`, tecla N, expulsa o carrinho para o ar
+- [x] Nó de looping 360° — `kind: 'loop'`, tecla G, arco circular com física de gravidade real
+- [x] Speed trail (motion blur) — rastro de velocidade acima de 70 km/h, intensidade proporcional
 
 ### Pendente (MVP restante)
-- [ ] Sistema de campanha com fases
 - [ ] Perfil: animação de ganho de XP/coins ao receber recompensas
 - [ ] Geração de GIF/replay
-- [ ] Som e música
+- [ ] Som e música (trilha de fundo)
 
 ### Pendente (pós-MVP / V2+)
 - [ ] Migrar engine para PixiJS

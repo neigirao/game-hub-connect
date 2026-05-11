@@ -82,9 +82,9 @@
 
 - [x] **Stall detection:** exibir "PARADO! 😴" se o carrinho ficar parado por >3s e encerrar o run
 - [x] **Velocidade mínima reversa:** impedir que o carrinho volte indefinidamente com velocidade negativa alta
-- [ ] **Novo nó: Lançador** — catapulta que expulsa o carrinho para o ar propositalmente (kind: `launcher`)
+- [x] **Novo nó: Lançador** — catapulta que expulsa o carrinho para o ar propositalmente (kind: `launcher`)
 - [ ] **Looping 360°** — nó especial que força o carrinho a fazer uma volta completa sem crash (kind: `loop`)
-- [ ] **Efeito de túnel:** se o carrinho passa por um ponto muito rápido, deixar rastro de velocidade (motion blur simples)
+- [x] **Efeito de túnel:** se o carrinho passa por um ponto muito rápido, deixar rastro de velocidade (motion blur simples)
 - [x] **Sons** — Web Audio API com 3 sons: trilho normal, booster, crash (sem assets externos, gerado por síntese)
 
 **Critério de aceite:** Cada item verificado individualmente. Sons devem funcionar sem CORS e sem arquivos externos.
@@ -111,8 +111,8 @@
 
 **Contexto:** Hoje o app tem só `/login` e `/`. Não há navegação entre telas.
 
-- [ ] Navbar persistente no `__root.tsx` com links: Jogar, Campanha, Ranking, Perfil
-- [ ] Navbar mostra avatar do usuário logado ou botão "Entrar" se não logado
+- [x] Navbar persistente no `__root.tsx` com links: Jogar, Campanha, Ranking, Perfil
+- [x] Navbar mostra avatar do usuário logado ou botão "Entrar" se não logado
 - [ ] Rota `/play` que serve o `play.html` num iframe ou redireciona para `/play.html`
 - [ ] Loading states com Skeleton para todas as queries de banco
 - [ ] Error boundary com mensagem amigável para falhas de rede
@@ -191,3 +191,5 @@ Sugestões de próximos passos baseadas no impacto para o jogador:
 | 2026-05-11 | Ranking Global `/leaderboard` (top 50 + season toggle) | Sessão 6 |
 | 2026-05-11 | Campanha `/campaign` (3 fases seed + painel de objetivos no play.html) | Sessão 7 |
 | 2026-05-11 | Stall detection, sons Web Audio, sistema Coins/XP | Sessão 8 |
+| 2026-05-11 | Nó lançador (catapulta) e navbar React global | Sessão 9 |
+| 2026-05-11 | Looping 360° (nó loop) e speed trail (motion blur) | Sessão 10 |

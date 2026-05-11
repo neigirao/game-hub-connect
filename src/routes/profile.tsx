@@ -273,12 +273,15 @@ function NavLink({ href, label, active }: { href: string; label: string; active?
   );
 }
 
+type LastReward = { xp: number; coins: number } | null;
+
 export function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [blueprints, setBlueprints] = useState<Blueprint[]>([]);
   const [scores, setScores] = useState<ScoreEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [reward, setReward] = useState<LastReward>(null);
 
   useEffect(() => {
     async function load() {
@@ -310,6 +313,16 @@ export function ProfilePage() {
       setBlueprints((bpRes.data ?? []) as Blueprint[]);
       setScores((scoreRes.data ?? []) as ScoreEntry[]);
       setLoading(false);
+
+      // Check for recent reward from play.html (written to sessionStorage)
+      try {
+        const raw = sessionStorage.getItem("cc_last_reward");
+        if (raw) {
+          const r = JSON.parse(raw) as { xp: number; coins: number; ts: number };
+          if (Date.now() - r.ts < 60_000) setReward({ xp: r.xp, coins: r.coins });
+          sessionStorage.removeItem("cc_last_reward");
+        }
+      } catch (_) {}
     }
     load();
   }, []);
@@ -322,21 +335,33 @@ export function ProfilePage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
         @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:.9} }
+        @keyframes rewardSlide { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
 
-      {/* Navbar */}
-      <nav style={S.navbar}>
-        <a href="/home.html" style={S.navLogo}>
-          <div style={S.navBadge} />
-          <span>CRASH COASTER</span>
-        </a>
-        <div style={S.navSpacer} />
-        <NavLink href="/play.html" label="🎢 Jogar" />
-        <NavLink href="/profile" label="👤 Perfil" active />
-        <NavLink href="/login" label="Sair" />
-      </nav>
-
       <div style={S.content}>
+        {/* Reward flash banner */}
+        {reward && (
+          <div style={{
+            background: "linear-gradient(90deg,rgba(46,213,115,.2),rgba(255,165,2,.15))",
+            border: "2px solid #2ED573",
+            borderRadius: 16,
+            padding: "14px 20px",
+            display: "flex", alignItems: "center", gap: 14,
+            animation: "rewardSlide .4s ease both",
+          }}>
+            <span style={{ fontSize: 28 }}>🎉</span>
+            <div>
+              <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 16, color: "#2ED573" }}>
+                Recompensas da última corrida!
+              </div>
+              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: "#fff", marginTop: 2 }}>
+                <span style={{ color: "#FF6BD6" }}>✨ +{reward.xp} XP</span>
+                {"  "}
+                <span style={{ color: "#FFA502" }}>🪙 +{reward.coins} moedas</span>
+              </div>
+            </div>
+          </div>
+        )}
         {loading ? (
           <>
             <LoadingCard />
