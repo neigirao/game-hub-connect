@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageError } from "@/components/page-error";
 
@@ -248,6 +248,7 @@ export function LeaderboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [liveUpdate, setLiveUpdate] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -255,39 +256,59 @@ export function LeaderboardPage() {
     });
   }, []);
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    (async () => {
-      try {
-        const { data, error: fetchError } = await supabase
-          .from("leaderboard_with_profiles")
-          .select("*")
-          .eq("season", season)
-          .order("rank", { ascending: true })
-          .limit(50);
+  const fetchRows = useCallback(async (currentSeason: string, silent = false) => {
+    if (!silent) { setLoading(true); setError(null); }
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("leaderboard_with_profiles")
+        .select("*")
+        .eq("season", currentSeason)
+        .order("rank", { ascending: true })
+        .limit(50);
 
-        if (fetchError) throw fetchError;
+      if (fetchError) throw fetchError;
 
-        const base = (data ?? []) as LeaderboardRow[];
-        if (base.length === 0) { setRows([]); setLoading(false); return; }
+      const base = (data ?? []) as LeaderboardRow[];
+      if (base.length === 0) { setRows([]); setLoading(false); return; }
 
-        const { data: entries } = await supabase
-          .from("leaderboard_entries")
-          .select("id, blueprint_id")
-          .in("id", base.map((r) => r.id));
+      const { data: entries } = await supabase
+        .from("leaderboard_entries")
+        .select("id, blueprint_id")
+        .in("id", base.map((r) => r.id));
 
-        const bpMap: Record<string, string | null> = {};
-        for (const e of entries ?? []) bpMap[e.id] = e.blueprint_id ?? null;
+      const bpMap: Record<string, string | null> = {};
+      for (const e of entries ?? []) bpMap[e.id] = e.blueprint_id ?? null;
 
-        setRows(base.map((r) => ({ ...r, blueprint_id: bpMap[r.id] ?? null })));
-        setLoading(false);
-      } catch {
+      setRows(base.map((r) => ({ ...r, blueprint_id: bpMap[r.id] ?? null })));
+      setLoading(false);
+    } catch {
+      if (!silent) {
         setError("Não foi possível carregar o ranking. Verifique sua conexão.");
         setLoading(false);
       }
-    })();
-  }, [season, retryCount]);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchRows(season);
+  }, [season, retryCount, fetchRows]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("leaderboard_entries_changes")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "leaderboard_entries" },
+        () => {
+          setLiveUpdate(true);
+          fetchRows(season, true);
+          setTimeout(() => setLiveUpdate(false), 2000);
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [season, fetchRows]);
 
   const currentUserRank = rows.find((r) => r.user_id === currentUserId);
 
@@ -303,8 +324,23 @@ export function LeaderboardPage() {
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 16 }}>
           <div>
-            <h1 style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 32, margin: 0, lineHeight: 1 }}>
+            <h1 style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 32, margin: 0, lineHeight: 1, display: "flex", alignItems: "center", gap: 12 }}>
               🏆 Ranking Global
+              <span style={{
+                fontSize: 11,
+                fontFamily: "'JetBrains Mono',monospace",
+                fontWeight: 600,
+                letterSpacing: 1,
+                padding: "3px 8px",
+                borderRadius: 20,
+                background: liveUpdate ? "rgba(46,213,115,.25)" : "rgba(255,255,255,.08)",
+                color: liveUpdate ? "#2ED573" : "#B7AEE0",
+                border: `1px solid ${liveUpdate ? "#2ED573" : "rgba(255,255,255,.15)"}`,
+                transition: "all .3s",
+                verticalAlign: "middle",
+              }}>
+                {liveUpdate ? "● AO VIVO" : "● LIVE"}
+              </span>
             </h1>
             <div style={{ color: "#B7AEE0", fontSize: 14, marginTop: 6 }}>
               Top 50 corridas mais épicas de todos os tempos
