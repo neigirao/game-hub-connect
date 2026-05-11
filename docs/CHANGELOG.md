@@ -8,14 +8,31 @@
 
 ## [Não lançado] — Em desenvolvimento
 
-### Adicionado
+### Adicionado — Documentação viva
 - `CLAUDE.md` — documentação viva principal (lida automaticamente pelo Claude Code)
 - `docs/GDD.md` — Game Design Document condensado para consulta rápida
-- `docs/ARCHITECTURE.md` — arquitetura técnica detalhada
-- `docs/DECISIONS.md` — log de decisões arquiteturais (ADRs)
+- `docs/ARCHITECTURE.md` — arquitetura técnica detalhada com diagramas
+- `docs/DECISIONS.md` — log de decisões arquiteturais (ADRs 001–006)
 - `docs/CHANGELOG.md` — este arquivo
 - `.claude/settings.json` — configuração de hooks do Claude Code
 - `.claude/hooks/post-commit-docs.sh` — lembrete automático de atualização de docs pós-commit
+
+### Adicionado — Schema do banco de dados
+- `supabase/migrations/20260511000001_create_profiles.sql` — tabela de perfis com trigger automático de criação
+- `supabase/migrations/20260511000002_create_blueprints.sql` — tabela de pistas com RLS e índices
+- `supabase/migrations/20260511000003_create_levels.sql` — tabela de fases da campanha
+- `supabase/migrations/20260511000004_create_leaderboard.sql` — ranking global com view `leaderboard_with_profiles`
+- `src/integrations/supabase/types.ts` — tipos TypeScript completos para todas as tabelas
+
+### Adicionado — Save / Load / Share em play.html
+- Botão "Salvar" abre modal com campo de nome + lista de pistas salvas
+- Botão "Pistas" abre a mesma modal com pistas do usuário logado
+- Carregar pista da lista (substitui a pista atual no editor)
+- Deletar pista da lista (com confirmação)
+- Botão "Compartilhar" gera URL com track data em base64 — carregada automaticamente ao abrir o link
+- Submit automático de score ao `leaderboard_entries` após completar corrida
+- `client.ts` grava `cc_sb_url` e `cc_sb_key` no localStorage para uso pelo `play.html`
+- `play.html` inicializa Supabase JS via CDN (ESM) e reutiliza sessão OAuth do React app
 
 ---
 

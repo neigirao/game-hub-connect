@@ -163,19 +163,27 @@ state = {
 **Project ID:** `sekuurohkxqktpllebdd`
 **URL:** `https://sekuurohkxqktpllebdd.supabase.co`
 
-### Schema atual
-**Nenhuma tabela criada ainda.** O Supabase está conectado mas sem schema.
+### Schema (migrations em `supabase/migrations/`)
 
-### Schema planejado (GDD — ainda não implementado)
-```sql
-profiles          -- id, email, username, coins, xp, level, inventory, is_admin
-blueprints        -- id, creator_id, track_data, survival_rate, adrenaline_score, likes, downloads
-levels            -- id, budget, star_criteria, rewards
-leaderboard_entries -- user_id, score, season
-```
+| Tabela | Arquivo | Descrição |
+|---|---|---|
+| `profiles` | `20260511000001_create_profiles.sql` | Usuários — criado automaticamente via trigger |
+| `blueprints` | `20260511000002_create_blueprints.sql` | Pistas salvas pelos usuários |
+| `levels` | `20260511000003_create_levels.sql` | Fases da campanha (gerenciadas pelo admin) |
+| `leaderboard_entries` | `20260511000004_create_leaderboard.sql` | Ranking global e mensal |
 
-> Quando criar as tabelas: rodar migration via `supabase` CLI e regenerar types com
-> `npx supabase gen types typescript --project-id sekuurohkxqktpllebdd > src/integrations/supabase/types.ts`
+**View:** `leaderboard_with_profiles` — top scores com rank e username
+
+**Trigger:** `on_auth_user_created` — cria `profiles` automaticamente ao registrar usuário
+
+> Para aplicar: `npx supabase db push --project-id sekuurohkxqktpllebdd`
+> Para regenerar types: `npx supabase gen types typescript --project-id sekuurohkxqktpllebdd > src/integrations/supabase/types.ts`
+
+### Como play.html acessa o Supabase
+
+O `client.ts` grava `cc_sb_url` e `cc_sb_key` no `localStorage` após inicializar.
+O `play.html` lê essas chaves e inicializa o `@supabase/supabase-js` via CDN (ESM).
+A sessão OAuth já fica no localStorage do mesmo domínio — zero friction.
 
 ---
 
@@ -200,14 +208,19 @@ leaderboard_entries -- user_id, score, season
 - [x] Landing page
 - [x] Login com Google OAuth
 - [x] Infraestrutura Supabase conectada
+- [x] Schema do banco (profiles, blueprints, levels, leaderboard_entries)
+- [x] Tipos TypeScript gerados para todas as tabelas
+- [x] Salvar pistas no banco via modal em play.html
+- [x] Carregar pistas salvas (lista com load/delete)
+- [x] Compartilhar pista via URL (track data codificado em base64)
+- [x] Submit automático de score ao leaderboard após corrida
+- [x] Documentação viva (CLAUDE.md, docs/)
 
 ### Pendente (MVP restante)
-- [ ] Tabelas no banco (profiles, blueprints, levels, leaderboard)
-- [ ] Salvar/carregar pistas do usuário
-- [ ] Perfil de usuário com coins e XP
+- [ ] Aplicar migrations no Supabase (`supabase db push`)
+- [ ] Perfil de usuário com coins e XP (tela de perfil React)
 - [ ] Sistema de campanha com fases
-- [ ] Ranking global
-- [ ] Compartilhamento de pistas
+- [ ] Ranking global (página de leaderboard React)
 - [ ] Geração de GIF/replay
 - [ ] Som e música
 

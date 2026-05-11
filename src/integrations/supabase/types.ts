@@ -14,10 +14,229 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          id: string
+          email: string
+          username: string
+          coins: number
+          xp: number
+          level: number
+          inventory: Json
+          is_admin: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          email: string
+          username: string
+          coins?: number
+          xp?: number
+          level?: number
+          inventory?: Json
+          is_admin?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          username?: string
+          coins?: number
+          xp?: number
+          level?: number
+          inventory?: Json
+          is_admin?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      blueprints: {
+        Row: {
+          id: string
+          creator_id: string
+          name: string
+          track_data: Json
+          closed_loop: boolean
+          node_count: number
+          survival_rate: number
+          adrenaline_score: number
+          chaos_score: number
+          smoothness_score: number
+          creativity_score: number
+          best_total_score: number
+          is_public: boolean
+          likes: number
+          downloads: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          creator_id: string
+          name?: string
+          track_data: Json
+          closed_loop?: boolean
+          node_count?: number
+          survival_rate?: number
+          adrenaline_score?: number
+          chaos_score?: number
+          smoothness_score?: number
+          creativity_score?: number
+          best_total_score?: number
+          is_public?: boolean
+        }
+        Update: {
+          name?: string
+          track_data?: Json
+          closed_loop?: boolean
+          node_count?: number
+          survival_rate?: number
+          adrenaline_score?: number
+          chaos_score?: number
+          smoothness_score?: number
+          creativity_score?: number
+          best_total_score?: number
+          is_public?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blueprints_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      levels: {
+        Row: {
+          id: number
+          title: string
+          description: string | null
+          scenario: string
+          order_index: number
+          budget: number
+          max_nodes: number
+          star1_score: number
+          star2_score: number
+          star3_score: number
+          objectives: Json
+          reward_coins: number
+          reward_xp: number
+          starter_track: Json | null
+          is_published: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          title: string
+          description?: string | null
+          scenario?: string
+          order_index?: number
+          budget?: number
+          max_nodes?: number
+          star1_score?: number
+          star2_score?: number
+          star3_score?: number
+          objectives?: Json
+          reward_coins?: number
+          reward_xp?: number
+          starter_track?: Json | null
+          is_published?: boolean
+        }
+        Update: {
+          title?: string
+          description?: string | null
+          scenario?: string
+          order_index?: number
+          budget?: number
+          max_nodes?: number
+          star1_score?: number
+          star2_score?: number
+          star3_score?: number
+          objectives?: Json
+          reward_coins?: number
+          reward_xp?: number
+          starter_track?: Json | null
+          is_published?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      leaderboard_entries: {
+        Row: {
+          id: string
+          user_id: string
+          blueprint_id: string | null
+          total_score: number
+          survival_rate: number
+          adrenaline_score: number
+          chaos_score: number
+          smoothness_score: number
+          creativity_score: number
+          max_g_force: number
+          max_speed_kmh: number
+          laps_completed: number
+          season: string
+          submitted_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          blueprint_id?: string | null
+          total_score: number
+          survival_rate?: number
+          adrenaline_score?: number
+          chaos_score?: number
+          smoothness_score?: number
+          creativity_score?: number
+          max_g_force?: number
+          max_speed_kmh?: number
+          laps_completed?: number
+          season?: string
+        }
+        Update: {
+          total_score?: number
+          survival_rate?: number
+          adrenaline_score?: number
+          chaos_score?: number
+          smoothness_score?: number
+          creativity_score?: number
+          max_g_force?: number
+          max_speed_kmh?: number
+          laps_completed?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      leaderboard_with_profiles: {
+        Row: {
+          id: string | null
+          user_id: string | null
+          username: string | null
+          total_score: number | null
+          survival_rate: number | null
+          adrenaline_score: number | null
+          chaos_score: number | null
+          max_g_force: number | null
+          max_speed_kmh: number | null
+          laps_completed: number | null
+          season: string | null
+          submitted_at: string | null
+          rank: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
