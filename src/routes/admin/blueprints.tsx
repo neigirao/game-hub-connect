@@ -26,6 +26,15 @@ type Blueprint = {
 type TrackNode = { x: number; y: number; kind: string };
 type TrackData = { nodes?: TrackNode[]; loop?: boolean };
 
+const PAGE_SIZE = 50;
+
+const SORT_OPTIONS = [
+  { value: "created_at", label: "Mais recentes" },
+  { value: "likes", label: "Mais curtidas" },
+  { value: "best_total_score", label: "Maior score" },
+  { value: "node_count", label: "Mais nós" },
+];
+
 const S = {
   content: {
     maxWidth: 1100,
@@ -62,7 +71,18 @@ const S = {
     fontFamily: "'Inter',system-ui,sans-serif",
     fontSize: 14,
     outline: "none",
-    width: 280,
+    width: 220,
+  },
+  select: {
+    padding: "9px 14px",
+    background: "#1a0e50",
+    border: "2px solid rgba(255,255,255,.12)",
+    borderRadius: 10,
+    color: "#fff",
+    fontFamily: "'Inter',system-ui,sans-serif",
+    fontSize: 13,
+    outline: "none",
+    cursor: "pointer",
   },
 };
 
@@ -96,25 +116,31 @@ function MiniTrack({ data }: { data: unknown }) {
 
 export function AdminBlueprintsPage() {
   const [blueprints, setBlueprints] = useState<Blueprint[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "featured">("all");
+  const [sort, setSort] = useState("created_at");
+  const [page, setPage] = useState(0);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
-  async function fetchBlueprints() {
+  async function fetchBlueprints(currentSort: string, currentPage: number) {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: fetchError } = await supabase
+      const offset = currentPage * PAGE_SIZE;
+      const { data, error: fetchError, count } = await supabase
         .from("blueprints")
-        .select("*")
+        .select("*", { count: "exact" })
         .eq("is_public", true)
-        .order("created_at", { ascending: false })
-        .limit(100);
+        .order(currentSort, { ascending: false })
+        .range(offset, offset + PAGE_SIZE - 1);
 
       if (fetchError) throw fetchError;
       if (!data) { setLoading(false); return; }
+
+      setTotal(count ?? 0);
 
       const userIds = [...new Set(data.map((b) => b.creator_id))];
       const { data: profiles } = await supabase
@@ -132,7 +158,14 @@ export function AdminBlueprintsPage() {
     }
   }
 
-  useEffect(() => { fetchBlueprints(); }, []);
+  useEffect(() => {
+    setPage(0);
+  }, [sort]);
+
+  useEffect(() => {
+    fetchBlueprints(sort, page);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sort, page]);
 
   function showToast(msg: string, ok = true) {
     setToast({ msg, ok });
@@ -152,6 +185,7 @@ export function AdminBlueprintsPage() {
     if (error) { showToast(error.message, false); return; }
     showToast("Pista removida do acesso público.");
     setBlueprints((prev) => prev.filter((x) => x.id !== b.id));
+    setTotal((t) => t - 1);
   }
 
   const filtered = blueprints.filter((b) => {
@@ -159,6 +193,8 @@ export function AdminBlueprintsPage() {
     const matchFilter = filter === "all" || b.is_featured;
     return matchSearch && matchFilter;
   });
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
     <div style={S.content}>
@@ -169,20 +205,30 @@ export function AdminBlueprintsPage() {
       )}
       <style>{`@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}`}</style>
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12 }}>
         <div>
           <h1 style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 28, margin: 0 }}>🎢 Moderar Pistas</h1>
           <p style={{ color: "#B7AEE0", fontSize: 14, margin: "4px 0 0" }}>
-            {filtered.length} pistas públicas {filter === "featured" ? "(destaques)" : ""}
+            {total} pistas públicas {filter === "featured" ? "(destaques)" : ""}
+            {totalPages > 1 && ` · Página ${page + 1} de ${totalPages}`}
           </p>
         </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const, alignItems: "center" }}>
           <input
             style={S.input}
             placeholder="Buscar por nome ou usuário…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          <select
+            style={S.select}
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+          >
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
           <button onClick={() => setFilter(filter === "all" ? "featured" : "all")} style={S.btn(filter === "featured" ? "linear-gradient(180deg,#FFA502,#c97a00)" : "rgba(255,255,255,.1)")}>
             {filter === "featured" ? "⭐ Destaques" : "Todos"}
           </button>
@@ -191,7 +237,7 @@ export function AdminBlueprintsPage() {
 
       <div style={S.card}>
         {error ? (
-          <PageError message={error} onRetry={fetchBlueprints} />
+          <PageError message={error} onRetry={() => fetchBlueprints(sort, page)} />
         ) : loading ? (
           <div style={{ textAlign: "center", padding: 48, color: "#B7AEE0", fontFamily: "'Fredoka',system-ui,sans-serif", fontSize: 18 }}>Carregando pistas…</div>
         ) : filtered.length === 0 ? (
@@ -239,6 +285,29 @@ export function AdminBlueprintsPage() {
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            style={{ ...S.btn("rgba(255,255,255,.1)"), opacity: page === 0 ? 0.4 : 1 }}
+          >
+            ← Anterior
+          </button>
+          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: "#B7AEE0" }}>
+            {page + 1} / {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+            style={{ ...S.btn("rgba(255,255,255,.1)"), opacity: page >= totalPages - 1 ? 0.4 : 1 }}
+          >
+            Próxima →
+          </button>
+        </div>
+      )}
     </div>
   );
 }
