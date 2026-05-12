@@ -83,7 +83,7 @@
 - [x] **Stall detection:** exibir "PARADO! 😴" se o carrinho ficar parado por >3s e encerrar o run
 - [x] **Velocidade mínima reversa:** impedir que o carrinho volte indefinidamente com velocidade negativa alta
 - [x] **Novo nó: Lançador** — catapulta que expulsa o carrinho para o ar propositalmente (kind: `launcher`)
-- [ ] **Looping 360°** — nó especial que força o carrinho a fazer uma volta completa sem crash (kind: `loop`)
+- [x] **Looping 360°** — nó especial que força o carrinho a fazer uma volta completa sem crash (kind: `loop`, tecla G) — física circular com gravidade real, speed mínima de 50 km/h, crash se lento
 - [x] **Efeito de túnel:** se o carrinho passa por um ponto muito rápido, deixar rastro de velocidade (motion blur simples)
 - [x] **Sons** — Web Audio API com 3 sons: trilho normal, booster, crash (sem assets externos, gerado por síntese)
 
