@@ -179,6 +179,24 @@ export function AdminBlueprintsPage() {
     setBlueprints((prev) => prev.map((x) => x.id === b.id ? { ...x, is_featured: !x.is_featured } : x));
   }
 
+  async function setDailyPick(b: Blueprint) {
+    const today = new Date().toISOString().slice(0, 10);
+    const title = window.prompt("Título do Desafio do Dia:", `Desafio — ${b.name}`);
+    if (title === null) return;
+    const description = window.prompt("Descrição do desafio:", "Construa a pista mais caótica possível e supere o score!");
+    if (description === null) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    const { error } = await supabase.from("daily_picks").upsert({
+      date: today,
+      blueprint_id: b.id,
+      title: title || `Desafio — ${b.name}`,
+      description: description || "Construa a pista mais caótica possível!",
+      created_by: session?.user.id,
+    }, { onConflict: "date" });
+    if (error) { showToast(error.message, false); return; }
+    showToast(`📅 "${b.name}" definida como pista do dia!`);
+  }
+
   async function removeBlueprint(b: Blueprint) {
     if (!window.confirm(`Remover a pista "${b.name}" de ${b.creator_username ?? "Anônimo"}? Ela ficará invisível para outros jogadores.`)) return;
     const { error } = await supabase.from("blueprints").update({ is_public: false }).eq("id", b.id);
@@ -273,6 +291,9 @@ export function AdminBlueprintsPage() {
                   >
                     ▶ Jogar
                   </a>
+                  <button onClick={() => setDailyPick(b)} style={S.btn("rgba(112,161,255,.2)")} title="Definir como Desafio do Dia">
+                    📅 Daily
+                  </button>
                   <button onClick={() => toggleFeatured(b)} style={S.btn(b.is_featured ? "linear-gradient(180deg,#FFA502,#c97a00)" : "rgba(255,165,2,.15)")} title={b.is_featured ? "Remover destaque" : "Marcar como destaque"}>
                     {b.is_featured ? "★ Destaque" : "☆ Destacar"}
                   </button>

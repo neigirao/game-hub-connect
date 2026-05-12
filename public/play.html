@@ -384,6 +384,15 @@
   .rc-row-fill{height:100%;width:0%;border-radius:5px;transition:width .7s cubic-bezier(.22,1,.36,1)}
   .rc-row-val{width:26px;font-family:'JetBrains Mono';font-size:11px;font-weight:700;text-align:right}
   .rc-buttons{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .bbtn.download{background:linear-gradient(180deg,#2ED573,#1a8a46);border-color:#7fffc4}
+  .rc-level-ranking{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)}
+  .rc-ranking-title{font-family:'Fredoka';font-weight:700;font-size:13px;color:#B7AEE0;margin-bottom:8px;text-align:center;letter-spacing:1px;text-transform:uppercase}
+  .rc-rank-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0}
+  .rc-rank-pos{width:20px;font-family:'JetBrains Mono';font-weight:700;font-size:11px;color:#FFA502;text-align:center;flex-shrink:0}
+  .rc-rank-name{flex:1;font-family:'Fredoka';font-weight:600;color:#e0d8ff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rc-rank-score{font-family:'JetBrains Mono';font-weight:700;font-size:12px;color:#2ED573}
+  .rc-rank-row.me .rc-rank-name{color:#FF6BD6}
+  .rc-rank-row.me .rc-rank-score{color:#FF6BD6}
 
   /* ===== Replay flash ===== */
   .replay{
@@ -711,6 +720,10 @@
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M8.5 10.5l7-3M8.5 13.5l7 3"/></svg>
         Compartilhar
       </button>
+      <button class="bbtn download" id="rcDownloadBtn" style="display:none">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 16l-5-5 1.4-1.4 2.6 2.6V4h2v8.2l2.6-2.6L17 11l-5 5zm-7 4v-2h14v2H5z"/></svg>
+        Salvar Vídeo
+      </button>
       <button class="bbtn reset" id="rcBuildBtn">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
         Editar Pista
@@ -720,6 +733,7 @@
         Jogar de Novo!
       </button>
     </div>
+    <div class="rc-level-ranking" id="rcLevelRanking" style="display:none"></div>
   </div>
 </div>
 
@@ -747,6 +761,9 @@ let sbClient = null;
 let currentUser = null;
 let currentLevelId = null;    // set when loaded via ?level= param
 let currentBlueprintId = null; // set when a blueprint is saved or loaded
+let currentDailyDate = null;  // set when loaded via ?daily= param
+let _mediaRecorder = null;
+let _recordedChunks = [];
 
 // Auth chip (top-right corner)
 const _authChip = document.createElement('div');
@@ -934,6 +951,16 @@ async function loadBlueprintFromUrl() {
   }
 }
 
+// ---- LOAD FROM ?daily= URL PARAM (pista do dia) ----
+function loadDailyFromUrl() {
+  const params = new URLSearchParams(location.search);
+  const daily = params.get('daily');
+  if (daily) {
+    currentDailyDate = daily;
+    showToast('🏁 Desafio do Dia! Sua pontuação entra no ranking diário.');
+  }
+}
+
 // ---- LOAD FROM ?level= URL PARAM ----
 async function loadLevelFromUrl() {
   const params = new URLSearchParams(location.search);
@@ -1101,7 +1128,7 @@ async function submitScore(blueprintId = null) {
      state.scores.smoothness + state.scores.creativity) / 5
   );
   if (total === 0) return;
-  await sbClient.from('leaderboard_entries').insert({
+  const entry = {
     user_id: currentUser.id,
     blueprint_id: blueprintId,
     level_id: currentLevelId,
@@ -1115,7 +1142,12 @@ async function submitScore(blueprintId = null) {
     max_speed_kmh: Math.round(state.maxSpeed * 3.6),
     laps_completed: state.laps,
     season: 'global',
-  });
+  };
+  await sbClient.from('leaderboard_entries').insert(entry);
+  // Also submit to daily leaderboard if playing today's daily pick
+  if (currentDailyDate && blueprintId) {
+    await sbClient.from('leaderboard_entries').insert({ ...entry, season: 'daily-' + currentDailyDate });
+  }
 }
 
 async function awardRewards(crashed) {
@@ -2475,6 +2507,7 @@ function toggleObj(el, ok){
 function completeRun(crashed = false){
   stopRailSound();
   if (crashed) playCrashSound();
+  stopCanvasRecording();
   const total = Math.round((state.scores.survival + state.scores.adrenaline + state.scores.chaos + state.scores.smoothness + state.scores.creativity) / 5);
   if (total > state.bestScore){
     state.bestScore = total;
@@ -2512,6 +2545,28 @@ function showRunComplete(crashed = false){
     </div>`).join('');
 
   modal.classList.add('show');
+
+  // Video download button
+  const downloadBtn = document.getElementById('rcDownloadBtn');
+  downloadBtn.style.display = 'none';
+  if (crashed && _recordedChunks.length > 0) {
+    const chunks = [..._recordedChunks];
+    _recordedChunks = [];
+    const blob = new Blob(chunks, { type: 'video/webm' });
+    const videoUrl = URL.createObjectURL(blob);
+    downloadBtn.style.display = '';
+    downloadBtn.onclick = () => {
+      const a = document.createElement('a');
+      a.href = videoUrl;
+      a.download = `crash-coaster-${new Date().toISOString().slice(0,10)}.webm`;
+      a.click();
+    };
+  } else {
+    _recordedChunks = [];
+  }
+
+  // Level ranking
+  loadLevelRanking();
 
   // Animate score count-up
   let cur = 0;
@@ -2644,6 +2699,25 @@ window.addEventListener('keydown', e=>{
 });
 
 // ---------------------------- MODE TOGGLE
+function startCanvasRecording() {
+  _recordedChunks = [];
+  if (typeof MediaRecorder === 'undefined' || !canvas.captureStream) return;
+  try {
+    const stream = canvas.captureStream(30);
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
+    _mediaRecorder = new MediaRecorder(stream, { mimeType });
+    _mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) _recordedChunks.push(e.data); };
+    _mediaRecorder.start(200);
+  } catch(e) { console.warn('[CC] MediaRecorder failed:', e); }
+}
+
+function stopCanvasRecording() {
+  if (_mediaRecorder && _mediaRecorder.state !== 'inactive') {
+    _mediaRecorder.stop();
+    _mediaRecorder = null;
+  }
+}
+
 function setMode(m){
   state.mode = m;
   stage.classList.toggle('mode-build', m==='build');
@@ -2652,10 +2726,12 @@ function setMode(m){
   const launchBtn = document.getElementById('launchBtn');
   if (m === 'test'){
     startTest();
+    startCanvasRecording();
     launchBtn.classList.add('stop');
     launchBtn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> PARAR';
   } else {
     stopRailSound();
+    stopCanvasRecording();
     stopTest();
     launchBtn.classList.remove('stop');
     launchBtn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> LANÇAR!';
@@ -2728,12 +2804,41 @@ document.getElementById('rcPlayAgainBtn').addEventListener('click', ()=>{
   setTimeout(() => setMode('test'), 100);
 });
 
+// ---- LEVEL RANKING (top-5 para a fase atual) ----
+async function loadLevelRanking() {
+  const el = document.getElementById('rcLevelRanking');
+  el.style.display = 'none';
+  el.innerHTML = '';
+  if (!currentLevelId || !sbClient) return;
+  try {
+    const { data } = await sbClient
+      .from('leaderboard_entries')
+      .select('total_score,user_id,profiles!user_id(username)')
+      .eq('level_id', currentLevelId)
+      .eq('season', 'global')
+      .order('total_score', { ascending: false })
+      .limit(5);
+    if (!data || data.length === 0) return;
+    el.style.display = '';
+    el.innerHTML = '<div class="rc-ranking-title">🏆 Top da Fase</div>' +
+      data.map((r, i) => {
+        const isMe = currentUser && r.user_id === currentUser.id;
+        return `<div class="rc-rank-row${isMe ? ' me' : ''}">
+          <span class="rc-rank-pos">${i+1}</span>
+          <span class="rc-rank-name">${r.profiles?.username ?? 'Anônimo'}</span>
+          <span class="rc-rank-score">${r.total_score} pts</span>
+        </div>`;
+      }).join('');
+  } catch(e) { console.warn('[CC] loadLevelRanking failed:', e); }
+}
+
 // ---------------------------- BOOT
 resize(); // initialize canvas + cam before loading track
 const loadedFromUrl = loadTrackFromUrl();
 if (loadedFromUrl) { pushHistory(); } else { initDefaultTrack(); }
 loadLevelFromUrl();    // async: fetches level data and shows objectives panel if ?level= present
 loadBlueprintFromUrl(); // async: loads blueprint by UUID if ?blueprint= param present
+loadDailyFromUrl();     // reads ?daily= param for daily challenge tracking
 updateScoreUI();
 requestAnimationFrame(tick);
 
