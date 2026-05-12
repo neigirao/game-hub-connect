@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { PageError } from "@/components/page-error";
+import { SHOP_ITEMS } from "./shop";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -552,6 +553,46 @@ export function ProfilePage() {
               <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
               LANÇAR AGORA!
             </a>
+
+            {/* Badges */}
+            {(() => {
+              const inv = Array.isArray(profile.inventory) ? profile.inventory as string[] : [];
+              const owned = SHOP_ITEMS.filter((i) => i.category === "badge" && inv.includes(i.id));
+              if (owned.length === 0) return null;
+              return (
+                <div style={S.card}>
+                  <div style={S.cardTitle}>
+                    <div style={{ ...S.pip, background: "#FFA502", boxShadow: "0 0 0 3px rgba(255,165,2,.25)" }} />
+                    Conquistas
+                  </div>
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const }}>
+                    {owned.map((badge) => (
+                      <div
+                        key={badge.id}
+                        title={badge.description}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          background: `${badge.color}18`,
+                          border: `2px solid ${badge.color}44`,
+                          borderRadius: 12,
+                          padding: "8px 14px",
+                        }}
+                      >
+                        <span style={{ fontSize: 22 }}>{badge.emoji}</span>
+                        <div>
+                          <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 13, color: badge.color }}>
+                            {badge.name}
+                          </div>
+                          <div style={{ fontSize: 10, color: "#B7AEE0" }}>{badge.description}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Pistas salvas */}
             <div style={S.card}>
