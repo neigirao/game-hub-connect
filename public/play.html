@@ -2702,10 +2702,21 @@ document.getElementById('runCompleteModal').addEventListener('click', e => {
   if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
 });
 document.getElementById('rcShareBtn').addEventListener('click', ()=>{
-  const url = buildShareUrl();
+  const total = Math.round((state.scores.survival + state.scores.adrenaline + state.scores.chaos + state.scores.smoothness + state.scores.creativity) / 5);
+  const stars = total >= 75 ? 3 : total >= 55 ? 2 : total >= 25 ? 1 : 0;
+  const p = new URLSearchParams({
+    score: total,
+    stars,
+    speed: Math.round(state.maxSpeed * 3.6),
+    g: state.maxG.toFixed(1),
+    s: Math.round(state.scores.survival),
+    a: Math.round(state.scores.adrenaline),
+    c: Math.round(state.scores.chaos),
+  });
+  const url = `${location.origin}/share?${p.toString()}`;
   navigator.clipboard.writeText(url)
-    .then(() => showToast('Link copiado!'))
-    .catch(() => showToast('URL: ' + url.slice(0,50), true));
+    .then(() => showToast('Link do resultado copiado! 🔗'))
+    .catch(() => showToast('URL: ' + url.slice(0, 50), true));
 });
 document.getElementById('rcBuildBtn').addEventListener('click', ()=>{
   document.getElementById('runCompleteModal').classList.remove('show');

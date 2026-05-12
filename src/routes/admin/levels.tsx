@@ -120,11 +120,12 @@ function MiniTrack({ nodes, loop }: { nodes: Array<{ x: number; y: number; kind:
   );
 }
 
-function LevelRow({ level, onEdit, onTogglePublish, onDelete }: {
+function LevelRow({ level, onEdit, onTogglePublish, onDelete, onDuplicate }: {
   level: Level;
   onEdit: (l: Level) => void;
   onTogglePublish: (l: Level) => void;
   onDelete: (l: Level) => void;
+  onDuplicate: (l: Level) => void;
 }) {
   const track = level.starter_track as StarterTrack | null;
   const nodes = track?.nodes ?? [];
@@ -165,6 +166,7 @@ function LevelRow({ level, onEdit, onTogglePublish, onDelete }: {
           {level.is_published ? "Publicado" : "Rascunho"}
         </span>
         <button onClick={() => onEdit(level)} style={S.btn("linear-gradient(180deg,#70A1FF,#3a6fd8)")}>Editar</button>
+        <button onClick={() => onDuplicate(level)} style={S.btn("rgba(255,255,255,.1)")} title="Duplicar como rascunho">📋</button>
         <button onClick={() => onTogglePublish(level)} style={S.btn(level.is_published ? "linear-gradient(180deg,#FF4757,#a02030)" : "linear-gradient(180deg,#2ED573,#1a8a46)")}>
           {level.is_published ? "Despublicar" : "Publicar"}
         </button>
@@ -473,6 +475,28 @@ export function AdminLevelsPage() {
     await fetchLevels();
   }
 
+  async function handleDuplicate(l: Level) {
+    const maxOrder = levels.length > 0 ? Math.max(...levels.map((x) => x.order_index)) : 0;
+    const payload = {
+      title: `Cópia de ${l.title}`,
+      description: l.description,
+      scenario: l.scenario,
+      order_index: maxOrder + 1,
+      star1_score: l.star1_score,
+      star2_score: l.star2_score,
+      star3_score: l.star3_score,
+      reward_coins: l.reward_coins,
+      reward_xp: l.reward_xp,
+      objectives: l.objectives,
+      starter_track: l.starter_track,
+      is_published: false,
+    };
+    const { error } = await supabase.from("levels").insert(payload);
+    if (error) { showToast(error.message, false); return; }
+    showToast("Fase duplicada como rascunho!");
+    await fetchLevels();
+  }
+
   async function handleDelete(l: Level) {
     if (!window.confirm(`Deletar a fase "${l.title}"? Esta ação não pode ser desfeita.`)) return;
     const { error } = await supabase.from("levels").delete().eq("id", l.id);
@@ -551,7 +575,7 @@ export function AdminLevelsPage() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {published.map((l) => (
-                  <LevelRow key={l.id} level={l} onEdit={openEdit} onTogglePublish={handleTogglePublish} onDelete={handleDelete} />
+                  <LevelRow key={l.id} level={l} onEdit={openEdit} onTogglePublish={handleTogglePublish} onDelete={handleDelete} onDuplicate={handleDuplicate} />
                 ))}
               </div>
             </div>
@@ -565,7 +589,7 @@ export function AdminLevelsPage() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {drafts.map((l) => (
-                  <LevelRow key={l.id} level={l} onEdit={openEdit} onTogglePublish={handleTogglePublish} onDelete={handleDelete} />
+                  <LevelRow key={l.id} level={l} onEdit={openEdit} onTogglePublish={handleTogglePublish} onDelete={handleDelete} onDuplicate={handleDuplicate} />
                 ))}
               </div>
             </div>
