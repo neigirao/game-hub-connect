@@ -254,6 +254,42 @@
 
 ---
 
+### ✅ 🟠 Tier 2 — Retenção e viralidade
+
+- [x] **E** — Gravação de vídeo do crash via MediaRecorder API (canvas.captureStream → .webm)
+  - Inicia ao entrar em modo Testar, para no completeRun
+  - Botão "Salvar Vídeo" aparece no modal de resultado apenas em crashes
+- [x] **F** — Leaderboard por fase no modal pós-corrida
+  - Top-5 do `leaderboard_entries` filtrado por `level_id` + `season=global`
+  - Row com highlight "você" para o usuário atual
+- [x] **G** — Desafio do Dia (`/challenge`)
+  - Tabela `daily_picks` (PK: date, FK: blueprint_id)
+  - Admin define pista do dia via botão "📅 Daily" em `/admin/blueprints`
+  - Página `/challenge` mostra a pista + leaderboard diário em tempo real
+  - `submitScore` submete com `season='daily-YYYY-MM-DD'` quando `?daily=` está na URL
+
+**Concluído em:** Sessão 14 — 2026-05-12
+
+---
+
+### 🟢 Conjunto de peças e customização de cenário
+
+**Contexto:** O editor hoje tem 5 tipos de nó básicos (normal, booster, brake, launcher, loop). A ideia é expandir com elementos visuais e funcionais que tornam cada pista mais única e compartilhável.
+
+- [ ] **Fogos de artifício** — nó especial que dispara partículas coloridas ao ser atingido
+- [ ] **Elementos de água** — seção "aquática" com efeito de respingo e desaceleração realista
+- [ ] **Coqueiros e palmeiras** — decoração de cenário tipo "Praia" (apenas visual)
+- [ ] **Objetos temáticos de montanha-russa** — arco de entrada, placas de aviso, cabine de controle
+- [ ] **Skins de trilho** — alterar visual do trilho (madeira, metálico, neon)
+- [ ] **Novos carrinhos** — formas diferentes além do padrão (trem, foguete, nave)
+- [ ] **Skins compráveis na loja** — integrar novos carrinhos ao sistema de coins/inventory
+- [ ] **Cenários alternáveis** — trocar background visual da pista (parque, vulcão, praia, espaço)
+  - Comprar cenário na loja → aplica via `localStorage` antes de abrir `play.html`
+
+**Critério de aceite:** Pelo menos 3 elementos novos de decoração funcionando no editor. Skins integradas ao sistema de loja existente.
+
+---
+
 ### 🟢 Replay e compartilhamento avançado
 
 - [ ] Gravar posições do carrinho a cada frame durante o run (array de {x, y, angle, t})
