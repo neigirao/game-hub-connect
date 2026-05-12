@@ -400,7 +400,7 @@ export function CampaignPage() {
 
         if (lvlsRes.error) throw lvlsRes.error;
 
-        setLevels((lvlsRes.data ?? []) as Level[]);
+        setLevels((lvlsRes.data ?? []) as unknown as Level[]);
 
         const map: Record<number, number> = {};
         for (const row of (scoresRes.data ?? []) as Array<{ level_id: number; total_score: number }>) {

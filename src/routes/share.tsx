@@ -11,16 +11,14 @@ export const Route = createFileRoute("/share")({
     a: Number(search.a ?? 0),
     c: Number(search.c ?? 0),
   }),
-  head: ({ search }) => ({
+  head: () => ({
     meta: [
-      { title: `Score ${search.score} ${"⭐".repeat(search.stars)} — Crash Coaster` },
-      { name: "description", content: `Consegui ${search.score} pontos em Crash Coaster! Velocidade: ${search.speed} km/h, G-force: ${search.g}G. Você consegue superar?` },
-      { property: "og:title", content: `Score ${search.score} ${"⭐".repeat(search.stars)} — Crash Coaster` },
-      { property: "og:description", content: `Consegui ${search.score} pontos! Velocidade: ${search.speed} km/h, G-force: ${search.g}G. Venha jogar!` },
+      { title: "Meu Score — Crash Coaster" },
+      { name: "description", content: "Veja meu score em Crash Coaster e tente superar!" },
+      { property: "og:title", content: "Meu Score — Crash Coaster 🎢" },
+      { property: "og:description", content: "Score gerado no Crash Coaster. Venha superar!" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: `Score ${search.score} — Crash Coaster 🎢` },
-      { name: "twitter:description", content: `Consegui ${search.score} pontos com ${search.stars} estrelas! Velocidade: ${search.speed} km/h. Você supera?` },
     ],
   }),
   component: SharePage,
