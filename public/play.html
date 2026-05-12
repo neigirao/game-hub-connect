@@ -126,6 +126,9 @@
   .tool[data-tool="spring"].active{background:linear-gradient(180deg,#A8FF78,#4ca800);border-color:#A8FF78}
   .tool[data-tool="firework"].active{background:linear-gradient(180deg,#FF6B35,#a83000);border-color:#FF6B35}
   .tool[data-tool="ice"].active{background:linear-gradient(180deg,#B3ECFF,#3a9cc7);border-color:#B3ECFF}
+  .tool[data-tool="inversor"].active{background:linear-gradient(180deg,#D946EF,#8b0a9e);border-color:#D946EF}
+  .tool[data-tool="cannon"].active{background:linear-gradient(180deg,#06B6D4,#0369a1);border-color:#06B6D4}
+  .tool[data-tool="portal"].active{background:linear-gradient(180deg,#8B5CF6,#4c1d95);border-color:#8B5CF6}
   .tool[data-tool="delete"].active{background:linear-gradient(180deg,#70A1FF,#3b6acc);border-color:#70A1FF}
   .tool:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
   .tool svg{width:26px;height:26px;display:block}
@@ -517,6 +520,18 @@
     <button class="tool" data-tool="ice" title="Gelo (Z)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="4" x2="12" y2="20"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="6.3" y1="6.3" x2="17.7" y2="17.7"/><line x1="17.7" y1="6.3" x2="6.3" y2="17.7"/><line x1="9" y1="4.5" x2="12" y2="8"/><line x1="15" y1="4.5" x2="12" y2="8"/></svg>
       <span class="label">GELO</span>
+    </button>
+    <button class="tool" data-tool="inversor" title="Inversor de Gravidade (I)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12a7 7 0 0 0 14 0"/><polyline points="12,3 9,6 12,9"/><line x1="12" y1="3" x2="12" y2="9"/></svg>
+      <span class="label">INV</span>
+    </button>
+    <button class="tool" data-tool="cannon" title="Canhão (C)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="12" r="4"/><line x1="11" y1="12" x2="20" y2="12"/><polyline points="16,8 20,12 16,16"/></svg>
+      <span class="label">CANHÃO</span>
+    </button>
+    <button class="tool" data-tool="portal" title="Portal (W)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><ellipse cx="8" cy="12" rx="3" ry="6"/><ellipse cx="16" cy="12" rx="3" ry="6"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
+      <span class="label">PORTAL</span>
     </button>
     <div class="divider"></div>
     <button class="tool" data-tool="delete" title="Deletar nó (D)">
@@ -1608,6 +1623,9 @@ function drawTrack(path){
       : k === 'spring' ? 'rgba(168,255,120,0.5)'
       : k === 'firework' ? 'rgba(255,107,53,0.5)'
       : k === 'ice' ? 'rgba(179,236,255,0.5)'
+      : k === 'inversor' ? 'rgba(217,70,239,0.6)'
+      : k === 'cannon' ? 'rgba(6,182,212,0.6)'
+      : k === 'portal' ? 'rgba(139,92,246,0.6)'
       : 'rgba(255,71,87,0.5)';
     ctx.beginPath();
     ctx.moveTo(pts[i].x, pts[i].y);
@@ -1690,6 +1708,9 @@ function drawNodes(){
     else if (n.kind === 'spring') col = '#A8FF78';
     else if (n.kind === 'firework') col = '#FF6B35';
     else if (n.kind === 'ice') col = '#B3ECFF';
+    else if (n.kind === 'inversor') col = '#D946EF';
+    else if (n.kind === 'cannon') col = '#06B6D4';
+    else if (n.kind === 'portal') col = '#8B5CF6';
     ctx.fillStyle = col;
     ctx.beginPath();
     ctx.arc(n.x, n.y, isDrag?14:(isHover?12:10), 0, Math.PI*2);
@@ -1767,13 +1788,54 @@ function drawNodes(){
         const a = r * Math.PI / 3;
         ctx.moveTo(n.x + Math.cos(a) * 7, n.y + Math.sin(a) * 7);
         ctx.lineTo(n.x - Math.cos(a) * 7, n.y - Math.sin(a) * 7);
-        // crossbars
         const bx = Math.cos(a) * 4, by = Math.sin(a) * 4;
         const px = -Math.sin(a) * 3, py = Math.cos(a) * 3;
         ctx.moveTo(n.x + bx + px, n.y + by + py); ctx.lineTo(n.x + bx - px, n.y + by - py);
         ctx.moveTo(n.x - bx + px, n.y - by + py); ctx.lineTo(n.x - bx - px, n.y - by - py);
       }
       ctx.stroke();
+    }
+    // inversor: arc on top (∩ = upside down section indicator)
+    if (n.kind === 'inversor'){
+      ctx.strokeStyle = '#0E0726';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(n.x, n.y + 2, 6, Math.PI, 0); // top arc
+      ctx.stroke();
+      // small down arrows on both sides
+      ctx.beginPath();
+      ctx.moveTo(n.x - 6, n.y + 4); ctx.lineTo(n.x - 6, n.y + 7);
+      ctx.moveTo(n.x + 6, n.y + 4); ctx.lineTo(n.x + 6, n.y + 7);
+      ctx.stroke();
+    }
+    // cannon: horizontal arrow with circle
+    if (n.kind === 'cannon'){
+      ctx.strokeStyle = '#0E0726';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(n.x - 4, n.y, 3, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(n.x - 1, n.y); ctx.lineTo(n.x + 7, n.y);
+      ctx.moveTo(n.x + 4, n.y - 3); ctx.lineTo(n.x + 7, n.y); ctx.lineTo(n.x + 4, n.y + 3);
+      ctx.stroke();
+    }
+    // portal: two small concentric rings (entry/exit)
+    if (n.kind === 'portal'){
+      ctx.strokeStyle = '#0E0726';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(n.x - 4, n.y, 4, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(n.x + 4, n.y, 4, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2,2]);
+      ctx.beginPath(); ctx.moveTo(n.x - 4, n.y - 4); ctx.lineTo(n.x + 4, n.y - 4); ctx.stroke();
+      ctx.setLineDash([]);
     }
     // index label for first / last
     if (i === 0 || i === state.nodes.length-1){
@@ -2460,9 +2522,10 @@ function tick(){
       const g = 900; // px/s²
       const slope = sample.ty; // already normalized, ≈ sin(angle)
       let a = g * slope; // pulls in +s direction when going down
-      // booster/brake
+      // booster/brake/inversor
       if (sample.kind === 'booster') a += 1200;
       if (sample.kind === 'brake')  a -= 1400;
+      if (sample.kind === 'inversor') a -= 2 * g * slope; // reverse gravity: net = -g*slope
       // mild rolling friction
       a -= 0.4 * c.v;
 
@@ -2616,6 +2679,66 @@ function tick(){
         c.v *= 0.9998;
         if (Math.random() < 0.3) spawnSparks(c.x, c.y, 1, '#B3ECFF');
       }
+
+      // Inversor — reversed gravity zone, requires 50+ km/h entry speed
+      if (sample.kind === 'inversor'){
+        if (!c._inversorIn){
+          c._inversorIn = true;
+          if (Math.abs(c.v) < 280){ // ~50 km/h — not enough speed
+            c.flying = true;
+            const dir = c.lastDir || {x:1, y:0};
+            c.vx = dir.x * c.v;
+            c.vy = 700;
+            setFailLevel(Math.max(state.failLevel, 7));
+            showToast('🙃 SEM VELOCIDADE PARA INVERTER!', '#FF4757');
+          } else {
+            showToast('🙃 INVERTIDO!', '#D946EF');
+            spawnSparks(c.x, c.y, 12, '#D946EF');
+            state.scores.adrenaline = Math.min(100, state.scores.adrenaline + 15);
+          }
+        }
+        if (Math.random() < 0.5) spawnSparks(c.x, c.y, 1, '#D946EF');
+      }
+      if (c._inversorIn && sample.kind !== 'inversor') c._inversorIn = false;
+
+      // Cannon — extreme horizontal launch (faster and more horizontal than launcher)
+      if (sample.kind === 'cannon' && !c._cannonCool){
+        c._cannonCool = true;
+        c.flying = true;
+        const dir = c.lastDir || {x:1, y:0};
+        c.vx = dir.x * 3500;
+        c.vy = -200;
+        spawnSparks(c.x, c.y, 20, '#06B6D4');
+        spawnSmoke(c.x, c.y, 8);
+        showToast('💥 CANHÃO!', '#06B6D4');
+        playBoostSound();
+      }
+      if (c._cannonCool && sample.kind !== 'cannon') c._cannonCool = false;
+
+      // Portal — teleport to the other portal node
+      if (sample.kind === 'portal' && !c._portalCool){
+        c._portalCool = true;
+        const portalNodes = state.nodes.filter(n => n.kind === 'portal');
+        if (portalNodes.length >= 2){
+          const distFn = n => Math.hypot(n.x - c.x, n.y - c.y);
+          const sorted = [...portalNodes].sort((a, b) => distFn(a) - distFn(b));
+          const exitPortal = sorted[1]; // second closest = exit
+          let minD = Infinity, exitS = 0;
+          for (let pi = 0; pi < path.pts.length; pi++){
+            const d = Math.hypot(path.pts[pi].x - exitPortal.x, path.pts[pi].y - exitPortal.y);
+            if (d < minD){ minD = d; exitS = path.lens[pi]; }
+          }
+          c.s = exitS + 30; // skip past exit portal
+          const exitSam = sampleAt(path, c.s);
+          c.x = exitSam.x; c.y = exitSam.y;
+          spawnConfetti(c.x, c.y, 30);
+          spawnSparks(c.x, c.y, 18, '#8B5CF6');
+          showToast('🌀 TELEPORTE!', '#8B5CF6');
+          state.scores.chaos = Math.min(100, state.scores.chaos + 10);
+          state.scores.creativity = Math.min(100, state.scores.creativity + 15);
+        }
+      }
+      if (c._portalCool && sample.kind !== 'portal') c._portalCool = false;
 
       // End of track
       if (c.s >= path.totalLen){
@@ -2940,6 +3063,15 @@ canvas.addEventListener('mousedown', e=>{
   } else if (state.tool === 'ice' && idx >= 0){
     state.nodes[idx].kind = state.nodes[idx].kind === 'ice' ? 'normal' : 'ice';
     pushHistory();
+  } else if (state.tool === 'inversor' && idx >= 0){
+    state.nodes[idx].kind = state.nodes[idx].kind === 'inversor' ? 'normal' : 'inversor';
+    pushHistory();
+  } else if (state.tool === 'cannon' && idx >= 0){
+    state.nodes[idx].kind = state.nodes[idx].kind === 'cannon' ? 'normal' : 'cannon';
+    pushHistory();
+  } else if (state.tool === 'portal' && idx >= 0){
+    state.nodes[idx].kind = state.nodes[idx].kind === 'portal' ? 'normal' : 'portal';
+    pushHistory();
   } else if (state.tool === 'delete' && idx >= 0){
     state.nodes.splice(idx, 1);
     pushHistory();
@@ -2993,7 +3125,7 @@ window.addEventListener('keydown', e=>{
     if (state.mode === 'build') undo();
     return;
   }
-  const map = {a:'add', m:'move', b:'booster', f:'brake', n:'launcher', g:'loop-node', t:'spring', q:'firework', z:'ice', d:'delete'};
+  const map = {a:'add', m:'move', b:'booster', f:'brake', n:'launcher', g:'loop-node', t:'spring', q:'firework', z:'ice', i:'inversor', c:'cannon', w:'portal', d:'delete'};
   if (map[e.key]){
     state.tool = map[e.key];
     document.querySelectorAll('#tools .tool').forEach(x=>{
