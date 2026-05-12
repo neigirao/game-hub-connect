@@ -179,7 +179,27 @@ function MiniTrack({ nodes, loop }: { nodes: Array<{ x: number; y: number; kind:
   );
 }
 
-function LevelCard({ level, index, bestScore }: { level: Level; index: number; bestScore: number }) {
+const LOCK_STARS = [0, 1, 2]; // fases 0,1,2: estrelas necessárias na fase anterior
+
+function getStars(score: number, level: Level): number {
+  return score >= level.star3_score ? 3 : score >= level.star2_score ? 2 : score >= level.star1_score ? 1 : 0;
+}
+
+function LevelCard({
+  level,
+  index,
+  bestScore,
+  locked,
+  requiredStars,
+  prevLevelTitle,
+}: {
+  level: Level;
+  index: number;
+  bestScore: number;
+  locked: boolean;
+  requiredStars: number;
+  prevLevelTitle: string;
+}) {
   const gradient = SCENARIO_GRADIENT[level.scenario] ?? "linear-gradient(135deg,#4a2aa6,#2a1565)";
   const emoji = SCENARIO_EMOJI[level.scenario] ?? "🎢";
   const trackUrl = `/play.html?level=${level.id}`;
@@ -190,8 +210,8 @@ function LevelCard({ level, index, bestScore }: { level: Level; index: number; b
   return (
     <div
       style={{
-        background: "linear-gradient(180deg,#2e1870,#1a0e50)",
-        border: "2px solid #4a2aa6",
+        background: locked ? "linear-gradient(180deg,#1a1040,#100930)" : "linear-gradient(180deg,#2e1870,#1a0e50)",
+        border: locked ? "2px solid #2d1a6a" : "2px solid #4a2aa6",
         borderRadius: 24,
         overflow: "hidden",
         boxShadow: "0 8px 0 rgba(0,0,0,.35)",
@@ -199,12 +219,13 @@ function LevelCard({ level, index, bestScore }: { level: Level; index: number; b
         flexDirection: "column" as const,
         animation: `slideIn .3s ease both`,
         animationDelay: `${index * 0.1}s`,
+        opacity: locked ? 0.7 : 1,
       }}
     >
       {/* Scenario banner */}
       <div
         style={{
-          background: gradient,
+          background: locked ? "linear-gradient(135deg,#1a1040,#100930)" : gradient,
           padding: "24px 24px 16px",
           display: "flex",
           alignItems: "flex-start",
@@ -213,6 +234,31 @@ function LevelCard({ level, index, bestScore }: { level: Level; index: number; b
           position: "relative" as const,
         }}
       >
+        {locked && (
+          <div style={{
+            position: "absolute" as const,
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(0,0,0,.45)",
+            zIndex: 2,
+            flexDirection: "column" as const,
+            gap: 6,
+          }}>
+            <div style={{ fontSize: 36 }}>🔒</div>
+            <div style={{
+              fontFamily: "'Fredoka',system-ui,sans-serif",
+              fontWeight: 700,
+              fontSize: 13,
+              color: "#B7AEE0",
+              textAlign: "center" as const,
+              padding: "0 12px",
+            }}>
+              Complete {`"${prevLevelTitle}"`} com {requiredStars}★
+            </div>
+          </div>
+        )}
         <div style={{ fontSize: 52, lineHeight: 1, filter: "drop-shadow(0 4px 8px rgba(0,0,0,.4))" }}>
           {emoji}
         </div>
@@ -277,27 +323,43 @@ function LevelCard({ level, index, bestScore }: { level: Level; index: number; b
             <span>🪙 +{level.reward_coins}</span>
             <span>✨ +{level.reward_xp} XP</span>
           </div>
-          <a
-            href={trackUrl}
-            style={{
+          {locked ? (
+            <div style={{
               fontFamily: "'Fredoka',system-ui,sans-serif",
-              fontWeight: 700, fontSize: 16,
-              padding: "10px 28px",
+              fontWeight: 700, fontSize: 15,
+              padding: "10px 24px",
               borderRadius: 14,
-              background: "linear-gradient(180deg,#FFA502,#c97a00)",
-              border: "2px solid #FFCB6B",
-              color: "#fff", textDecoration: "none",
-              boxShadow: "0 4px 0 #6e3f00",
+              background: "rgba(255,255,255,.06)",
+              border: "2px solid rgba(255,255,255,.12)",
+              color: "#B7AEE0",
               display: "flex", alignItems: "center", gap: 8,
-              transition: "transform .1s ease",
               whiteSpace: "nowrap" as const,
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
-          >
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-            Jogar
-          </a>
+            }}>
+              🔒 Bloqueado
+            </div>
+          ) : (
+            <a
+              href={trackUrl}
+              style={{
+                fontFamily: "'Fredoka',system-ui,sans-serif",
+                fontWeight: 700, fontSize: 16,
+                padding: "10px 28px",
+                borderRadius: 14,
+                background: "linear-gradient(180deg,#FFA502,#c97a00)",
+                border: "2px solid #FFCB6B",
+                color: "#fff", textDecoration: "none",
+                boxShadow: "0 4px 0 #6e3f00",
+                display: "flex", alignItems: "center", gap: 8,
+                transition: "transform .1s ease",
+                whiteSpace: "nowrap" as const,
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+              Jogar
+            </a>
+          )}
         </div>
       </div>
     </div>
@@ -400,14 +462,24 @@ export function CampaignPage() {
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(290px,1fr))", gap: 24 }}>
-            {levels.map((level, i) => (
-              <LevelCard
-                key={level.id}
-                level={level}
-                index={i}
-                bestScore={bestScores[level.id] ?? 0}
-              />
-            ))}
+            {levels.map((level, i) => {
+              const required = LOCK_STARS[i] ?? 0;
+              const prevLevel = i > 0 ? levels[i - 1] : null;
+              const prevBest = prevLevel ? (bestScores[prevLevel.id] ?? 0) : 0;
+              const prevStars = prevLevel ? getStars(prevBest, prevLevel) : 0;
+              const locked = i > 0 && prevStars < required && !!userId;
+              return (
+                <LevelCard
+                  key={level.id}
+                  level={level}
+                  index={i}
+                  bestScore={bestScores[level.id] ?? 0}
+                  locked={locked}
+                  requiredStars={required}
+                  prevLevelTitle={prevLevel?.title ?? ""}
+                />
+              );
+            })}
           </div>
         )}
 
