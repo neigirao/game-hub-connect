@@ -9,6 +9,19 @@ export const Route = createFileRoute("/campaign")({
       { title: "Campanha — Crash Coaster" },
       { name: "description", content: "Jogue as fases da campanha de Crash Coaster. Construa pistas para cada desafio, lance o carrinho e conquiste até 3 estrelas por fase." },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Início", "item": "https://crashcoaster.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Campanha", "item": "https://crashcoaster.app/campaign" },
+          ],
+        }),
+      },
+    ],
   }),
   component: CampaignPage,
 });

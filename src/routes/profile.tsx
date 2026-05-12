@@ -197,6 +197,41 @@ function XPBar({ xp, level, animateFromXp }: { xp: number; level: number; animat
   );
 }
 
+function LevelUpBanner({ level }: { level: number }) {
+  return (
+    <div style={{
+      background: "linear-gradient(90deg,rgba(255,165,2,.22),rgba(255,107,214,.14))",
+      border: "2px solid #FFA502",
+      borderRadius: 18,
+      padding: "18px 24px",
+      display: "flex", alignItems: "center", gap: 20,
+      animation: "rewardSlide .45s cubic-bezier(.22,1,.36,1) both, rewardGlow 2s ease .3s 3",
+    }}>
+      <span style={{
+        fontSize: 56, lineHeight: 1, flexShrink: 0,
+        animation: "rewardPop .6s cubic-bezier(.34,1.56,.64,1) .05s both",
+        display: "block",
+      }}>🏆</span>
+      <div>
+        <div style={{
+          fontFamily: "'Fredoka',system-ui,sans-serif",
+          fontWeight: 700, fontSize: 26, color: "#FFA502", lineHeight: 1,
+          animation: "rewardPop .5s cubic-bezier(.34,1.56,.64,1) .15s both",
+        }}>
+          LEVEL UP!
+        </div>
+        <div style={{
+          fontFamily: "'Fredoka',system-ui,sans-serif",
+          fontSize: 16, color: "#FFE9A8", marginTop: 6,
+          animation: "rewardPop .5s cubic-bezier(.34,1.56,.64,1) .25s both",
+        }}>
+          Você chegou ao nível {level}! Continue jogando para evoluir mais.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RewardBanner({ xp, coins }: { xp: number; coins: number }) {
   const countedXp = useCountUp(xp, 1100);
   const countedCoins = useCountUp(coins, 1100);
@@ -426,6 +461,13 @@ export function ProfilePage() {
   const displayName = profile?.username ?? profile?.email?.split("@")[0] ?? "Jogador";
   const bestScore = scores.length > 0 ? Math.max(...scores.map((s) => s.total_score)) : 0;
 
+  const leveledUp = (() => {
+    if (!reward || !profile) return false;
+    const prevXp = Math.max(0, profile.xp - reward.xp);
+    const prevLevel = Math.floor(prevXp / 500) + 1;
+    return profile.level > prevLevel;
+  })();
+
   return (
     <div style={S.page}>
       <style>{`
@@ -434,9 +476,11 @@ export function ProfilePage() {
         @keyframes rewardSlide { from{opacity:0;transform:translateY(-16px) scale(.95)} to{opacity:1;transform:translateY(0) scale(1)} }
         @keyframes rewardPop { 0%{transform:scale(0);opacity:0} 60%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1} }
         @keyframes rewardGlow { 0%,100%{box-shadow:0 0 0 0 rgba(46,213,115,0)} 50%{box-shadow:0 0 24px 4px rgba(46,213,115,.35)} }
+        @keyframes levelGlow { 0%,100%{box-shadow:0 0 0 0 rgba(255,165,2,0)} 50%{box-shadow:0 0 32px 6px rgba(255,165,2,.4)} }
       `}</style>
 
       <div style={S.content}>
+        {leveledUp && profile && <LevelUpBanner level={profile.level} />}
         {reward && <RewardBanner xp={reward.xp} coins={reward.coins} />}
         {error ? (
           <PageError message={error} onRetry={() => setRetryCount((c) => c + 1)} />
