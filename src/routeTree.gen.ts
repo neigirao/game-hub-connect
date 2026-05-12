@@ -9,30 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as CampaignRouteImport } from './routes/campaign'
-import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as TracksRouteImport } from './routes/tracks'
+import { Route as ShopRouteImport } from './routes/shop'
+import { Route as ShareRouteImport } from './routes/share'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as ChallengeRouteImport } from './routes/challenge'
+import { Route as CampaignRouteImport } from './routes/campaign'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminLevelsRouteImport } from './routes/admin/levels'
 import { Route as AdminBlueprintsRouteImport } from './routes/admin/blueprints'
-import { Route as AdminUsersRouteImport } from './routes/admin/users'
 
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const TracksRoute = TracksRouteImport.update({
+  id: '/tracks',
+  path: '/tracks',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CampaignRoute = CampaignRouteImport.update({
-  id: '/campaign',
-  path: '/campaign',
+const ShopRoute = ShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LeaderboardRoute = LeaderboardRouteImport.update({
-  id: '/leaderboard',
-  path: '/leaderboard',
+const ShareRoute = ShareRouteImport.update({
+  id: '/share',
+  path: '/share',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -45,109 +49,184 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChallengeRoute = ChallengeRouteImport.update({
+  id: '/challenge',
+  path: '/challenge',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CampaignRoute = CampaignRouteImport.update({
+  id: '/campaign',
+  path: '/campaign',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/admin/',
+  id: '/',
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLevelsRoute = AdminLevelsRouteImport.update({
-  id: '/admin/levels',
+  id: '/levels',
   path: '/levels',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminBlueprintsRoute = AdminBlueprintsRouteImport.update({
-  id: '/admin/blueprints',
+  id: '/blueprints',
   path: '/blueprints',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/admin/users',
-  path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/campaign': typeof CampaignRoute
+  '/challenge': typeof ChallengeRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
-  '/leaderboard': typeof LeaderboardRoute
-  '/campaign': typeof CampaignRoute
-  '/admin': typeof AdminRoute
-  '/admin/': typeof AdminIndexRoute
-  '/admin/levels': typeof AdminLevelsRoute
+  '/share': typeof ShareRoute
+  '/shop': typeof ShopRoute
+  '/tracks': typeof TracksRoute
   '/admin/blueprints': typeof AdminBlueprintsRoute
+  '/admin/levels': typeof AdminLevelsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/campaign': typeof CampaignRoute
+  '/challenge': typeof ChallengeRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
-  '/leaderboard': typeof LeaderboardRoute
-  '/campaign': typeof CampaignRoute
-  '/admin': typeof AdminRoute
-  '/admin/': typeof AdminIndexRoute
-  '/admin/levels': typeof AdminLevelsRoute
+  '/share': typeof ShareRoute
+  '/shop': typeof ShopRoute
+  '/tracks': typeof TracksRoute
   '/admin/blueprints': typeof AdminBlueprintsRoute
+  '/admin/levels': typeof AdminLevelsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/campaign': typeof CampaignRoute
+  '/challenge': typeof ChallengeRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
-  '/leaderboard': typeof LeaderboardRoute
-  '/campaign': typeof CampaignRoute
-  '/admin': typeof AdminRoute
-  '/admin/': typeof AdminIndexRoute
-  '/admin/levels': typeof AdminLevelsRoute
+  '/share': typeof ShareRoute
+  '/shop': typeof ShopRoute
+  '/tracks': typeof TracksRoute
   '/admin/blueprints': typeof AdminBlueprintsRoute
+  '/admin/levels': typeof AdminLevelsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/profile' | '/leaderboard' | '/campaign' | '/admin' | '/admin/' | '/admin/levels' | '/admin/blueprints' | '/admin/users'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/campaign'
+    | '/challenge'
+    | '/leaderboard'
+    | '/login'
+    | '/profile'
+    | '/share'
+    | '/shop'
+    | '/tracks'
+    | '/admin/blueprints'
+    | '/admin/levels'
+    | '/admin/users'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/profile' | '/leaderboard' | '/campaign' | '/admin' | '/admin/' | '/admin/levels' | '/admin/blueprints' | '/admin/users'
-  id: '__root__' | '/' | '/login' | '/profile' | '/leaderboard' | '/campaign' | '/admin' | '/admin/' | '/admin/levels' | '/admin/blueprints' | '/admin/users'
+  to:
+    | '/'
+    | '/campaign'
+    | '/challenge'
+    | '/leaderboard'
+    | '/login'
+    | '/profile'
+    | '/share'
+    | '/shop'
+    | '/tracks'
+    | '/admin/blueprints'
+    | '/admin/levels'
+    | '/admin/users'
+    | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/campaign'
+    | '/challenge'
+    | '/leaderboard'
+    | '/login'
+    | '/profile'
+    | '/share'
+    | '/shop'
+    | '/tracks'
+    | '/admin/blueprints'
+    | '/admin/levels'
+    | '/admin/users'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  CampaignRoute: typeof CampaignRoute
+  ChallengeRoute: typeof ChallengeRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
-  LeaderboardRoute: typeof LeaderboardRoute
-  CampaignRoute: typeof CampaignRoute
-  AdminRoute: typeof AdminRoute
+  ShareRoute: typeof ShareRoute
+  ShopRoute: typeof ShopRoute
+  TracksRoute: typeof TracksRoute
 }
-
-const AdminRouteChildren = {
-  AdminIndexRoute: AdminIndexRoute,
-  AdminLevelsRoute: AdminLevelsRoute,
-  AdminBlueprintsRoute: AdminBlueprintsRoute,
-  AdminUsersRoute: AdminUsersRoute,
-}
-
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/tracks': {
+      id: '/tracks'
+      path: '/tracks'
+      fullPath: '/tracks'
+      preLoaderRoute: typeof TracksRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/share': {
+      id: '/share'
+      path: '/share'
+      fullPath: '/share'
+      preLoaderRoute: typeof ShareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -157,11 +236,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/leaderboard': {
       id: '/leaderboard'
       path: '/leaderboard'
       fullPath: '/leaderboard'
       preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/challenge': {
+      id: '/challenge'
+      path: '/challenge'
+      fullPath: '/challenge'
+      preLoaderRoute: typeof ChallengeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/campaign': {
@@ -178,44 +271,71 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRouteImport
-    }
-    '/admin/levels': {
-      id: '/admin/levels'
-      path: '/levels'
-      fullPath: '/admin/levels'
-      preLoaderRoute: typeof AdminLevelsRouteImport
-      parentRoute: typeof AdminRouteImport
-    }
-    '/admin/blueprints': {
-      id: '/admin/blueprints'
-      path: '/blueprints'
-      fullPath: '/admin/blueprints'
-      preLoaderRoute: typeof AdminBlueprintsRouteImport
-      parentRoute: typeof AdminRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/users': {
       id: '/admin/users'
       path: '/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/levels': {
+      id: '/admin/levels'
+      path: '/levels'
+      fullPath: '/admin/levels'
+      preLoaderRoute: typeof AdminLevelsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/blueprints': {
+      id: '/admin/blueprints'
+      path: '/blueprints'
+      fullPath: '/admin/blueprints'
+      preLoaderRoute: typeof AdminBlueprintsRouteImport
+      parentRoute: typeof AdminRoute
     }
   }
 }
 
+interface AdminRouteChildren {
+  AdminBlueprintsRoute: typeof AdminBlueprintsRoute
+  AdminLevelsRoute: typeof AdminLevelsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminBlueprintsRoute: AdminBlueprintsRoute,
+  AdminLevelsRoute: AdminLevelsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  CampaignRoute: CampaignRoute,
+  ChallengeRoute: ChallengeRoute,
+  LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
-  LeaderboardRoute: LeaderboardRoute,
-  CampaignRoute: CampaignRoute,
-  AdminRoute: AdminRouteWithChildren,
+  ShareRoute: ShareRoute,
+  ShopRoute: ShopRoute,
+  TracksRoute: TracksRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
