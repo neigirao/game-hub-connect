@@ -7,7 +7,7 @@ export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
       { title: "Loja — Crash Coaster" },
-      { name: "description", content: "Gaste suas moedas em badges e skins exclusivos do Crash Coaster." },
+      { name: "description", content: "Gaste suas moedas em badges, skins e cenários exclusivos do Crash Coaster." },
     ],
   }),
   component: ShopPage,
@@ -18,12 +18,13 @@ type ShopItem = {
   name: string;
   description: string;
   cost: number;
-  category: "badge" | "skin";
+  category: "badge" | "skin" | "scenario";
   emoji: string;
   color: string;
 };
 
 export const SHOP_ITEMS: ShopItem[] = [
+  // Badges
   {
     id: "badge_parque",
     name: "Mestre do Parque",
@@ -60,6 +61,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     emoji: "🚀",
     color: "#70A1FF",
   },
+  // Skins do carrinho
   {
     id: "skin_candy",
     name: "Carrinho Candy",
@@ -77,6 +79,34 @@ export const SHOP_ITEMS: ShopItem[] = [
     category: "skin",
     emoji: "🏆",
     color: "#FFA502",
+  },
+  {
+    id: "skin_rocket",
+    name: "Foguete Supersônico",
+    description: "Mais aerodinâmico, mais caótico, mais fogo",
+    cost: 2000,
+    category: "skin",
+    emoji: "🚀",
+    color: "#FF4757",
+  },
+  // Cenários
+  {
+    id: "cenario_praia",
+    name: "Cenário Praia",
+    description: "Areia, sol e ondas — caos com bronzeado garantido",
+    cost: 600,
+    category: "scenario",
+    emoji: "🏖️",
+    color: "#FFA502",
+  },
+  {
+    id: "cenario_noite",
+    name: "Cenário Noite",
+    description: "Céu estrelado — crashes mais dramáticos sob a lua",
+    cost: 900,
+    category: "scenario",
+    emoji: "🌙",
+    color: "#70A1FF",
   },
 ];
 
@@ -98,39 +128,80 @@ const S = {
   },
 };
 
+function categoryLabel(cat: ShopItem["category"]) {
+  if (cat === "badge") return "Badge";
+  if (cat === "skin") return "Skin";
+  return "Cenário";
+}
+
 function ShopCard({
   item,
   owned,
   coins,
   onBuy,
   buying,
+  equipped,
+  onEquip,
 }: {
   item: ShopItem;
   owned: boolean;
   coins: number;
   onBuy: (item: ShopItem) => void;
   buying: string | null;
+  equipped: boolean;
+  onEquip: (item: ShopItem) => void;
 }) {
   const canAfford = coins >= item.cost;
   const isLoading = buying === item.id;
+  const isEquippable = item.category === "skin" || item.category === "scenario";
 
   return (
-    <div style={{
-      background: owned
-        ? "linear-gradient(180deg,#1a3a1a,#0e2010)"
-        : "linear-gradient(180deg,#2e1870,#1a0e50)",
-      border: owned ? "2px solid #2ED573" : "2px solid #4a2aa6",
-      borderRadius: 20,
-      padding: "20px 20px 16px",
-      display: "flex",
-      flexDirection: "column" as const,
-      gap: 12,
-      boxShadow: owned ? "0 6px 0 #0a1a0a" : "0 6px 0 rgba(0,0,0,.3)",
-      transition: "transform .15s ease",
-    }}
+    <div
+      style={{
+        background: owned
+          ? "linear-gradient(180deg,#1a3a1a,#0e2010)"
+          : "linear-gradient(180deg,#2e1870,#1a0e50)",
+        border: equipped
+          ? "2px solid #FFA502"
+          : owned
+          ? "2px solid #2ED573"
+          : "2px solid #4a2aa6",
+        borderRadius: 20,
+        padding: "20px 20px 16px",
+        display: "flex",
+        flexDirection: "column" as const,
+        gap: 12,
+        boxShadow: equipped
+          ? "0 6px 0 #6e3f00, 0 0 0 3px rgba(255,165,2,.15)"
+          : owned
+          ? "0 6px 0 #0a1a0a"
+          : "0 6px 0 rgba(0,0,0,.3)",
+        transition: "transform .15s ease",
+        position: "relative" as const,
+      }}
       onMouseEnter={(e) => !owned && (e.currentTarget.style.transform = "translateY(-3px)")}
       onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
     >
+      {equipped && (
+        <div style={{
+          position: "absolute" as const,
+          top: 10,
+          right: 10,
+          fontSize: 9,
+          fontFamily: "'Fredoka',system-ui,sans-serif",
+          fontWeight: 700,
+          letterSpacing: 1,
+          textTransform: "uppercase" as const,
+          padding: "2px 8px",
+          borderRadius: 8,
+          background: "rgba(255,165,2,.25)",
+          color: "#FFA502",
+          border: "1px solid rgba(255,165,2,.5)",
+        }}>
+          ✓ Equipado
+        </div>
+      )}
+
       {/* Icon */}
       <div style={{ fontSize: 48, textAlign: "center" as const, filter: `drop-shadow(0 2px 8px ${item.color}60)` }}>
         {item.emoji}
@@ -142,7 +213,7 @@ function ShopCard({
           fontFamily: "'Fredoka',system-ui,sans-serif",
           fontWeight: 700,
           fontSize: 16,
-          color: owned ? "#2ED573" : "#fff",
+          color: equipped ? "#FFA502" : owned ? "#2ED573" : "#fff",
           marginBottom: 4,
         }}>
           {item.name}
@@ -166,21 +237,45 @@ function ShopCard({
           color: item.color,
           border: `1px solid ${item.color}55`,
         }}>
-          {item.category === "badge" ? "Badge" : "Skin"}
+          {categoryLabel(item.category)}
         </span>
       </div>
 
       {/* CTA */}
       {owned ? (
-        <div style={{
-          textAlign: "center" as const,
-          fontFamily: "'Fredoka',system-ui,sans-serif",
-          fontWeight: 700,
-          fontSize: 14,
-          color: "#2ED573",
-          padding: "8px",
-        }}>
-          ✓ Você tem este item
+        <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
+          {isEquippable && !equipped && (
+            <button
+              onClick={() => onEquip(item)}
+              style={{
+                fontFamily: "'Fredoka',system-ui,sans-serif",
+                fontWeight: 700,
+                fontSize: 14,
+                padding: "9px",
+                borderRadius: 12,
+                border: "2px solid #FFCB6B",
+                background: "linear-gradient(180deg,#FFA502,#c97a00)",
+                color: "#fff",
+                cursor: "pointer",
+                boxShadow: "0 3px 0 #6e3f00",
+                transition: "all .15s",
+              }}
+            >
+              ⚡ Equipar
+            </button>
+          )}
+          {(!isEquippable || equipped) && (
+            <div style={{
+              textAlign: "center" as const,
+              fontFamily: "'Fredoka',system-ui,sans-serif",
+              fontWeight: 700,
+              fontSize: 14,
+              color: equipped ? "#FFA502" : "#2ED573",
+              padding: "8px",
+            }}>
+              {equipped ? "✓ Equipado" : "✓ Você tem este item"}
+            </div>
+          )}
         </div>
       ) : (
         <button
@@ -218,6 +313,12 @@ export function ShopPage() {
   const [buying, setBuying] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [equippedSkin, setEquippedSkin] = useState<string>(() =>
+    typeof window !== "undefined" ? localStorage.getItem("cc_cart_skin") ?? "" : ""
+  );
+  const [equippedScenario, setEquippedScenario] = useState<string>(() =>
+    typeof window !== "undefined" ? localStorage.getItem("cc_scenario") ?? "" : ""
+  );
 
   function showToast(msg: string, ok = true) {
     setToast({ msg, ok });
@@ -277,8 +378,23 @@ export function ShopPage() {
     showToast(`${item.emoji} ${item.name} adquirido!`);
   }
 
+  function handleEquip(item: ShopItem) {
+    if (item.category === "skin") {
+      const newSkin = equippedSkin === item.id ? "" : item.id;
+      localStorage.setItem("cc_cart_skin", newSkin);
+      setEquippedSkin(newSkin);
+      showToast(newSkin ? `${item.emoji} ${item.name} equipado!` : "Skin removida");
+    } else if (item.category === "scenario") {
+      const newScenario = equippedScenario === item.id ? "" : item.id;
+      localStorage.setItem("cc_scenario", newScenario);
+      setEquippedScenario(newScenario);
+      showToast(newScenario ? `${item.emoji} ${item.name} equipado!` : "Cenário padrão restaurado");
+    }
+  }
+
   const badges = SHOP_ITEMS.filter((i) => i.category === "badge");
   const skins = SHOP_ITEMS.filter((i) => i.category === "skin");
+  const scenarios = SHOP_ITEMS.filter((i) => i.category === "scenario");
 
   return (
     <div style={S.page}>
@@ -317,7 +433,7 @@ export function ShopPage() {
               🛒 Loja
             </h1>
             <p style={{ color: "#B7AEE0", fontSize: 15, marginTop: 8, marginBottom: 0 }}>
-              Gaste suas moedas em badges e skins exclusivos.
+              Gaste suas moedas em badges, skins e cenários exclusivos.
             </p>
           </div>
           {userId && !loading && (
@@ -378,8 +494,8 @@ export function ShopPage() {
           <PageError message={error} onRetry={() => setRetryCount((c) => c + 1)} />
         ) : loading ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 18 }}>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <PulseSkeleton key={i} height={240} borderRadius={20} delay={i * 0.08} />
+            {Array.from({ length: 9 }).map((_, i) => (
+              <PulseSkeleton key={i} height={240} borderRadius={20} delay={i * 0.06} />
             ))}
           </div>
         ) : (
@@ -398,30 +514,18 @@ export function ShopPage() {
                       coins={coins}
                       onBuy={handleBuy}
                       buying={buying}
+                      equipped={false}
+                      onEquip={handleEquip}
                     />
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Skins */}
+            {/* Skins do carrinho */}
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase" as const, color: "#B7AEE0", fontWeight: 700 }}>
-                  Skins do carrinho
-                </div>
-                <span style={{
-                  fontSize: 10,
-                  fontFamily: "'Fredoka',system-ui,sans-serif",
-                  fontWeight: 700,
-                  padding: "2px 8px",
-                  borderRadius: 8,
-                  background: "rgba(112,161,255,.2)",
-                  color: "#70A1FF",
-                  border: "1px solid rgba(112,161,255,.3)",
-                }}>
-                  Em breve no jogo
-                </span>
+              <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase" as const, color: "#B7AEE0", fontWeight: 700, marginBottom: 16 }}>
+                Skins do carrinho
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 18 }}>
                 {skins.map((item, i) => (
@@ -432,6 +536,30 @@ export function ShopPage() {
                       coins={coins}
                       onBuy={handleBuy}
                       buying={buying}
+                      equipped={equippedSkin === item.id}
+                      onEquip={handleEquip}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Cenários */}
+            <div>
+              <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase" as const, color: "#B7AEE0", fontWeight: 700, marginBottom: 16 }}>
+                Cenários
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 18 }}>
+                {scenarios.map((item, i) => (
+                  <div key={item.id} style={{ animation: `slideIn .3s ease ${(badges.length + skins.length + i) * 0.07}s both` }}>
+                    <ShopCard
+                      item={item}
+                      owned={inventory.includes(item.id)}
+                      coins={coins}
+                      onBuy={handleBuy}
+                      buying={buying}
+                      equipped={equippedScenario === item.id}
+                      onEquip={handleEquip}
                     />
                   </div>
                 ))}
