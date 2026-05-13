@@ -8,6 +8,20 @@
 
 ## [Não lançado] — Em desenvolvimento
 
+### Sessão 13 — 2026-05-13: Rotas sociais, loja e desafio diário
+
+**Objetivo da sessão:** Consolidar recursos sociais/economia no app React e preparar base SQL do desafio diário.
+
+#### Adicionado — Novas rotas de produto (React)
+- `/tracks` com listagem de pistas públicas, ordenação (destaque/likes/score/recente) e like em tempo real via RPC `toggle_blueprint_like`
+- `/shop` com catálogo de badges/skins/cenários, compra e equip de cosméticos
+- `/challenge` com "Desafio do Dia", contagem regressiva até meia-noite e ranking diário (`season = daily-YYYY-MM-DD`)
+- `/share` para fluxo dedicado de compartilhamento
+
+#### Adicionado — Migrações Supabase
+- `20260512000002_daily_picks.sql`: estrutura para curadoria diária de pistas
+- `20260513144056_10c92338-a77a-41e3-af4c-5cbe68dd13f0.sql`: ajustes de schema para sustentar os fluxos mais recentes
+
 ### Sessão 10 — 2026-05-11: Looping 360° e speed trail (motion blur)
 
 **Objetivo da sessão:** Adicionar o nó de looping 360° ao editor e efeito de rastro de velocidade (motion blur) ao carrinho.
