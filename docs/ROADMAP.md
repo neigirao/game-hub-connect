@@ -13,6 +13,25 @@
 
 ---
 
+## 🔍 INVESTIGAÇÕES PENDENTES
+
+### 🟠 P1 — Restaurar landing `home.html` na rota `/`
+
+**Contexto:** O CLAUDE.md descreve o fluxo `Landing (home.html) → Login → Jogo`, mas hoje `src/routes/index.tsx` redireciona direto para `/login` (não-autenticado) ou `/campaign` (autenticado). A landing rica em `public/home.html` nunca é exibida no preview/published — daí a sensação de "sumiu a home anterior".
+
+**Hipótese:** Quando consolidamos o roteamento via TanStack (#1) e adicionamos auth-guard global, o redirect substituiu o `window.location = '/home.html'` antigo.
+
+**Decisão a tomar:**
+- (a) Manter redirect atual e aposentar `home.html` (assumir `/campaign` como nova landing pós-login).
+- (b) Servir `home.html` na raiz para visitantes anônimos e só redirecionar autenticados para `/campaign`.
+- (c) Migrar o conteúdo de `home.html` para uma rota React `src/routes/index.tsx` (melhor SEO/SSR, alinha com `tanstack-route-architecture`).
+
+**Critério de aceite:** Visitante anônimo abre `/` e vê uma landing real (ou home.html, ou rota React equivalente). Documentação atualizada em CLAUDE.md.
+
+**Recomendação:** opção (c) — landing nativa React com `head()` próprio.
+
+---
+
 ## FASE MVP — O que falta para ter um jogo completo
 
 ### ✅ 🔴 P1 — Tela de Perfil do Usuário
