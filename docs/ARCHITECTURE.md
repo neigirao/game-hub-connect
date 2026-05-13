@@ -1,6 +1,6 @@
 # Arquitetura Técnica — Crash Coaster
 
-> Última atualização: 2026-05-11
+> Última atualização: 2026-05-13
 > Mantenha este arquivo sincronizado com mudanças estruturais.
 
 ---
@@ -33,6 +33,21 @@
               │  project: sekuurohkxqktpllebdd│
               └───────────────────────────────┘
 ```
+
+---
+
+
+## Mapa de Documentação (onde está cada assunto)
+
+| Assunto | Arquivo |
+|---|---|
+| Arquitetura técnica, integrações, fluxos e inventário macro de APIs | `docs/ARCHITECTURE.md` |
+| Matriz detalhada de APIs por recurso e arquivo | `docs/API_MATRIX.md` |
+| Decisões arquiteturais (ADRs) | `docs/DECISIONS.md` |
+| Evolução por sessão e mudanças entregues | `docs/CHANGELOG.md` |
+| Backlog e prioridades (MVP → V2 → V3) | `docs/ROADMAP.md` |
+| Visão de game design e pilares de produto | `docs/GDD.md` |
+| Banco (DDL e evolução de schema) | `supabase/migrations/*.sql` |
 
 ---
 
@@ -72,17 +87,25 @@ G-force = Math.hypot(ax, ay) / 9.8
 Meta-framework TanStack Start rodando no Cloudflare Workers.
 
 **Responsabilidades atuais:**
-- Roteamento (`/`, `/login`)
+- Roteamento completo de produto (`/campaign`, `/challenge`, `/tracks`, `/leaderboard`, `/profile`, `/shop`, `/admin/*`)
 - Autenticação Google OAuth
-- Shell para futuras rotas React (dashboard, perfil, admin)
+- Shell React global com navegação persistente
+- Páginas de dados conectadas ao Supabase (perfil, ranking, trilhas, loja, desafio diário e admin)
 
-**Não faz hoje:** O jogo em si não usa React — vive em `play.html`.
+**Não faz hoje:** O loop principal do jogo ainda roda em `play.html` (Canvas standalone), fora do React.
 
-**Estrutura de rotas:**
+**Estrutura principal de rotas:**
 ```
-/           → redireciona para /home.html (landing page estática)
-/login      → formulário OAuth Google
-/__root     → layout raiz (providers, error boundary)
+/              → decide por sessão (anônimo: /home.html, logado: /campaign)
+/login         → login OAuth Google
+/campaign      → seleção de fases
+/challenge     → desafio diário
+/tracks        → comunidade (pistas públicas + likes)
+/leaderboard   → ranking global/mensal
+/profile       → perfil do jogador
+/shop          → loja de cosméticos
+/share         → página de compartilhamento
+/admin/*       → dashboard e painéis de moderação
 ```
 
 **Providers disponíveis (já configurados):**
@@ -93,7 +116,7 @@ Meta-framework TanStack Start rodando no Cloudflare Workers.
 
 ### 3. Supabase
 
-**Configuração atual:** Projeto criado, sem tabelas.
+**Configuração atual:** Projeto ativo com schema de produção e migrations versionadas em `supabase/migrations`.
 
 **Clientes disponíveis:**
 
@@ -127,20 +150,22 @@ Valida Bearer token para proteger rotas de API futuras.
 ## Fluxo de Dados Atual
 
 ```
-Usuário abre play.html
+Usuário autentica no React App
         │
         ▼
-Canvas inicializa (sem dados do servidor)
+Supabase session é reutilizada no play.html
         │
         ▼
-Usuário constrói pista (estado local em memória)
+play.html carrega fase/blueprint (quando informado por URL)
         │
         ▼
-Usuário testa → física roda → score calculado
+Usuário testa pista → score calculado localmente
         │
         ▼
-[FALTA] Salvar pista no Supabase
-[FALTA] Publicar para ranking
+Score e recompensas enviados para Supabase
+        │
+        ▼
+Páginas React consomem dados atualizados (perfil/ranking/desafio/tracks/admin)
 ```
 
 ---
@@ -165,6 +190,66 @@ Salvar blueprint (play.html → Supabase)
         ▼
 Publicar → leaderboard atualizado
 ```
+
+---
+
+
+## APIs consumidas (inventário prático)
+
+### Supabase Auth
+- `supabase.auth.getSession()` — valida sessão nas rotas React e no redirect inicial.
+- `supabase.auth.onAuthStateChange()` — atualiza UI global (navbar/avatar) em tempo real.
+- `signInWithOAuth({ provider: "google" })` — login.
+
+### Supabase Database (REST via client)
+- Tabelas consumidas diretamente: `profiles`, `blueprints`, `leaderboard_entries`, `levels`, `daily_picks`, `blueprint_likes` e tabelas auxiliares de loja/equipamentos.
+- Views consumidas: `leaderboard_with_profiles` (ranking agregado).
+- Operações comuns: `select`, `insert`, `update`, `delete`, `order`, `limit`, filtros por temporada e usuário.
+
+### Supabase RPC
+- `award_run_rewards(...)` — aplica XP/coins após corrida.
+- `toggle_blueprint_like(...)` — alterna curtida de pista e retorna contagem atualizada.
+
+### Realtime
+- Listener em `leaderboard_entries` para atualizar ranking sem refresh manual.
+
+### APIs no `play.html`
+- `GET /rest/v1/levels` (via client Supabase) para carregar fase por `?level=`.
+- `GET /rest/v1/blueprints` para abrir pista por `?blueprint=`.
+- `POST /rest/v1/leaderboard_entries` para publicar resultado da corrida.
+
+> Observação: a aplicação não mantém uma API HTTP própria extensa hoje; o backend principal é o Supabase (Auth + PostgREST + RPC + Realtime).
+
+---
+
+## Banco de dados (estado atual)
+
+**Fonte da verdade do schema:** pasta `supabase/migrations/` (versionada em SQL).
+
+**Domínios principais:**
+- **Usuários:** `profiles` (username, level, xp, coins, flags como `is_admin`/`is_banned`).
+- **Conteúdo:** `blueprints` (pistas), `levels` (campanha), `daily_picks` (curadoria diária).
+- **Competição:** `leaderboard_entries` + view de ranking.
+- **Social:** `blueprint_likes`.
+- **Economia:** funções e tabelas de suporte para compras/equipamentos da loja.
+
+**Segurança de dados:**
+- RLS habilitado com policies por papel/contexto.
+- Fluxos administrativos protegidos por `profiles.is_admin = true`.
+- Chave de service role usada apenas server-side (`client.server.ts`).
+
+---
+
+## Mapa de código (onde fica cada parte)
+
+- **Game loop e editor:** `public/play.html`
+- **Landing/SEO estático:** `public/home.html`, `public/sitemap.xml`, `public/robots.txt`
+- **Roteamento React:** `src/routes/*`
+- **Admin:** `src/routes/admin/*`
+- **Navegação global:** `src/components/game-nav.tsx`
+- **Integração Supabase:** `src/integrations/supabase/*`
+- **Tipos Supabase gerados/espelhados:** `src/integrations/supabase/types.ts`
+- **Config de deploy edge:** `wrangler.jsonc`, `src/server.ts`
 
 ---
 
@@ -200,7 +285,7 @@ Publicar → leaderboard atualizado
 ## Segurança
 
 - RLS (Row Level Security) habilitado no Supabase
-- Sem tabelas expostas ainda — configurar policies ao criar cada tabela
+- Policies aplicadas por domínio (usuário, conteúdo, competição e admin), revisadas a cada migration
 - `client.server.ts` usa service role key — nunca expor no browser
 - Auth middleware valida JWT em todas as rotas de API
 
