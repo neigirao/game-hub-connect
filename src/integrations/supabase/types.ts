@@ -468,6 +468,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      submit_score: {
+        Args: {
+          p_adrenaline: number
+          p_blueprint_id: string
+          p_chaos: number
+          p_creativity: number
+          p_laps: number
+          p_level_id: number
+          p_max_g: number
+          p_max_speed_kmh: number
+          p_season?: string
+          p_smoothness: number
+          p_survival: number
+        }
+        Returns: Json
+      }
       toggle_blueprint_like: { Args: { p_blueprint_id: string }; Returns: Json }
     }
     Enums: {

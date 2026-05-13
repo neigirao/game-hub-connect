@@ -1152,33 +1152,41 @@ function closeTracksModal() {
   document.getElementById('tracksModal').classList.remove('show');
 }
 
-// ---- SUBMIT SCORE TO LEADERBOARD ----
+// ---- SUBMIT SCORE TO LEADERBOARD (server-side validated) ----
 async function submitScore(blueprintId = null) {
   if (!sbClient || !currentUser) return;
-  const total = Math.round(
-    (state.scores.survival + state.scores.adrenaline + state.scores.chaos +
-     state.scores.smoothness + state.scores.creativity) / 5
-  );
-  if (total === 0) return;
-  const entry = {
-    user_id: currentUser.id,
-    blueprint_id: blueprintId,
-    level_id: currentLevelId,
-    total_score: total,
-    survival_rate: state.scores.survival,
-    adrenaline_score: state.scores.adrenaline,
-    chaos_score: state.scores.chaos,
-    smoothness_score: state.scores.smoothness,
-    creativity_score: state.scores.creativity,
-    max_g_force: parseFloat(state.maxG.toFixed(2)),
-    max_speed_kmh: Math.round(state.maxSpeed * 3.6),
-    laps_completed: state.laps,
-    season: 'global',
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v|0));
+  const survival   = clamp(state.scores.survival,   0, 100);
+  const adrenaline = clamp(state.scores.adrenaline, 0, 100);
+  const chaos      = clamp(state.scores.chaos,      0, 100);
+  const smoothness = clamp(state.scores.smoothness, 0, 100);
+  const creativity = clamp(state.scores.creativity, 0, 100);
+  const total = Math.round((survival + adrenaline + chaos + smoothness + creativity) / 5);
+  if (total <= 0) return;
+  const args = {
+    p_blueprint_id: blueprintId,
+    p_level_id: currentLevelId,
+    p_survival: survival,
+    p_adrenaline: adrenaline,
+    p_chaos: chaos,
+    p_smoothness: smoothness,
+    p_creativity: creativity,
+    p_max_g: parseFloat(state.maxG.toFixed(2)),
+    p_max_speed_kmh: Math.round(state.maxSpeed * 3.6),
+    p_laps: state.laps,
+    p_season: 'global',
   };
-  await sbClient.from('leaderboard_entries').insert(entry);
-  // Also submit to daily leaderboard if playing today's daily pick
-  if (currentDailyDate && blueprintId) {
-    await sbClient.from('leaderboard_entries').insert({ ...entry, season: 'daily-' + currentDailyDate });
+  try {
+    const { error } = await sbClient.rpc('submit_score', args);
+    if (error) console.warn('[CC] submit_score failed:', error.message);
+    if (currentDailyDate && blueprintId) {
+      const { error: dErr } = await sbClient.rpc('submit_score', {
+        ...args, p_season: 'daily-' + currentDailyDate,
+      });
+      if (dErr) console.warn('[CC] submit_score daily failed:', dErr.message);
+    }
+  } catch (e) {
+    console.warn('[CC] submit_score threw:', e);
   }
 }
 
