@@ -146,7 +146,7 @@
       radial-gradient(800px 500px at 50% 20%, #5a32b8 0%, transparent 60%),
       linear-gradient(180deg,#2D1B69 0%, #20114d 60%, #1a0d3d 100%);
   }
-  #game{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair;}
+  #game{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;}
   .stage.mode-test #game{cursor:default}
   .stage .watermark{
     position:absolute;left:18px;top:14px;font-family:'Fredoka';font-weight:700;color:rgba(255,255,255,.08);font-size:48px;letter-spacing:2px;pointer-events:none;line-height:.9;
@@ -3030,18 +3030,26 @@ function canvasPoint(e){
   const r = canvas.getBoundingClientRect();
   return {x: e.clientX - r.left, y: e.clientY - r.top};
 }
-function nodeAt(p){
+function nodeAt(p, radius){
+  const R = radius || 16;
   for (let i = 0; i < state.nodes.length; i++){
     const n = state.nodes[i];
-    if (Math.hypot(n.x-p.x, n.y-p.y) < 16) return i;
+    if (Math.hypot(n.x-p.x, n.y-p.y) < R) return i;
   }
   return -1;
 }
 let _dragMoved = false;
-canvas.addEventListener('mousedown', e=>{
+let _activePointerId = null;
+const _isCoarse = (typeof window !== 'undefined' && window.matchMedia)
+  ? window.matchMedia('(pointer: coarse)').matches : false;
+const _hitRadius = _isCoarse ? 26 : 16;
+canvas.addEventListener('pointerdown', e=>{
   if (state.mode !== 'build') return;
+  if (_activePointerId !== null) return; // ignore secondary touches
+  _activePointerId = e.pointerId;
+  try { canvas.setPointerCapture(e.pointerId); } catch(_) {}
   const p = canvasPoint(e);
-  const idx = nodeAt(p);
+  const idx = nodeAt(p, _hitRadius);
   _dragMoved = false;
   if (state.tool === 'add'){
     if (idx >= 0){ state.dragging = idx; return; }
@@ -3085,20 +3093,29 @@ canvas.addEventListener('mousedown', e=>{
     pushHistory();
   }
 });
-canvas.addEventListener('mousemove', e=>{
+canvas.addEventListener('pointermove', e=>{
+  if (e.pointerType !== 'mouse' && _activePointerId !== null && e.pointerId !== _activePointerId) return;
   const p = canvasPoint(e);
-  state.hoverNode = nodeAt(p);
+  state.hoverNode = nodeAt(p, _hitRadius);
   if (state.dragging >= 0 && state.mode === 'build'){
     state.nodes[state.dragging].x = p.x;
     state.nodes[state.dragging].y = Math.max(20, Math.min(canvas.clientHeight*0.82, p.y));
     _dragMoved = true;
   }
 });
-window.addEventListener('mouseup', ()=>{
+function _endPointer(e){
+  if (e && _activePointerId !== null && e.pointerId !== _activePointerId && e.pointerType !== 'mouse') return;
   if (_dragMoved && state.dragging >= 0) pushHistory();
   state.dragging = -1;
   _dragMoved = false;
-});
+  _activePointerId = null;
+  if (e && e.pointerId != null) {
+    try { canvas.releasePointerCapture(e.pointerId); } catch(_) {}
+  }
+}
+window.addEventListener('pointerup', _endPointer);
+window.addEventListener('pointercancel', _endPointer);
+canvas.addEventListener('contextmenu', e => { if (_isCoarse) e.preventDefault(); });
 
 // ---------------------------- TOOLBAR
 document.querySelectorAll('#tools .tool').forEach(b=>{
