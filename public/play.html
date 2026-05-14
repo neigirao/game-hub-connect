@@ -136,6 +136,13 @@
   .tool .label{font-size:9px;color:#fff;line-height:1;opacity:.9}
   .tools .divider{height:2px;background:rgba(255,255,255,.07);width:60%;margin:6px 0;border-radius:2px}
   .tools .hint{font-size:9px;color:var(--ink-dim);text-align:center;line-height:1.2;padding:0 4px;margin-top:auto;font-family:'JetBrains Mono'}
+  .legend-btn{width:40px;height:32px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:var(--ink-dim);font-size:14px;cursor:pointer;margin:2px auto 0;display:block}
+  .legend-btn:hover{background:rgba(255,255,255,.12)}
+  .legend-panel{position:fixed;left:68px;top:50%;transform:translateY(-50%);background:#1a0f40;border:1.5px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 16px;z-index:999;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+  .legend-panel h4{margin:0 0 10px;font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono'}
+  .legend-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:12px}
+  .legend-key{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:4px;padding:1px 6px;font-family:'JetBrains Mono';font-size:10px;color:#fff;min-width:18px;text-align:center}
+  .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 
   /* ===== Stage ===== */
   .stage{
@@ -550,7 +557,28 @@
     </button>
 
     <div class="hint">DICA<br/>Clique para adicionar nós. Aperte LOOP para fechar o circuito.</div>
+    <button class="legend-btn" id="legendBtn" title="Teclas de atalho">⌨</button>
   </aside>
+
+  <div class="legend-panel" id="legendPanel" style="display:none">
+    <h4>Teclas de atalho</h4>
+    <div class="legend-row"><span class="legend-key">A</span><span class="legend-dot" style="background:#FFE9A8"></span><span style="color:#ddd">Adicionar nó</span></div>
+    <div class="legend-row"><span class="legend-key">M</span><span class="legend-dot" style="background:#70A1FF"></span><span style="color:#ddd">Mover nó</span></div>
+    <div class="legend-row"><span class="legend-key">B</span><span class="legend-dot" style="background:#FFA502"></span><span style="color:#ddd">Booster — acelera</span></div>
+    <div class="legend-row"><span class="legend-key">F</span><span class="legend-dot" style="background:#FF4757"></span><span style="color:#ddd">Freio — desacelera</span></div>
+    <div class="legend-row"><span class="legend-key">N</span><span class="legend-dot" style="background:#2ED573"></span><span style="color:#ddd">Lançador — catapulta</span></div>
+    <div class="legend-row"><span class="legend-key">G</span><span class="legend-dot" style="background:#FF6BD6"></span><span style="color:#ddd">Looping 360°</span></div>
+    <div class="legend-row"><span class="legend-key">T</span><span class="legend-dot" style="background:#A8FF78"></span><span style="color:#ddd">Trampolim — voa!</span></div>
+    <div class="legend-row"><span class="legend-key">Q</span><span class="legend-dot" style="background:#FF6B35"></span><span style="color:#ddd">Fogos — confete</span></div>
+    <div class="legend-row"><span class="legend-key">Z</span><span class="legend-dot" style="background:#B3ECFF"></span><span style="color:#ddd">Gelo — sem atrito</span></div>
+    <div class="legend-row"><span class="legend-key">I</span><span class="legend-dot" style="background:#D946EF"></span><span style="color:#ddd">Inversor — gravidade ⬆</span></div>
+    <div class="legend-row"><span class="legend-key">C</span><span class="legend-dot" style="background:#06B6D4"></span><span style="color:#ddd">Canhão — disparo!</span></div>
+    <div class="legend-row"><span class="legend-key">W</span><span class="legend-dot" style="background:#8B5CF6"></span><span style="color:#ddd">Portal — teleporte</span></div>
+    <div class="legend-row"><span class="legend-key">D</span><span class="legend-dot" style="background:#ff5555"></span><span style="color:#ddd">Deletar nó</span></div>
+    <div class="legend-row"><span class="legend-key">L</span><span class="legend-dot" style="background:#FFE9A8"></span><span style="color:#ddd">Fechar circuito</span></div>
+    <div class="legend-row"><span class="legend-key">Space</span><span class="legend-dot" style="background:#fff"></span><span style="color:#ddd">Build ↔ Testar</span></div>
+    <div class="legend-row"><span class="legend-key">Ctrl+Z</span><span class="legend-dot" style="background:#888"></span><span style="color:#ddd">Desfazer</span></div>
+  </div>
 
   <!-- ====== STAGE ====== -->
   <main class="stage mode-build" id="stage">
@@ -896,6 +924,96 @@ function playCrashSound() {
   src.start();
 }
 
+function playSpringSound() {
+  const ac = getAC();
+  const osc = ac.createOscillator();
+  const g = ac.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(300, ac.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(1400, ac.currentTime + 0.18);
+  g.gain.setValueAtTime(0.22, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.3);
+  osc.connect(g); g.connect(ac.destination);
+  osc.start(); osc.stop(ac.currentTime + 0.3);
+}
+
+function playFireworkSound() {
+  const ac = getAC();
+  const bufSize = Math.floor(ac.sampleRate * 0.35);
+  const buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) {
+    const t = i / bufSize;
+    d[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 0.6) * (1 + Math.sin(i * 0.08));
+  }
+  const src = ac.createBufferSource(); src.buffer = buf;
+  const g = ac.createGain();
+  g.gain.setValueAtTime(0.3, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.35);
+  src.connect(g); g.connect(ac.destination); src.start();
+}
+
+function playIceSound() {
+  const ac = getAC();
+  const osc = ac.createOscillator();
+  const g = ac.createGain();
+  const filter = ac.createBiquadFilter();
+  filter.type = 'highpass'; filter.frequency.value = 1800;
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(2200, ac.currentTime);
+  osc.frequency.linearRampToValueAtTime(1600, ac.currentTime + 0.4);
+  g.gain.setValueAtTime(0.12, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.5);
+  osc.connect(filter); filter.connect(g); g.connect(ac.destination);
+  osc.start(); osc.stop(ac.currentTime + 0.5);
+}
+
+function playInversorSound() {
+  const ac = getAC();
+  const osc = ac.createOscillator();
+  const g = ac.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(800, ac.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(200, ac.currentTime + 0.25);
+  g.gain.setValueAtTime(0.2, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.3);
+  osc.connect(g); g.connect(ac.destination);
+  osc.start(); osc.stop(ac.currentTime + 0.3);
+}
+
+function playCannonSound() {
+  const ac = getAC();
+  const bufSize = Math.floor(ac.sampleRate * 0.5);
+  const buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) {
+    const t = i / bufSize;
+    d[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 1.2) * (t < 0.05 ? 1 : 0.5);
+  }
+  const src = ac.createBufferSource(); src.buffer = buf;
+  const filter = ac.createBiquadFilter();
+  filter.type = 'lowpass'; filter.frequency.value = 600;
+  const g = ac.createGain();
+  g.gain.setValueAtTime(0.5, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.5);
+  src.connect(filter); filter.connect(g); g.connect(ac.destination); src.start();
+}
+
+function playPortalSound() {
+  const ac = getAC();
+  const osc = ac.createOscillator();
+  const g = ac.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(600, ac.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(200, ac.currentTime + 0.15);
+  osc.frequency.exponentialRampToValueAtTime(700, ac.currentTime + 0.35);
+  g.gain.setValueAtTime(0.18, ac.currentTime);
+  g.gain.setValueAtTime(0.18, ac.currentTime + 0.15);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.45);
+  osc.connect(g); g.connect(ac.destination);
+  osc.start(); osc.stop(ac.currentTime + 0.45);
+}
+
 async function initSupabase() {
   renderAuthChip(null);
   const url = localStorage.getItem('cc_sb_url');
@@ -1233,6 +1351,8 @@ function resize() {
   cam.y = cam.ty = r.height / 2;
 }
 window.addEventListener('resize', resize);
+
+const MAX_PARTICLES = 2000;
 
 // ---------------------------- STATE
 const state = {
@@ -2280,6 +2400,18 @@ function initCart(){
     finished: false,
     lastDir: {x:1,y:0},
     timeOnTrack: 0,
+    // node cooldown / state flags — all reset on each run
+    _launchCool: false,
+    _loopCool: false,
+    _looping: false,
+    _springCool: false,
+    _fireworkCool: false,
+    _inversorIn: false,
+    _cannonCool: false,
+    _portalCool: false,
+    _stalledOut: false,
+    stallTime: 0,
+    _gSmooth: 0,
   };
 }
 
@@ -2326,6 +2458,7 @@ function stopTest(){
 }
 
 function spawnSparks(x, y, n, color='#FFE9A8'){
+  if (state.particles.length >= MAX_PARTICLES) return;
   for (let i=0;i<n;i++){
     state.particles.push({
       kind:'spark', x, y,
@@ -2338,6 +2471,7 @@ function spawnSparks(x, y, n, color='#FFE9A8'){
   }
 }
 function spawnSmoke(x, y, n=4){
+  if (state.particles.length >= MAX_PARTICLES) return;
   for (let i=0;i<n;i++){
     state.particles.push({
       kind:'smoke', x: x+(Math.random()-0.5)*8, y: y+(Math.random()-0.5)*8,
@@ -2349,6 +2483,7 @@ function spawnSmoke(x, y, n=4){
   }
 }
 function spawnConfetti(x, y, n=20){
+  if (state.particles.length >= MAX_PARTICLES) return;
   const colors = ['#FF6BD6','#70A1FF','#FFA502','#2ED573','#FFE9A8'];
   for (let i=0;i<n;i++){
     state.particles.push({
@@ -2364,6 +2499,7 @@ function spawnConfetti(x, y, n=20){
   }
 }
 function spawnBolts(x,y,n=4){
+  if (state.particles.length >= MAX_PARTICLES) return;
   for(let i=0;i<n;i++){
     state.particles.push({
       kind:'bolt', x, y,
@@ -2471,12 +2607,15 @@ function hideToast(){ document.getElementById('toast').classList.remove('show');
 
 // ---------------------------- UPDATE
 let lastT = performance.now();
+let _pathCache = null, _pathCacheKey = '';
 function tick(){
   const now = performance.now();
   const dt = Math.min(0.033, (now - lastT)/1000);
   lastT = now;
   const W = canvas.clientWidth, H = canvas.clientHeight;
-  const path = buildPath(state.nodes);
+  const _nodeKey = state.nodes.map(n=>`${n.x|0},${n.y|0},${n.kind}`).join('|') + (state.closedLoop?'C':'');
+  if (_nodeKey !== _pathCacheKey){ _pathCacheKey = _nodeKey; _pathCache = buildPath(state.nodes); }
+  const path = _pathCache;
 
   // camera shake
   state.shakeT = Math.max(0, state.shakeT - 60*dt);
@@ -2533,7 +2672,6 @@ function tick(){
 
       // on-track motion
       const sample = sampleAt(path, c.s);
-      const prevX = c.x, prevY = c.y;
       c.x = sample.x; c.y = sample.y;
       c.angle = Math.atan2(sample.ty, sample.tx);
       c.lastDir = {x: sample.tx, y: sample.ty};
@@ -2590,7 +2728,6 @@ function tick(){
       document.getElementById('gIndicator').style.left = Math.min(100, gShown/6*100) + '%';
 
       // Score progression (live)
-      const aimSpeed = 80;
       state.scores.adrenaline = Math.min(100, state.scores.adrenaline + Math.min(1.5, (speedKmh-30)/40) * dt * 20);
       if (gShown > 3.0 && gShown < 4.5){
         state.scores.adrenaline = Math.min(100, state.scores.adrenaline + 25*dt);
@@ -2679,6 +2816,7 @@ function tick(){
         c.vy = -1100;
         spawnSparks(c.x, c.y, 14, '#A8FF78');
         spawnConfetti(c.x, c.y, 16);
+        playSpringSound();
         showToast('🟢 TRAMPOLIM!', '#A8FF78');
       }
       if (c._springCool && sample.kind !== 'spring') c._springCool = false;
@@ -2689,16 +2827,19 @@ function tick(){
         spawnConfetti(c.x, c.y, 40);
         spawnSparks(c.x, c.y, 20, '#FF6B35');
         state.scores.chaos = Math.min(100, state.scores.chaos + 20);
+        playFireworkSound();
         showToast('🎆 FOGOS!', '#FF6B35');
       }
       if (c._fireworkCool && sample.kind !== 'firework') c._fireworkCool = false;
 
       // Ice zone — low friction, cart slides
       if (sample.kind === 'ice'){
+        if (!c._iceCool){ c._iceCool = true; playIceSound(); }
         a *= 0.15;
         c.v *= 0.9998;
         if (Math.random() < 0.3) spawnSparks(c.x, c.y, 1, '#B3ECFF');
       }
+      if (c._iceCool && sample.kind !== 'ice') c._iceCool = false;
 
       // Inversor — reversed gravity zone, requires 50+ km/h entry speed
       if (sample.kind === 'inversor'){
@@ -2712,6 +2853,7 @@ function tick(){
             setFailLevel(Math.max(state.failLevel, 7));
             showToast('🙃 SEM VELOCIDADE PARA INVERTER!', '#FF4757');
           } else {
+            playInversorSound();
             showToast('🙃 INVERTIDO!', '#D946EF');
             spawnSparks(c.x, c.y, 12, '#D946EF');
             state.scores.adrenaline = Math.min(100, state.scores.adrenaline + 15);
@@ -2730,8 +2872,8 @@ function tick(){
         c.vy = -200;
         spawnSparks(c.x, c.y, 20, '#06B6D4');
         spawnSmoke(c.x, c.y, 8);
+        playCannonSound();
         showToast('💥 CANHÃO!', '#06B6D4');
-        playBoostSound();
       }
       if (c._cannonCool && sample.kind !== 'cannon') c._cannonCool = false;
 
@@ -2739,7 +2881,9 @@ function tick(){
       if (sample.kind === 'portal' && !c._portalCool){
         c._portalCool = true;
         const portalNodes = state.nodes.filter(n => n.kind === 'portal');
-        if (portalNodes.length >= 2){
+        if (portalNodes.length < 2){
+          showToast('🌀 Coloque 2 portais para teleportar!', '#8B5CF6');
+        } else {
           const distFn = n => Math.hypot(n.x - c.x, n.y - c.y);
           const sorted = [...portalNodes].sort((a, b) => distFn(a) - distFn(b));
           const exitPortal = sorted[1]; // second closest = exit
@@ -2753,10 +2897,12 @@ function tick(){
           c.x = exitSam.x; c.y = exitSam.y;
           spawnConfetti(c.x, c.y, 30);
           spawnSparks(c.x, c.y, 18, '#8B5CF6');
+          playPortalSound();
           showToast('🌀 TELEPORTE!', '#8B5CF6');
           state.scores.chaos = Math.min(100, state.scores.chaos + 10);
           state.scores.creativity = Math.min(100, state.scores.creativity + 15);
         }
+      }
       }
       if (c._portalCool && sample.kind !== 'portal') c._portalCool = false;
 
@@ -3287,6 +3433,18 @@ document.getElementById('rcPlayAgainBtn').addEventListener('click', ()=>{
   document.getElementById('runCompleteModal').classList.remove('show');
   setMode('build');
   setTimeout(() => setMode('test'), 100);
+});
+document.getElementById('legendBtn').addEventListener('click', () => {
+  const p = document.getElementById('legendPanel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+});
+document.addEventListener('click', e => {
+  const p = document.getElementById('legendPanel');
+  if (p.style.display !== 'none' &&
+      !p.contains(e.target) &&
+      e.target.id !== 'legendBtn') {
+    p.style.display = 'none';
+  }
 });
 
 // ---- LEVEL RANKING (top-5 para a fase atual) ----
