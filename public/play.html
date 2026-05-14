@@ -131,6 +131,8 @@
   .tool[data-tool="cannon"].active{background:linear-gradient(180deg,#06B6D4,#0369a1);border-color:#06B6D4}
   .tool[data-tool="portal"].active{background:linear-gradient(180deg,#8B5CF6,#4c1d95);border-color:#8B5CF6}
   .tool[data-tool="delete"].active{background:linear-gradient(180deg,#70A1FF,#3b6acc);border-color:#70A1FF}
+  .tool[data-tool="set-start"].active{background:linear-gradient(180deg,#FFA502,#a86a00);border-color:#FFA502}
+  .tool[data-tool="set-end"].active{background:linear-gradient(180deg,#70A1FF,#3b6acc);border-color:#70A1FF}
   .tool:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
   .tool svg{width:26px;height:26px;display:block}
   .tool .label{font-size:9px;color:#fff;line-height:1;opacity:.9}
@@ -554,6 +556,24 @@
     <button class="tool" id="loopBtn" data-tool="loop" title="Fechar circuito (L)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 16 0 8 8 0 0 1-16 0z"/><circle cx="4" cy="12" r="2.5" fill="currentColor"/><circle cx="20" cy="12" r="2.5" fill="currentColor"/></svg>
       <span class="label">LOOP</span>
+    </button>
+    <div class="divider"></div>
+    <button class="tool" id="zoomInBtn" title="Zoom In (=)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+      <span class="label">Z+</span>
+    </button>
+    <button class="tool" id="zoomOutBtn" title="Zoom Out (-)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+      <span class="label">Z−</span>
+    </button>
+    <div class="divider"></div>
+    <button class="tool" data-tool="set-start" title="Definir Embarque — clique num nó">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12,8 12,12 15,14"/><circle cx="12" cy="12" r="2" fill="#FFA502" stroke="none"/></svg>
+      <span class="label">INI</span>
+    </button>
+    <button class="tool" data-tool="set-end" title="Definir Desembarque — clique num nó">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><line x1="9" y1="12" x2="15" y2="12"/><circle cx="12" cy="12" r="2" fill="#70A1FF" stroke="none"/></svg>
+      <span class="label">FIM</span>
     </button>
 
     <div class="hint">DICA<br/>Clique para adicionar nós. Aperte LOOP para fechar o circuito.</div>
@@ -1048,7 +1068,8 @@ async function initSupabase() {
 
 // ---- SHARE URL (sem banco — apenas URL com dados codificados) ----
 function buildShareUrl() {
-  const data = { nodes: state.nodes, loop: state.closedLoop };
+  const data = { nodes: state.nodes, loop: state.closedLoop,
+                 startNodeIdx: state.startNodeIdx, endNodeIdx: state.endNodeIdx };
   const encoded = btoa(JSON.stringify(data));
   return `${location.origin}/play.html?track=${encoded}`;
 }
@@ -1062,6 +1083,8 @@ function loadTrackFromUrl() {
     if (Array.isArray(data.nodes) && data.nodes.length > 0) {
       state.nodes = data.nodes;
       state.closedLoop = !!data.loop;
+      state.startNodeIdx = data.startNodeIdx ?? 0;
+      state.endNodeIdx   = data.endNodeIdx   ?? -1;
       updateLoopBtn();
       return true;
     }
@@ -1090,9 +1113,14 @@ async function loadBlueprintFromUrl() {
       return;
     }
     const bp = rows[0];
-    if (Array.isArray(bp.track_data) && bp.track_data.length > 0) {
-      state.nodes = bp.track_data;
+    // Support both old format (array) and new format (object with nodes + station indices)
+    const td = bp.track_data;
+    const nodes = Array.isArray(td) ? td : (td?.nodes ?? []);
+    if (Array.isArray(nodes) && nodes.length > 0) {
+      state.nodes = nodes;
       state.closedLoop = !!bp.closed_loop;
+      state.startNodeIdx = td?.startNodeIdx ?? 0;
+      state.endNodeIdx   = td?.endNodeIdx   ?? -1;
       currentBlueprintId = bp.id;
       updateLoopBtn();
       pushHistory();
@@ -1139,6 +1167,8 @@ async function loadLevelFromUrl() {
     if (level.starter_track?.nodes?.length > 0) {
       state.nodes = level.starter_track.nodes;
       state.closedLoop = !!level.starter_track.loop;
+      state.startNodeIdx = level.starter_track.startNodeIdx ?? 0;
+      state.endNodeIdx   = level.starter_track.endNodeIdx   ?? -1;
       updateLoopBtn();
       pushHistory();
     }
@@ -1171,7 +1201,7 @@ async function saveBlueprint(name) {
   const { data: bpData, error } = await sbClient.from('blueprints').insert({
     creator_id: currentUser.id,
     name: name || 'Minha Pista',
-    track_data: state.nodes,
+    track_data: { nodes: state.nodes, startNodeIdx: state.startNodeIdx, endNodeIdx: state.endNodeIdx },
     closed_loop: state.closedLoop,
     node_count: state.nodes.length,
     survival_rate: state.scores.survival,
@@ -1234,8 +1264,12 @@ async function loadTrackList() {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       try {
-        state.nodes = JSON.parse(btn.dataset.track);
+        const td = JSON.parse(btn.dataset.track);
+        const nodes = Array.isArray(td) ? td : (td?.nodes ?? []);
+        state.nodes = nodes;
         state.closedLoop = btn.dataset.loop === 'true';
+        state.startNodeIdx = td?.startNodeIdx ?? 0;
+        state.endNodeIdx   = td?.endNodeIdx   ?? -1;
         currentBlueprintId = btn.dataset.id;
         updateLoopBtn();
         closeTracksModal();
@@ -1344,8 +1378,9 @@ const ctx = canvas.getContext('2d');
 const stage = document.getElementById('stage');
 
 let DPR = Math.min(2, window.devicePixelRatio || 1);
-// Camera: follows cart in test mode
-const cam = { x: 0, y: 0, tx: 0, ty: 0, z: 1, tz: 1 };
+// Camera: follows cart in test mode; free pan/zoom in build mode
+const cam = { x: 0, y: 0, tx: 0, ty: 0, z: 1, tz: 1,
+              freeX: 0, freeY: 0, freeZ: 1 };
 function resize() {
   const r = stage.getBoundingClientRect();
   canvas.width = r.width * DPR;
@@ -1354,8 +1389,9 @@ function resize() {
   canvas.style.height = r.height + 'px';
   ctx.setTransform(DPR,0,0,DPR,0,0);
   // Re-center camera when viewport changes
-  cam.x = cam.tx = r.width / 2;
-  cam.y = cam.ty = r.height / 2;
+  cam.x = cam.tx = cam.freeX = r.width / 2;
+  cam.y = cam.ty = cam.freeY = r.height / 2;
+  cam.freeZ = 1;
 }
 window.addEventListener('resize', resize);
 
@@ -1382,6 +1418,8 @@ const state = {
   cameraShake: {x:0,y:0},
   hoverNode: -1,
   dragging: -1,
+  startNodeIdx: 0,   // index of EMBARQUE node (visual only)
+  endNodeIdx:   -1,  // index of DESEMBARQUE node; -1 = last node auto
 };
 
 // ---------------------------- UNDO HISTORY
@@ -1982,8 +2020,13 @@ function drawNodes(){
 
 function drawStations(){
   if (state.nodes.length < 1) return;
-  const first = state.nodes[0];
-  const last = state.nodes[state.nodes.length-1];
+  const si = (state.startNodeIdx >= 0 && state.startNodeIdx < state.nodes.length)
+             ? state.startNodeIdx : 0;
+  const ei = (state.endNodeIdx >= 0 && state.endNodeIdx < state.nodes.length)
+             ? state.endNodeIdx : state.nodes.length - 1;
+  const first = state.nodes[si];
+  const last  = state.nodes[ei];
+
   // With only 1 node, draw the departure station and nothing else
   if (state.nodes.length === 1) {
     drawStation(first.x, first.y, 'EMBARQUE', '#FFA502');
@@ -3024,9 +3067,9 @@ function tick(){
     cam.ty = state.cart.y;
     cam.tz = 1.3;
   } else {
-    cam.tx = W / 2;
-    cam.ty = H / 2;
-    cam.tz = 1;
+    cam.tx = cam.freeX;
+    cam.ty = cam.freeY;
+    cam.tz = cam.freeZ;
   }
   cam.x += (cam.tx - cam.x) * 0.09;
   cam.y += (cam.ty - cam.y) * 0.09;
@@ -3193,7 +3236,13 @@ function showRunComplete(crashed = false){
 // ---------------------------- INPUT
 function canvasPoint(e){
   const r = canvas.getBoundingClientRect();
-  return {x: e.clientX - r.left, y: e.clientY - r.top};
+  const sx = e.clientX - r.left;
+  const sy = e.clientY - r.top;
+  const cW = canvas.clientWidth, cH = canvas.clientHeight;
+  return {
+    x: cam.x + (sx - cW/2) / cam.z,
+    y: cam.y + (sy - cH/2) / cam.z,
+  };
 }
 function nodeAt(p, radius){
   const R = radius || 16;
@@ -3205,6 +3254,7 @@ function nodeAt(p, radius){
 }
 let _dragMoved = false;
 let _activePointerId = null;
+let _panActive = false, _panOriginX = 0, _panOriginY = 0, _panCamX0 = 0, _panCamY0 = 0;
 const _isCoarse = (typeof window !== 'undefined' && window.matchMedia)
   ? window.matchMedia('(pointer: coarse)').matches : false;
 const _hitRadius = _isCoarse ? 26 : 16;
@@ -3222,7 +3272,15 @@ canvas.addEventListener('pointerdown', e=>{
     state.dragging = state.nodes.length - 1;
     pushHistory();
   } else if (state.tool === 'move'){
-    state.dragging = idx;
+    if (idx >= 0) {
+      state.dragging = idx;
+    } else {
+      _panActive = true;
+      _panOriginX = e.clientX;
+      _panOriginY = e.clientY;
+      _panCamX0 = cam.freeX;
+      _panCamY0 = cam.freeY;
+    }
   } else if (state.tool === 'booster' && idx >= 0){
     state.nodes[idx].kind = state.nodes[idx].kind === 'booster' ? 'normal' : 'booster';
     pushHistory();
@@ -3255,21 +3313,49 @@ canvas.addEventListener('pointerdown', e=>{
     pushHistory();
   } else if (state.tool === 'delete' && idx >= 0){
     state.nodes.splice(idx, 1);
+    if (state.startNodeIdx >= state.nodes.length) state.startNodeIdx = 0;
+    if (state.endNodeIdx >= state.nodes.length) state.endNodeIdx = -1;
     pushHistory();
+  } else if (state.tool === 'set-start' && idx >= 0){
+    state.startNodeIdx = idx;
+    pushHistory();
+    showToast('🟠 Embarque definido!', '#FFA502');
+  } else if (state.tool === 'set-end' && idx >= 0){
+    state.endNodeIdx = idx;
+    pushHistory();
+    showToast('🔵 Desembarque definido!', '#70A1FF');
   }
 });
 canvas.addEventListener('pointermove', e=>{
   if (e.pointerType !== 'mouse' && _activePointerId !== null && e.pointerId !== _activePointerId) return;
+
+  // Camera pan (Move tool + empty background drag)
+  if (_panActive) {
+    cam.freeX = _panCamX0 - (e.clientX - _panOriginX) / cam.z;
+    cam.freeY = _panCamY0 - (e.clientY - _panOriginY) / cam.z;
+    canvas.style.cursor = 'grabbing';
+    return;
+  }
+
   const p = canvasPoint(e);
   state.hoverNode = nodeAt(p, _hitRadius);
+
+  // Cursor feedback for Move tool
+  if (state.tool === 'move') {
+    canvas.style.cursor = state.hoverNode >= 0 ? 'pointer' : 'grab';
+  } else {
+    canvas.style.cursor = '';
+  }
+
   if (state.dragging >= 0 && state.mode === 'build'){
     state.nodes[state.dragging].x = p.x;
-    state.nodes[state.dragging].y = Math.max(20, Math.min(canvas.clientHeight*0.82, p.y));
+    state.nodes[state.dragging].y = p.y;
     _dragMoved = true;
   }
 });
 function _endPointer(e){
   if (e && _activePointerId !== null && e.pointerId !== _activePointerId && e.pointerType !== 'mouse') return;
+  if (_panActive) { _panActive = false; canvas.style.cursor = 'grab'; }
   if (_dragMoved && state.dragging >= 0) pushHistory();
   state.dragging = -1;
   _dragMoved = false;
@@ -3281,6 +3367,28 @@ function _endPointer(e){
 window.addEventListener('pointerup', _endPointer);
 window.addEventListener('pointercancel', _endPointer);
 canvas.addEventListener('contextmenu', e => { if (_isCoarse) e.preventDefault(); });
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  if (state.mode !== 'build') return;
+  if (e.ctrlKey || e.metaKey) {
+    // Ctrl+scroll = zoom centrado no cursor
+    const factor = e.deltaY > 0 ? 0.92 : 1.09;
+    const newZ = Math.min(4, Math.max(0.25, cam.freeZ * factor));
+    const r = canvas.getBoundingClientRect();
+    const mx = e.clientX - r.left;
+    const my = e.clientY - r.top;
+    const cW = canvas.clientWidth, cH = canvas.clientHeight;
+    const wx = cam.freeX + (mx - cW/2) / cam.freeZ;
+    const wy = cam.freeY + (my - cH/2) / cam.freeZ;
+    cam.freeZ = newZ;
+    cam.freeX = wx - (mx - cW/2) / cam.freeZ;
+    cam.freeY = wy - (my - cH/2) / cam.freeZ;
+  } else {
+    // Scroll normal = pan
+    cam.freeX += e.deltaX / cam.freeZ;
+    cam.freeY += e.deltaY / cam.freeZ;
+  }
+}, { passive: false });
 
 // ---------------------------- TOOLBAR
 document.querySelectorAll('#tools .tool').forEach(b=>{
@@ -3331,6 +3439,8 @@ window.addEventListener('keydown', e=>{
     e.preventDefault();
     toggleMode();
   }
+  if (e.key === '=' || e.key === '+') cam.freeZ = Math.min(4, cam.freeZ * 1.25);
+  if (e.key === '-' || e.key === '_') cam.freeZ = Math.max(0.25, cam.freeZ / 1.25);
 });
 
 // ---------------------------- MODE TOGGLE
@@ -3373,6 +3483,14 @@ function setMode(m){
     stopTest();
     launchBtn.classList.remove('stop');
     launchBtn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> LANÇAR!';
+    // Return camera to embark station
+    const si = (state.startNodeIdx >= 0 && state.startNodeIdx < state.nodes.length)
+               ? state.startNodeIdx : 0;
+    if (state.nodes[si]) {
+      cam.freeX = state.nodes[si].x;
+      cam.freeY = state.nodes[si].y;
+    }
+    cam.freeZ = 1;
   }
 }
 function toggleMode(){ setMode(state.mode === 'build' ? 'test' : 'build'); }
@@ -3439,6 +3557,12 @@ document.getElementById('rcBuildBtn').addEventListener('click', ()=>{
 document.getElementById('rcPlayAgainBtn').addEventListener('click', ()=>{
   document.getElementById('runCompleteModal').classList.remove('show');
   setMode('build');
+});
+document.getElementById('zoomInBtn').addEventListener('click', () => {
+  cam.freeZ = Math.min(4, cam.freeZ * 1.25);
+});
+document.getElementById('zoomOutBtn').addEventListener('click', () => {
+  cam.freeZ = Math.max(0.25, cam.freeZ / 1.25);
 });
 document.getElementById('legendBtn').addEventListener('click', () => {
   const p = document.getElementById('legendPanel');

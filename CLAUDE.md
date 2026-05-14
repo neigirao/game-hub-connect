@@ -127,7 +127,10 @@ state = {
   },
   closedLoop: boolean,
   tool: 'add'|'move'|'booster'|'brake'|'launcher'|'loop-node'|
-        'spring'|'firework'|'ice'|'inversor'|'cannon'|'portal'|'delete',
+        'spring'|'firework'|'ice'|'inversor'|'cannon'|'portal'|
+        'set-start'|'set-end'|'delete',
+  startNodeIdx: number,   // índice do nó de EMBARQUE (default: 0)
+  endNodeIdx: number,     // índice do nó de DESEMBARQUE (-1 = último nó automático)
   scores: { survival, adrenaline, chaos, smoothness, creativity },
   particles: [],   // limitado a MAX_PARTICLES = 2000
   ghosts: [],
@@ -150,7 +153,7 @@ state = {
 
 **Ferramentas do editor (teclado):**
 - `A` — Adicionar nó
-- `M` — Mover nó
+- `M` — Mover nó (arrastar fundo vazio = pan câmera)
 - `B` — Booster
 - `F` — Freio (brake)
 - `N` — Lançador (catapulta)
@@ -166,6 +169,22 @@ state = {
 - `Space` — Alternar Build/Test
 - `Ctrl+Z` — Undo (stack de 60 snapshots)
 - `?` — Painel de legenda de atalhos
+- `=` / `+` — Zoom In (câmera livre)
+- `-` / `_` — Zoom Out (câmera livre)
+
+**Câmera livre no editor (modo Build):**
+- `state.cam.freeX/Y/Z` controlam a posição e zoom da câmera livre
+- Move tool + arrastar fundo vazio → pan câmera (drag to pan)
+- Scroll do mouse → pan horizontal/vertical
+- Ctrl+Scroll → zoom centrado no cursor
+- Botões `＋`/`－` na toolbar → zoom in/out
+- Ao voltar do modo Testar → câmera centraliza no nó de EMBARQUE
+
+**Ferramentas de estação:**
+- Botão `INI` (tool `set-start`) → clica em nó → define EMBARQUE
+- Botão `FIM` (tool `set-end`) → clica em nó → define DESEMBARQUE
+- Estações salvas em `track_data: { nodes, startNodeIdx, endNodeIdx }` (JSONB)
+- Backward compatible: blueprints antigos (array) carregam com startNodeIdx=0, endNodeIdx=-1
 
 **Sons (Web Audio API, síntese — zero assets externos):**
 - Rail hum (oscilador sawtooth proporcional à velocidade)
@@ -298,6 +317,9 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 - [x] og:image dinâmico em `/share` (SVG gerado no Worker com score/estrelas/speed/g)
 - [x] Fontes Google consolidadas no `__root.tsx` (sem FOUC de @import inline)
 - [x] `onAuthStateChange` em `RootComponent` — React Query invalida cache no login/logout
+- [x] Câmera livre no editor: pan com Move+arrastar fundo, scroll pan, Ctrl+scroll zoom, botões zoom
+- [x] Ferramentas de estação INI/FIM — definem EMBARQUE/DESEMBARQUE; salvos em track_data JSONB
+- [x] Links "Desafios" e "Pistas da Comunidade" desativados do GameNav (rotas existem mas não linkadas)
 
 - [x] **Painel de Admin** `/admin` completo — admin: `neigirao@gmail.com`
   - [x] Coluna `is_admin` em `profiles` + RLS + guard de rota `/admin/*`
@@ -330,6 +352,8 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 | sbClient = null em play.html | Usuário que vai direto para /play.html não tem cc_sb_url no localStorage; usar optional chaining silencia o erro mas o clique vira no-op |
 | @import inline causa FOUC | Não adicionar `@import url(google fonts)` dentro de `<style>` em componentes React — consolidar em `__root.tsx` head links |
 | `<a href>` vs `<Link to>` | Links internos de rotas React devem usar `<Link to>`, não `<a href>` — caso contrário perdem o cache do QueryClient a cada navegação |
+| canvasPoint() deve converter com câmera | Após adicionar câmera livre, `canvasPoint()` deve usar `cam.x + (sx - W/2) / cam.z` — sem isso, cliques em nós ficam deslocados quando câmera está em posição diferente do centro |
+| track_data formato duplo | Blueprints antigos têm track_data como array JSON; novos têm `{nodes, startNodeIdx, endNodeIdx}`. Load code deve checar `Array.isArray(td) ? td : td.nodes` |
 
 ---
 
