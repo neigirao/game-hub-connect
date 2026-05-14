@@ -841,7 +841,14 @@ function renderAuthChip(user) {
         <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.1 5c-.4.4 6.7-4.9 6.7-14.5 0-1.2-.1-2.4-.4-3.5z"/>
       </svg>
       <span>Entrar com Google</span>`;
-    _authChip.onclick = () => sbClient?.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
+    _authChip.onclick = () => {
+      if (sbClient) {
+        sbClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
+      } else {
+        // cc_sb_url/key not in localStorage — user came directly to play.html bypassing React app
+        window.location.href = '/login?redirectTo=' + encodeURIComponent(window.location.pathname + window.location.search);
+      }
+    };
   } else {
     const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'jogador';
     const avatar = user.user_metadata?.avatar_url;
@@ -2903,7 +2910,6 @@ function tick(){
           state.scores.chaos = Math.min(100, state.scores.chaos + 10);
           state.scores.creativity = Math.min(100, state.scores.creativity + 15);
         }
-      }
       }
       if (c._portalCool && sample.kind !== 'portal') c._portalCool = false;
 
