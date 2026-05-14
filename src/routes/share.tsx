@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 
 export const Route = createFileRoute("/share")({
@@ -11,16 +11,28 @@ export const Route = createFileRoute("/share")({
     a: Number(search.a ?? 0),
     c: Number(search.c ?? 0),
   }),
-  head: () => ({
-    meta: [
-      { title: "Meu Score — Crash Coaster" },
-      { name: "description", content: "Veja meu score em Crash Coaster e tente superar!" },
-      { property: "og:title", content: "Meu Score — Crash Coaster 🎢" },
-      { property: "og:description", content: "Score gerado no Crash Coaster. Venha superar!" },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+  head: ({ search }) => {
+    const ogImage = `/api/og/share?score=${search.score}&stars=${search.stars}&speed=${search.speed}&g=${search.g}`;
+    const starEmoji = "⭐".repeat(Math.min(3, search.stars));
+    const title = `${search.score} pts ${starEmoji} — Crash Coaster 🎢`;
+    const description = `Velocidade: ${search.speed} km/h · G-force: ${search.g}G. Você consegue superar?`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { property: "og:image", content: ogImage },
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "630" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: ogImage },
+      ],
+    };
+  },
   component: SharePage,
 });
 
@@ -57,16 +69,15 @@ function SharePage() {
       gap: 24,
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
         @keyframes pop { 0%{transform:scale(.85);opacity:0} 70%{transform:scale(1.04)} 100%{transform:scale(1);opacity:1} }
         @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
 
       {/* Logo */}
-      <a href="/" style={{ textDecoration: "none", fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 18, color: "#B7AEE0", display: "flex", alignItems: "center", gap: 8 }}>
+      <Link to="/" style={{ textDecoration: "none", fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 18, color: "#B7AEE0", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ width: 30, height: 30, borderRadius: 8, background: "conic-gradient(from 220deg,#FFA502,#FF6BD6,#70A1FF,#2ED573,#FFA502)", boxShadow: "0 2px 0 #1a0a48" }} />
         Crash Coaster
-      </a>
+      </Link>
 
       {/* Score card */}
       <div style={{

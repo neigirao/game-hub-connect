@@ -7,7 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { GameNav } from "@/components/game-nav";
+import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
 
@@ -88,24 +90,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Game Hub Connect is a web game application that allows users to play and track their progress." },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Game Hub Connect is a web game application that allows users to play and track their progress." },
+      { title: "Crash Coaster — The game where failing is more fun than winning" },
+      { name: "description", content: "Construa montanhas-russas improváveis, provoque acidentes épicos e compartilhe o caos. Crash Coaster é um jogo sandbox 2D de física no browser." },
+      { name: "author", content: "Crash Coaster" },
+      { property: "og:title", content: "Crash Coaster 🎢" },
+      { property: "og:description", content: "Construa montanhas-russas improváveis e compartilhe o caos. The game where failing is more fun than winning." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
-      { name: "twitter:description", content: "Game Hub Connect is a web game application that allows users to play and track their progress." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5e0d4ed9-979b-43cd-9e87-b678b0cc6d87/id-preview-1bed519b--77df94cf-5ce7-44fa-9184-632abcf8365e.lovable.app-1778459097672.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5e0d4ed9-979b-43cd-9e87-b678b0cc6d87/id-preview-1bed519b--77df94cf-5ce7-44fa-9184-632abcf8365e.lovable.app-1778459097672.png" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Crash Coaster 🎢" },
+      { name: "twitter:description", content: "Construa montanhas-russas improváveis e compartilhe o caos." },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" },
     ],
   }),
   shellComponent: RootShell,
@@ -130,6 +129,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      queryClient.invalidateQueries();
+    });
+    return () => subscription.unsubscribe();
+  }, [queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>

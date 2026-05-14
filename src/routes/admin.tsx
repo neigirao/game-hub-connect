@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin")({
@@ -25,8 +25,6 @@ function AdminLayout() {
       color: "#fff",
       fontFamily: "'Inter',system-ui,sans-serif",
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');`}</style>
-
       {/* Admin sub-navbar */}
       <div style={{
         background: "rgba(255,71,87,.12)",

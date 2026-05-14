@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -472,7 +472,6 @@ export function ProfilePage() {
   return (
     <div style={S.page}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
         @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:.9} }
         @keyframes rewardSlide { from{opacity:0;transform:translateY(-16px) scale(.95)} to{opacity:1;transform:translateY(0) scale(1)} }
         @keyframes rewardPop { 0%{transform:scale(0);opacity:0} 60%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1} }
@@ -643,9 +642,9 @@ export function ProfilePage() {
             <div style={{ color: "#B7AEE0", marginTop: 8, fontSize: 14 }}>
               Parece que seu perfil ainda não foi criado. Tente fazer login novamente.
             </div>
-            <a href="/login" style={{ display: "inline-block", marginTop: 16, padding: "10px 20px", background: "linear-gradient(180deg,#FF6BD6,#a8329c)", borderRadius: 12, color: "#fff", textDecoration: "none", fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700 }}>
+            <Link to="/login" style={{ display: "inline-block", marginTop: 16, padding: "10px 20px", background: "linear-gradient(180deg,#FF6BD6,#a8329c)", borderRadius: 12, color: "#fff", textDecoration: "none", fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700 }}>
               Ir para Login
-            </a>
+            </Link>
           </div>
         )}
       </div>

@@ -160,8 +160,8 @@ state = {
 
 ## 5. Banco de Dados (Supabase)
 
-**Project ID:** `hafxruwnggitvtyngedy`
-**URL:** `https://hafxruwnggitvtyngedy.supabase.co`
+**Project ID:** `sekuurohkxqktpllebdd`
+**URL:** `https://sekuurohkxqktpllebdd.supabase.co`
 
 ### Schema (migrations em `supabase/migrations/`)
 

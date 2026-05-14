@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useRouterState } from "@tanstack/react-router";
+import { useRouterState, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 
@@ -128,42 +128,49 @@ export function GameNav() {
   const initial = user?.name?.[0]?.toUpperCase() ?? "?";
 
   return (
-    <>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&display=swap');`}</style>
-      <nav style={S.navbar}>
-        <a href="/home.html" style={S.logo}>
-          <div style={S.badge} />
-          <span>CRASH COASTER</span>
-        </a>
-        <div style={S.spacer} />
-        {LINKS.map((l) => (
+    <nav style={S.navbar}>
+      <a href="/home.html" style={S.logo}>
+        <div style={S.badge} />
+        <span>CRASH COASTER</span>
+      </a>
+      <div style={S.spacer} />
+      {LINKS.map((l) =>
+        l.href.endsWith(".html") ? (
           <a
             key={l.href}
             href={l.href}
-            style={{
-              ...S.link,
-              ...(pathname === l.href || (l.href !== "/play.html" && pathname.startsWith(l.href)) ? S.linkActive : {}),
-            }}
+            style={S.link}
           >
             {l.label}
           </a>
-        ))}
-        <div style={{ width: 1, height: 24, background: "rgba(255,255,255,.12)", flexShrink: 0 }} />
-        {user ? (
-          <a href="/profile" style={{ display: "flex", alignItems: "center", gap: 7, textDecoration: "none" }}>
-            {user.avatar ? (
-              <img src={user.avatar} alt={user.name} style={S.avatar(user.avatar)} />
-            ) : (
-              <div style={S.avatarInitial}>{initial}</div>
-            )}
-            <span style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 600, fontSize: 13, color: "#fff", maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {user.name.split(" ")[0]}
-            </span>
-          </a>
         ) : (
-          <a href="/login" style={S.loginBtn}>Entrar</a>
-        )}
-      </nav>
-    </>
+          <Link
+            key={l.href}
+            to={l.href}
+            style={{
+              ...S.link,
+              ...(pathname === l.href || pathname.startsWith(l.href) ? S.linkActive : {}),
+            }}
+          >
+            {l.label}
+          </Link>
+        )
+      )}
+      <div style={{ width: 1, height: 24, background: "rgba(255,255,255,.12)", flexShrink: 0 }} />
+      {user ? (
+        <Link to="/profile" style={{ display: "flex", alignItems: "center", gap: 7, textDecoration: "none" }}>
+          {user.avatar ? (
+            <img src={user.avatar} alt={user.name} style={S.avatar(user.avatar)} />
+          ) : (
+            <div style={S.avatarInitial}>{initial}</div>
+          )}
+          <span style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 600, fontSize: 13, color: "#fff", maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {user.name.split(" ")[0]}
+          </span>
+        </Link>
+      ) : (
+        <Link to="/login" style={S.loginBtn}>Entrar</Link>
+      )}
+    </nav>
   );
 }

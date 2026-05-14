@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageError, PulseSkeleton } from "@/components/page-error";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -421,7 +421,6 @@ export function CampaignPage() {
   return (
     <div style={S.page}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
         @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:.9} }
         @keyframes slideIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
@@ -485,7 +484,7 @@ export function CampaignPage() {
 
         {!loading && levels.length > 0 && !userId && (
           <div style={{ textAlign: "center", padding: "12px 0", color: "#B7AEE0", fontSize: 13 }}>
-            <a href="/login" style={{ color: "#FF6BD6", textDecoration: "none", fontWeight: 700 }}>Faça login</a> para salvar seu progresso e aparecer no ranking.
+            <Link to="/login" style={{ color: "#FF6BD6", textDecoration: "none", fontWeight: 700 }}>Faça login</Link> para salvar seu progresso e aparecer no ranking.
           </div>
         )}
       </div>
