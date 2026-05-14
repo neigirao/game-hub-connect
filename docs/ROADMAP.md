@@ -19,9 +19,20 @@
 
 **Decisão:** opção (b) — `/` decide pela sessão: anônimo → `home.html`, autenticado → `/campaign`.
 
-**Implementado em:** `src/routes/index.tsx` (sessão 12).
+**Implementado em:** `src/routes/index.tsx` (sessão 12, refinado na sessão 14 com fallback de erro e tela de loading temática).
 
 **Próximo passo opcional:** migrar a landing para uma rota React nativa (opção c) para ganhar SSR/SEO via `head()`.
+
+---
+
+### ✅ 🔴 Correções de bloqueio no `play.html` (sessão 14)
+
+- [x] Unificar duplicidade de `showToast` (corrige `SyntaxError` que travava todos os botões do jogo)
+- [x] Guard em `startTest()` quando `initCart()` retorna `null` (sem nós suficientes)
+- [x] `initDefaultTrack()` cria mini-rampa de 3 nós para Test mode funcionar de cara
+- [x] Favicon inline no `<head>` para eliminar 404 no console
+
+**Critério de aceite:** ✅ Botões do jogo respondem; "Testar" inicia corrida em sessão nova sem erro; console limpo de 404 do favicon.
 
 ---
 
