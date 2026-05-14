@@ -2282,7 +2282,17 @@ function initCart(){
 }
 
 function startTest(){
-  state.cart = initCart();
+  const cart = initCart();
+  if (!cart) {
+    showToast('Construa pelo menos 2 nós para testar 🛤️', '#FFA502');
+    state.mode = 'build';
+    stage.classList.remove('mode-test');
+    document.querySelectorAll('.mode-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === 'build');
+    });
+    return;
+  }
+  state.cart = cart;
   state.particles = [];
   state.ghosts = [];
   state.debris = [];
