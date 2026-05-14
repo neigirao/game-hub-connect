@@ -1280,9 +1280,11 @@ function undo() {
 function initDefaultTrack(){
   resize();
   const r = stage.getBoundingClientRect();
-  // Start with just the departure station placed at the center-left of the canvas
+  // Mini-rampa default — 3 nós para que o Testar funcione imediatamente
   state.nodes = [
-    {x: r.width * 0.3, y: r.height * 0.6, kind: 'normal'},
+    {x: r.width * 0.20, y: r.height * 0.35, kind: 'normal'},
+    {x: r.width * 0.50, y: r.height * 0.55, kind: 'normal'},
+    {x: r.width * 0.80, y: r.height * 0.65, kind: 'normal'},
   ];
   state.closedLoop = false;
   updateLoopBtn();
