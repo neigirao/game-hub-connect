@@ -11,16 +11,28 @@ export const Route = createFileRoute("/share")({
     a: Number(search.a ?? 0),
     c: Number(search.c ?? 0),
   }),
-  head: () => ({
-    meta: [
-      { title: "Meu Score — Crash Coaster" },
-      { name: "description", content: "Veja meu score em Crash Coaster e tente superar!" },
-      { property: "og:title", content: "Meu Score — Crash Coaster 🎢" },
-      { property: "og:description", content: "Score gerado no Crash Coaster. Venha superar!" },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+  head: ({ search }) => {
+    const ogImage = `/api/og/share?score=${search.score}&stars=${search.stars}&speed=${search.speed}&g=${search.g}`;
+    const starEmoji = "⭐".repeat(Math.min(3, search.stars));
+    const title = `${search.score} pts ${starEmoji} — Crash Coaster 🎢`;
+    const description = `Velocidade: ${search.speed} km/h · G-force: ${search.g}G. Você consegue superar?`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { property: "og:image", content: ogImage },
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "630" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: ogImage },
+      ],
+    };
+  },
   component: SharePage,
 });
 
