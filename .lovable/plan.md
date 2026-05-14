@@ -1,57 +1,55 @@
-# Corrigir `SyntaxError: Identifier 'showToast' has already been declared`
+# Corrigir “carrinho parado ao testar” e ruído de 404 no console
 
-## Causa
+## Diagnóstico
 
-`public/play.html` declara `function showToast(...)` duas vezes:
+Investiguei `public/play.html`:
 
-- **Linha 921** — versão "modal", usa `#globalToast`, assinatura `(msg, isError=false)`.
-- **Linha 2450** — versão "rodapé", usa `#toast`, assinatura `(text, color='#FF4757')`.
+1. **Carrinho parado** — causa-raiz:
+   - `initDefaultTrack()` (linha 1279) cria **apenas 1 nó** (a estação de partida).
+   - `initCart()` (linha 2266) retorna `null` quando `state.nodes.length < 2`.
+   - `startTest()` (linha 2283) faz `state.cart = initCart()` sem checar `null` → o `tick()` nunca entra na física porque `state.cart` é falsy. Resultado: o jogador clica **Testar**, nada acontece e nenhum aviso aparece.
+   - O caso é comum ao abrir `play.html?level=1` antes do `loadLevelFromUrl()` async terminar (ou quando o usuário ainda não passou pela rota React e o `localStorage.cc_sb_url/key` não foi semeado, fazendo o fetch do level abortar).
 
-Como ambas estão no mesmo `<script>` (modo estrito implícito do bundler), a segunda declaração lança `SyntaxError` e **todo o script para de carregar**. Resultado: nenhum handler de clique do editor é registrado, e qualquer botão do jogo fica inerte.
+2. **`404 (Not Found)`** — vem do `/favicon.ico`. O `play.html` não declara `<link rel="icon">`, então o navegador pede `/favicon.ico` e leva 404. Confirmado nas requisições de rede do preview.
 
-Há ~30 chamadas espalhadas, misturando os dois estilos:
-- `showToast('msg', true)` → quer destacar erro
-- `showToast('msg', '#FF6BD6')` → quer cor customizada
-- `showToast('msg')` → caso default
+3. **`A listener indicated an asynchronous response by returning true...`** — ruído de extensão de navegador (Chrome MV3), **não** é bug do jogo. Sem ação necessária além de documentar.
 
-## Correção
+## Mudanças
 
-Manter **uma única** `showToast` que aceite os dois formatos e use ambos os elementos do DOM já presentes (`#toast` no rodapé é o usado pelo gameplay; `#globalToast` é o modal central usado por save/share).
+### `public/play.html`
 
-### Passos
+1. **Guarda em `startTest()`** — se `initCart()` retornar `null`:
+   - mostrar toast `"Construa pelo menos 2 nós para testar 🛤️"`,
+   - voltar `state.mode` para `'build'` e atualizar a UI dos botões via `setMode('build')` (sem reentrar em `startTest`),
+   - fazer `return` antes de mexer em partículas/UI.
 
-1. **Remover** a declaração da linha 921 (versão modal antiga).
-2. **Substituir** a declaração da linha 2450 por uma versão unificada:
-   - Detecta se o segundo argumento é boolean (modo erro) ou string (cor de borda).
-   - Renderiza no `#toast` (rodapé) por padrão — é o elemento mais visível durante o gameplay.
-   - Quando o segundo argumento é boolean, aplica cor vermelha (`--danger`) para erro e verde (`--safe`) para sucesso.
-3. **Manter** a função `hideToast()` existente.
-4. Não alterar nenhuma das ~30 chamadas — a nova assinatura é compatível com todas.
+2. **`initDefaultTrack()` com 3 nós** (mini-rampa) em vez de 1 — assim o Testar funciona imediatamente em sessão nova:
+   ```js
+   state.nodes = [
+     {x: r.width*0.2, y: r.height*0.35, kind:'normal'}, // estação alta
+     {x: r.width*0.5, y: r.height*0.55, kind:'normal'},
+     {x: r.width*0.8, y: r.height*0.65, kind:'normal'}, // chegada baixa
+   ];
+   ```
+   Mantém `closedLoop = false` e a chamada de `pushHistory()`.
 
-### Detalhes técnicos
+3. **Favicon inline** no `<head>`, eliminando o 404 sem precisar criar arquivo:
+   ```html
+   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23170C3D'/%3E%3Ctext x='50%25' y='58%25' font-size='40' text-anchor='middle' fill='%23FF6BD6'%3E🎢%3C/text%3E%3C/svg%3E" />
+   ```
 
-```js
-function showToast(text, opt) {
-  const t = document.getElementById('toast');
-  if (!t) return;
-  t.textContent = text;
-  let color = '#FF4757';
-  if (typeof opt === 'string') color = opt;
-  else if (opt === true) color = '#FF4757';
-  else if (opt === false) color = '#2ED573';
-  t.style.borderColor = color;
-  t.classList.add('show');
-  clearTimeout(showToast._t);
-  showToast._t = setTimeout(() => t.classList.remove('show'), 2000);
-}
-```
+## Não vou tocar
+
+- Lógica de física, score, level loading, RLS — fora do escopo do bug reportado.
+- O aviso "message channel closed" — origem em extensão do navegador, sem código do projeto envolvido.
 
 ## Verificação
 
-- Recarregar `/play.html` e confirmar no console que **não** há mais `SyntaxError`.
-- Clicar no canvas com a ferramenta Adicionar — nó deve aparecer.
-- Testar botões da topbar (Build/Test, Loop, Salvar) — todos devem responder e o toast deve aparecer.
+- Abrir `/play.html` (sem `?level`) → clicar **Testar** → carrinho desce a mini-rampa.
+- Abrir `/play.html?level=1` logado → starter track substitui o default e Testar roda normal.
+- Apagar todos os nós e clicar Testar → toast `"Construa pelo menos 2 nós..."` aparece e o modo volta a Build.
+- Console limpo: sem mais `404 favicon.ico`.
 
-## Arquivos afetados
+## Arquivos
 
-- `public/play.html` (apenas remoção/substituição das duas declarações de `showToast`)
+- `public/play.html`
