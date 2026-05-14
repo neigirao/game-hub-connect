@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageError, PulseSkeleton } from "@/components/page-error";
@@ -201,7 +201,6 @@ export function ChallengePage() {
   return (
     <div style={S.page}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
         @keyframes slideIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
         @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
       `}</style>
@@ -345,7 +344,7 @@ export function ChallengePage() {
               <div style={{ padding: "14px 20px 20px" }}>
                 {!userId ? (
                   <div style={{ textAlign: "center" as const, padding: "20px 0", color: "#B7AEE0", fontSize: 13 }}>
-                    <a href="/login" style={{ color: "#FF6BD6", fontWeight: 700, textDecoration: "none" }}>Faça login</a> para aparecer no ranking.
+                    <Link to="/login" style={{ color: "#FF6BD6", fontWeight: 700, textDecoration: "none" }}>Faça login</Link> para aparecer no ranking.
                   </div>
                 ) : null}
                 <RankTable entries={entries} userId={userId} />

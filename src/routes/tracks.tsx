@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageError, PulseSkeleton } from "@/components/page-error";
@@ -285,7 +285,6 @@ export function TracksPage() {
   return (
     <div style={S.page}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
         @keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
 
@@ -403,7 +402,7 @@ export function TracksPage() {
 
         {!loading && !userId && blueprints.length > 0 && (
           <div style={{ textAlign: "center" as const, color: "#B7AEE0", fontSize: 13, paddingBottom: 8 }}>
-            <a href="/login" style={{ color: "#FF6BD6", textDecoration: "none", fontWeight: 700 }}>Faça login</a> para curtir pistas e salvar suas favoritas.
+            <Link to="/login" style={{ color: "#FF6BD6", textDecoration: "none", fontWeight: 700 }}>Faça login</Link> para curtir pistas e salvar suas favoritas.
           </div>
         )}
       </div>

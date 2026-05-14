@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 
 export const Route = createFileRoute("/share")({
@@ -57,16 +57,15 @@ function SharePage() {
       gap: 24,
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
         @keyframes pop { 0%{transform:scale(.85);opacity:0} 70%{transform:scale(1.04)} 100%{transform:scale(1);opacity:1} }
         @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
 
       {/* Logo */}
-      <a href="/" style={{ textDecoration: "none", fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 18, color: "#B7AEE0", display: "flex", alignItems: "center", gap: 8 }}>
+      <Link to="/" style={{ textDecoration: "none", fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 18, color: "#B7AEE0", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ width: 30, height: 30, borderRadius: 8, background: "conic-gradient(from 220deg,#FFA502,#FF6BD6,#70A1FF,#2ED573,#FFA502)", boxShadow: "0 2px 0 #1a0a48" }} />
         Crash Coaster
-      </a>
+      </Link>
 
       {/* Score card */}
       <div style={{
