@@ -8,6 +8,25 @@
 
 ## [Não lançado] — Em desenvolvimento
 
+### Sessão 14 — 2026-05-14: Correções no editor/Test mode e landing
+
+**Objetivo da sessão:** Desbloquear o modo Testar logo no primeiro acesso, corrigir erros de console e restaurar a landing `home.html` na rota `/`.
+
+#### Corrigido — `public/play.html`
+- **`SyntaxError: Identifier 'showToast' has already been declared`** — duas declarações de `showToast` foram unificadas em uma única função `showToast(text, opt?)`, onde `opt` aceita string (cor), boolean (modo erro) ou `false` (sucesso). Renderiza em `#toast` com timeout de 2000ms. Removida a versão antiga "modal" (`#globalToast`).
+- **Carrinho parado ao apertar "Testar"** — `startTest()` agora valida o retorno de `initCart()`: se `null` (nós insuficientes), exibe toast "Construa pelo menos 2 nós para testar 🛤️", reverte `state.mode` para `'build'`, remove a classe `mode-test` e devolve o foco ao botão de Construir.
+- **404 `favicon.ico`** — adicionado `<link rel="icon">` inline (data URI SVG com gradiente azul + 🎢) no `<head>` para eliminar a request 404.
+- **Mini-rampa padrão em `initDefaultTrack()`** — alterado de 1 nó (apenas estação de partida) para 3 nós (alto 0.20/0.35 → meio 0.50/0.55 → baixo 0.80/0.65). Test mode agora funciona imediatamente em sessões novas, sem precisar carregar pista do banco.
+
+#### Adicionado — Landing pública na rota `/`
+- `src/routes/index.tsx` agora decide pelo estado da sessão Supabase: anônimo → `window.location.replace('/home.html')`; autenticado → `navigate({ to: '/campaign' })`. Resolve o problema de a home não aparecer mais no preview após a navbar React global ter sido introduzida na sessão 9.
+- Tela de loading minimalista com paleta do jogo durante o `getSession()`.
+
+#### Notas
+- O aviso `"A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received"` é ruído de extensão MV3 do Chrome — não é bug do app.
+
+---
+
 ### Sessão 13 — 2026-05-13: Rotas sociais, loja e desafio diário
 
 **Objetivo da sessão:** Consolidar recursos sociais/economia no app React e preparar base SQL do desafio diário.
