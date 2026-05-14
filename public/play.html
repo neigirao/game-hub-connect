@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=1440" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23170C3D'/%3E%3Ctext x='50%25' y='58%25' font-size='40' text-anchor='middle' fill='%23FF6BD6'%3E🎢%3C/text%3E%3C/svg%3E" />
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
 <style>
   :root{
@@ -1279,9 +1280,11 @@ function undo() {
 function initDefaultTrack(){
   resize();
   const r = stage.getBoundingClientRect();
-  // Start with just the departure station placed at the center-left of the canvas
+  // Mini-rampa default — 3 nós para que o Testar funcione imediatamente
   state.nodes = [
-    {x: r.width * 0.3, y: r.height * 0.6, kind: 'normal'},
+    {x: r.width * 0.20, y: r.height * 0.35, kind: 'normal'},
+    {x: r.width * 0.50, y: r.height * 0.55, kind: 'normal'},
+    {x: r.width * 0.80, y: r.height * 0.65, kind: 'normal'},
   ];
   state.closedLoop = false;
   updateLoopBtn();
@@ -2281,7 +2284,17 @@ function initCart(){
 }
 
 function startTest(){
-  state.cart = initCart();
+  const cart = initCart();
+  if (!cart) {
+    showToast('Construa pelo menos 2 nós para testar 🛤️', '#FFA502');
+    state.mode = 'build';
+    stage.classList.remove('mode-test');
+    document.querySelectorAll('.mode-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === 'build');
+    });
+    return;
+  }
+  state.cart = cart;
   state.particles = [];
   state.ghosts = [];
   state.debris = [];
