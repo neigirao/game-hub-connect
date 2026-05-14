@@ -82,8 +82,6 @@ type NavUser = { name: string; avatar: string | null };
 const BASE_LINKS = [
   { href: "/play.html", label: "🎢 Jogar" },
   { href: "/campaign", label: "🗺️ Campanha" },
-  { href: "/challenge", label: "🏁 Desafio" },
-  { href: "/tracks", label: "🛤️ Pistas" },
   { href: "/leaderboard", label: "🏆 Ranking" },
   { href: "/shop", label: "🛒 Loja" },
   { href: "/profile", label: "👤 Perfil" },

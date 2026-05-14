@@ -22,7 +22,7 @@ function LoginPage() {
       return;
     }
     if (result.redirected) return;
-    window.location.href = "/";
+    window.location.href = "/campaign";
   };
 
   return (
