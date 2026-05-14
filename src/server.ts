@@ -67,7 +67,9 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 }
 
 // C14: redirect / to /home.html at Worker level — eliminates React hydration flash
+// Exception: OAuth callbacks carry ?code= and must reach the React app to exchange the token
 function isRootRequest(url: URL): boolean {
+  if (url.searchParams.has("code") || url.searchParams.has("access_token")) return false;
   return url.pathname === "/" || url.pathname === "";
 }
 

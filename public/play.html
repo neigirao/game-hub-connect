@@ -3439,7 +3439,6 @@ document.getElementById('rcBuildBtn').addEventListener('click', ()=>{
 document.getElementById('rcPlayAgainBtn').addEventListener('click', ()=>{
   document.getElementById('runCompleteModal').classList.remove('show');
   setMode('build');
-  setTimeout(() => setMode('test'), 100);
 });
 document.getElementById('legendBtn').addEventListener('click', () => {
   const p = document.getElementById('legendPanel');
