@@ -918,13 +918,7 @@ async function initSupabase() {
   }
 }
 
-function showToast(msg, isError = false) {
-  const t = document.getElementById('globalToast');
-  t.textContent = msg;
-  t.className = 'toast-modal show' + (isError ? ' error' : '');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove('show'), 2600);
-}
+// (showToast unificada está definida mais abaixo, próximo ao loop do jogo)
 
 // ---- SHARE URL (sem banco — apenas URL com dados codificados) ----
 function buildShareUrl() {
@@ -2447,13 +2441,18 @@ function highlightFailLegend(L){
   }).join('');
 }
 
-function showToast(text, color='#FF4757'){
+function showToast(text, opt){
   const t = document.getElementById('toast');
+  if (!t) return;
   t.textContent = text;
+  let color = '#FF4757';
+  if (typeof opt === 'string') color = opt;
+  else if (opt === true) color = '#FF4757';
+  else if (opt === false) color = '#2ED573';
   t.style.borderColor = color;
   t.classList.add('show');
   clearTimeout(showToast._t);
-  showToast._t = setTimeout(()=>t.classList.remove('show'), 1800);
+  showToast._t = setTimeout(()=>t.classList.remove('show'), 2000);
 }
 function hideToast(){ document.getElementById('toast').classList.remove('show'); }
 
