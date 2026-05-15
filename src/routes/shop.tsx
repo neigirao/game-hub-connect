@@ -354,6 +354,7 @@ export function ShopPage() {
 
   async function handleBuy(item: ShopItem) {
     if (!userId) { window.location.href = "/login"; return; }
+    if (!window.confirm(`Gastar ${item.cost.toLocaleString()} moedas em "${item.name}"?`)) return;
     setBuying(item.id);
     const { data, error: err } = await supabase.rpc("purchase_shop_item", {
       p_item_id: item.id,
@@ -458,6 +459,26 @@ export function ShopPage() {
             </div>
           )}
         </div>
+
+        {/* Coins callout */}
+        {userId && !loading && (
+          <div style={{
+            background: "linear-gradient(135deg,rgba(255,165,2,.12),rgba(255,165,2,.04))",
+            border: "1px solid rgba(255,165,2,.3)",
+            borderRadius: 16,
+            padding: "14px 20px",
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+          }}>
+            <span style={{ fontSize: 26, flexShrink: 0 }}>💡</span>
+            <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontSize: 14, color: "#B7AEE0", lineHeight: 1.5 }}>
+              <span style={{ color: "#FFA502", fontWeight: 700 }}>Como ganhar moedas:</span> jogue corridas na{" "}
+              <Link to="/campaign" style={{ color: "#FF6BD6", fontWeight: 700, textDecoration: "none" }}>Campanha</Link>
+              {" "}— ganhe <span style={{ color: "#FFA502", fontWeight: 700 }}>+100 moedas</span> por estrela nova conquistada.
+            </div>
+          </div>
+        )}
 
         {!userId && !loading ? (
           <div style={{

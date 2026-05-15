@@ -239,23 +239,42 @@ export function ChallengePage() {
             <div style={{ fontSize: 14, color: "#B7AEE0", marginBottom: 24 }}>
               O admin escolhe a pista do dia — volte mais tarde ou jogue em modo livre.
             </div>
-            <a
-              href="/play.html"
-              style={{
-                fontFamily: "'Fredoka',system-ui,sans-serif",
-                fontWeight: 700,
-                fontSize: 15,
-                padding: "10px 28px",
-                borderRadius: 14,
-                background: "linear-gradient(180deg,#FFA502,#c97a00)",
-                color: "#fff",
-                textDecoration: "none",
-                display: "inline-block",
-                boxShadow: "0 4px 0 rgba(0,0,0,.3)",
-              }}
-            >
-              🎢 Jogar Livre
-            </a>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" as const }}>
+              <Link
+                to="/campaign"
+                style={{
+                  fontFamily: "'Fredoka',system-ui,sans-serif",
+                  fontWeight: 700,
+                  fontSize: 15,
+                  padding: "10px 28px",
+                  borderRadius: 14,
+                  background: "linear-gradient(180deg,#FF6BD6,#a8329c)",
+                  color: "#fff",
+                  textDecoration: "none",
+                  display: "inline-block",
+                  boxShadow: "0 4px 0 rgba(0,0,0,.3)",
+                }}
+              >
+                🗺️ Ir para Campanha
+              </Link>
+              <a
+                href="/play.html"
+                style={{
+                  fontFamily: "'Fredoka',system-ui,sans-serif",
+                  fontWeight: 700,
+                  fontSize: 15,
+                  padding: "10px 28px",
+                  borderRadius: 14,
+                  background: "linear-gradient(180deg,#FFA502,#c97a00)",
+                  color: "#fff",
+                  textDecoration: "none",
+                  display: "inline-block",
+                  boxShadow: "0 4px 0 rgba(0,0,0,.3)",
+                }}
+              >
+                🎢 Jogar Livre
+              </a>
+            </div>
           </div>
         ) : (
           <>

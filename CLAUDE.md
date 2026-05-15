@@ -337,6 +337,9 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 - [x] Botão "Compartilhar" no modal pós-corrida abre `/share` em nova aba (além de copiar URL)
 - [x] Botão 🗑️ em cada blueprint do perfil — apaga com confirmação, atualiza lista localmente
 - [x] Challenge page: quando blueprint do desafio foi deletado, mostra aviso em vez de travar
+- [x] Loja mostra callout explicando como ganhar coins (jogar Campanha, +100 por estrela) (P2)
+- [x] Confirmação antes de comprar item na loja — `window.confirm` com nome e custo do item (P5)
+- [x] Challenge page sem desafio exibe CTAs secundários: "Ir para Campanha" e "Jogar Livre" (P4)
 
 ### Pendente (pós-MVP / V2+)
 - [ ] Migrar engine para PixiJS
