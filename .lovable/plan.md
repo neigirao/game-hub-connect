@@ -1,55 +1,46 @@
-# Corrigir “carrinho parado ao testar” e ruído de 404 no console
+# Plano
 
-## Diagnóstico
+Três correções de UX em `public/play.html` + `src/routes/login.tsx`, com sincronização da documentação ao final (sem precisar pedir de novo).
 
-Investiguei `public/play.html`:
+## 1. Toolbar do editor — duas colunas (sem scroll)
 
-1. **Carrinho parado** — causa-raiz:
-   - `initDefaultTrack()` (linha 1279) cria **apenas 1 nó** (a estação de partida).
-   - `initCart()` (linha 2266) retorna `null` quando `state.nodes.length < 2`.
-   - `startTest()` (linha 2283) faz `state.cart = initCart()` sem checar `null` → o `tick()` nunca entra na física porque `state.cart` é falsy. Resultado: o jogador clica **Testar**, nada acontece e nenhum aviso aparece.
-   - O caso é comum ao abrir `play.html?level=1` antes do `loadLevelFromUrl()` async terminar (ou quando o usuário ainda não passou pela rota React e o `localStorage.cc_sb_url/key` não foi semeado, fazendo o fetch do level abortar).
+**Arquivo:** `public/play.html` (CSS `.tools` em ~L102 e `.tool` em ~L111)
 
-2. **`404 (Not Found)`** — vem do `/favicon.ico`. O `play.html` não declara `<link rel="icon">`, então o navegador pede `/favicon.ico` e leva 404. Confirmado nas requisições de rede do preview.
+- Trocar `display:flex; flex-direction:column` por `display:grid; grid-template-columns: repeat(2, 1fr); gap:6px`.
+- Reduzir `.tool` de `64×64` para `54×54` (ícone `22×22`, label `9px`).
+- `.divider` e `.hint` recebem `grid-column: 1 / -1` para ocuparem a linha inteira.
+- `.legend-btn` também full-width na grid.
+- Padding lateral do `.tools` reduzido para `8px 6px`.
+- Resultado: 14 botões + 4 dividers cabem em viewport 769px sem scroll. Fallback: `overflow-y:auto` no `.tools` caso a viewport fique abaixo de ~620px.
 
-3. **`A listener indicated an asynchronous response by returning true...`** — ruído de extensão de navegador (Chrome MV3), **não** é bug do jogo. Sem ação necessária além de documentar.
+## 2. Login → cair direto em `/campaign`
 
-## Mudanças
+**Arquivo:** `src/routes/login.tsx`
 
-### `public/play.html`
+- Trocar `redirect_uri: window.location.origin` por `redirect_uri: window.location.origin + "/campaign"`. Hoje o callback volta em `/`, que então redireciona para `/campaign`; com isso eliminamos o salto duplo e qualquer chance de cair no `/home.html` por race da sessão.
+- Manter o fallback `window.location.href = "/campaign"` para o caminho não-redirected.
 
-1. **Guarda em `startTest()`** — se `initCart()` retornar `null`:
-   - mostrar toast `"Construa pelo menos 2 nós para testar 🛤️"`,
-   - voltar `state.mode` para `'build'` e atualizar a UI dos botões via `setMode('build')` (sem reentrar em `startTest`),
-   - fazer `return` antes de mexer em partículas/UI.
+## 3. Botão "Campanha" no modal de Game Over
 
-2. **`initDefaultTrack()` com 3 nós** (mini-rampa) em vez de 1 — assim o Testar funciona imediatamente em sessão nova:
-   ```js
-   state.nodes = [
-     {x: r.width*0.2, y: r.height*0.35, kind:'normal'}, // estação alta
-     {x: r.width*0.5, y: r.height*0.55, kind:'normal'},
-     {x: r.width*0.8, y: r.height*0.65, kind:'normal'}, // chegada baixa
-   ];
-   ```
-   Mantém `closedLoop = false` e a chamada de `pushHistory()`.
+**Arquivo:** `public/play.html` (modal em ~L797 e handlers em ~L3553)
 
-3. **Favicon inline** no `<head>`, eliminando o 404 sem precisar criar arquivo:
-   ```html
-   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23170C3D'/%3E%3Ctext x='50%25' y='58%25' font-size='40' text-anchor='middle' fill='%23FF6BD6'%3E🎢%3C/text%3E%3C/svg%3E" />
-   ```
+- Adicionar `<button class="bbtn" id="rcCampaignBtn">🗺️ Campanha</button>` no `.rc-buttons`, antes de "Editar Pista".
+- Handler: `location.href = '/campaign'`.
+- Visível sempre (tanto em vitória quanto em crash). Texto e ícone consistentes com a paleta existente.
 
-## Não vou tocar
+## 4. Documentação (faço junto, sem pedir)
 
-- Lógica de física, score, level loading, RLS — fora do escopo do bug reportado.
-- O aviso "message channel closed" — origem em extensão do navegador, sem código do projeto envolvido.
+- `CLAUDE.md` § 8: marcar "toolbar 2 colunas", "login → /campaign direto", "botão Campanha no modal de resultado" como implementados; § 9: adicionar armadilha "redirect_uri OAuth deve apontar para `/campaign` para evitar flash em `/`".
+- `docs/CHANGELOG.md`: nova entrada Sessão 15 (2026-05-15) listando os três itens.
+- `docs/ROADMAP.md`: remover/mover os itens correspondentes da fila aberta, se existirem.
 
-## Verificação
+## Validação
 
-- Abrir `/play.html` (sem `?level`) → clicar **Testar** → carrinho desce a mini-rampa.
-- Abrir `/play.html?level=1` logado → starter track substitui o default e Testar roda normal.
-- Apagar todos os nós e clicar Testar → toast `"Construa pelo menos 2 nós..."` aparece e o modo volta a Build.
-- Console limpo: sem mais `404 favicon.ico`.
+- `node --check` no script de `play.html` (rotina já documentada na § 11 do CLAUDE.md).
+- Screenshot do editor em 1462×769 confirmando todos os botões visíveis.
+- Conferir no preview: clicar Entrar → cai em `/campaign`; rodar uma corrida até crash → modal mostra botão Campanha funcional.
 
-## Arquivos
+## Fora de escopo
 
-- `public/play.html`
+- Não vou tocar na física, no schema do banco, nem no fluxo OAuth do `play.html` (o "Entrar com Google" do canvas já redireciona para `/login` quando `sbClient` é nulo).
+- Não vou refatorar `play.html` para módulos — está no backlog mas é mudança grande demais.
