@@ -306,8 +306,21 @@ function StatBadge({ label, value, color = "#FFE9A8" }: { label: string; value: 
   );
 }
 
-function BlueprintRow({ bp }: { bp: Blueprint }) {
-  const shareUrl = `${window.location.origin}/play.html?track=${btoa(JSON.stringify({ nodes: [], loop: bp.closed_loop }))}`;
+function BlueprintRow({ bp, onDelete }: { bp: Blueprint; onDelete: (id: string) => void }) {
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (!window.confirm(`Apagar a pista "${bp.name}"? Esta ação não pode ser desfeita.`)) return;
+    setDeleting(true);
+    const { error } = await supabase.from("blueprints").delete().eq("id", bp.id);
+    if (error) {
+      alert("Erro ao apagar pista. Tente novamente.");
+      setDeleting(false);
+    } else {
+      onDelete(bp.id);
+    }
+  }
+
   return (
     <div
       style={{
@@ -336,6 +349,18 @@ function BlueprintRow({ bp }: { bp: Blueprint }) {
       >
         Jogar
       </a>
+      <button
+        onClick={handleDelete}
+        disabled={deleting}
+        style={{
+          fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 12,
+          padding: "6px 10px", borderRadius: 8, border: "2px solid rgba(255,71,87,.4)",
+          background: "rgba(255,71,87,.1)", color: "#FF4757", cursor: "pointer",
+          flexShrink: 0, opacity: deleting ? 0.5 : 1,
+        }}
+      >
+        🗑️
+      </button>
     </div>
   );
 }
@@ -607,7 +632,7 @@ export function ProfilePage() {
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {blueprints.map((bp) => (
-                    <BlueprintRow key={bp.id} bp={bp} />
+                    <BlueprintRow key={bp.id} bp={bp} onDelete={(id) => setBlueprints((prev) => prev.filter((b) => b.id !== id))} />
                   ))}
                 </div>
               )}

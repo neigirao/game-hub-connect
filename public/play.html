@@ -3552,9 +3552,10 @@ document.getElementById('rcShareBtn').addEventListener('click', ()=>{
     c: Math.round(state.scores.chaos),
   });
   const url = `${location.origin}/share?${p.toString()}`;
+  window.open(url, '_blank', 'noopener');
   navigator.clipboard.writeText(url)
-    .then(() => showToast('Link do resultado copiado! 🔗'))
-    .catch(() => showToast('URL: ' + url.slice(0, 50), true));
+    .then(() => showToast('Abrindo página de compartilhamento! 🔗'))
+    .catch(() => {});
 });
 document.getElementById('rcBuildBtn').addEventListener('click', ()=>{
   document.getElementById('runCompleteModal').classList.remove('show');

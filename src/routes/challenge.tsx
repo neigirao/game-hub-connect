@@ -306,27 +306,33 @@ export function ChallengePage() {
                   </div>
                 </div>
 
-                <a
-                  href={playUrl!}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 10,
-                    fontFamily: "'Fredoka',system-ui,sans-serif",
-                    fontWeight: 700,
-                    fontSize: 18,
-                    padding: "14px 36px",
-                    borderRadius: 16,
-                    background: "linear-gradient(180deg,#FFA502,#c97a00)",
-                    border: "2px solid #FFCB6B",
-                    color: "#fff",
-                    textDecoration: "none",
-                    boxShadow: "0 6px 0 #6e3f00",
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-                  Aceitar Desafio!
-                </a>
+                {pick.blueprints ? (
+                  <a
+                    href={playUrl!}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 10,
+                      fontFamily: "'Fredoka',system-ui,sans-serif",
+                      fontWeight: 700,
+                      fontSize: 18,
+                      padding: "14px 36px",
+                      borderRadius: 16,
+                      background: "linear-gradient(180deg,#FFA502,#c97a00)",
+                      border: "2px solid #FFCB6B",
+                      color: "#fff",
+                      textDecoration: "none",
+                      boxShadow: "0 6px 0 #6e3f00",
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                    Aceitar Desafio!
+                  </a>
+                ) : (
+                  <div style={{ fontSize: 13, color: "#FF4757", background: "rgba(255,71,87,.1)", border: "1px solid rgba(255,71,87,.3)", borderRadius: 10, padding: "10px 16px" }}>
+                    ⚠️ A pista deste desafio foi removida. O admin irá escolher uma nova em breve.
+                  </div>
+                )}
               </div>
             </div>
 

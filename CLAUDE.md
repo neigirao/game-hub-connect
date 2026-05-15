@@ -333,6 +333,11 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 - [ ] Geração de GIF/replay
 - [ ] Trilha de fundo (música)
 
+### Implementado (sprint recente)
+- [x] Botão "Compartilhar" no modal pós-corrida abre `/share` em nova aba (além de copiar URL)
+- [x] Botão 🗑️ em cada blueprint do perfil — apaga com confirmação, atualiza lista localmente
+- [x] Challenge page: quando blueprint do desafio foi deletado, mostra aviso em vez de travar
+
 ### Pendente (pós-MVP / V2+)
 - [ ] Migrar engine para PixiJS
 - [ ] Zustand para state management
