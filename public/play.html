@@ -1403,6 +1403,23 @@ window.addEventListener('resize', resize);
 
 const MAX_PARTICLES = 2000;
 
+// === PHYSICS CONSTANTS ===
+const GRAVITY        = 900;    // px/s² — track gravity acceleration
+const BOOSTER_ACCEL  = 1200;   // px/s² — booster node impulse
+const BRAKE_ACCEL    = 1400;   // px/s² — brake node impulse
+const FRICTION       = 0.4;    // rolling friction coefficient (per-velocity)
+const STALL_TIMEOUT  = 3.0;    // seconds stationary before run ends
+const STALL_MIN_V    = 5;      // px/s threshold for "stationary"
+const STALL_FLAT     = 0.05;   // slope threshold for "flat enough to stall"
+const G_SCALE        = 12000;  // curvature→G divisor (tuned to feel ~9.8m/s²)
+const G_SLOPE_WEIGHT = 0.5;    // how much slope contributes to perceived G
+const G_SMOOTH_A     = 0.3;    // lerp alpha for G-force smoothing (0=lag,1=snap)
+const SPEED_KMH_MULT = 0.18;   // px/s → km/h visual mapping
+const INVERSOR_MIN_V = 280;    // px/s (~50 km/h) min speed to survive inversion
+const CANNON_LAUNCH_VY = 700;  // px/s vertical launch speed for cannon/inversor
+// G-force fail thresholds (each index = fail level)
+const G_FAIL = [0, 1.2, 2.0, 2.8, 3.4, 4.0, 4.6, 5.0];
+
 // ---------------------------- STATE
 const state = {
   mode: 'build',           // 'build' | 'test'
@@ -2734,20 +2751,17 @@ function tick(){
       c.lastDir = {x: sample.tx, y: sample.ty};
 
       // slope acceleration (positive y = down)
-      const g = 900; // px/s²
       const slope = sample.ty; // already normalized, ≈ sin(angle)
-      let a = g * slope; // pulls in +s direction when going down
-      // booster/brake/inversor
-      if (sample.kind === 'booster') a += 1200;
-      if (sample.kind === 'brake')  a -= 1400;
-      if (sample.kind === 'inversor') a -= 2 * g * slope; // reverse gravity: net = -g*slope
-      // mild rolling friction
-      a -= 0.4 * c.v;
+      let a = GRAVITY * slope;
+      if (sample.kind === 'booster') a += BOOSTER_ACCEL;
+      if (sample.kind === 'brake')  a -= BRAKE_ACCEL;
+      if (sample.kind === 'inversor') a -= 2 * GRAVITY * slope; // reverse gravity
+      a -= FRICTION * c.v;
 
       c.v += a * dt;
-      if (c.v < 5 && Math.abs(slope) < 0.05 && sample.kind !== 'booster' && sample.kind !== 'loop'){
+      if (c.v < STALL_MIN_V && Math.abs(slope) < STALL_FLAT && sample.kind !== 'booster' && sample.kind !== 'loop'){
         c.stallTime = (c.stallTime || 0) + dt;
-        if (c.stallTime > 3.0 && !c._stalledOut) {
+        if (c.stallTime > STALL_TIMEOUT && !c._stalledOut) {
           c._stalledOut = true;
           setStatus('PARADO! 😴', 'warn');
           showToast('Carrinho parado — encerrando corrida...', '#FFA502');
@@ -2768,12 +2782,11 @@ function tick(){
 
       // G-force estimate
       const k = curvatureAt(path, sample.idx); // signed
-      const gForce = Math.abs(k) * (c.v*c.v) / 12000 + Math.abs(slope) * 0.5;
-      // Smooth a bit
-      c._gSmooth = (c._gSmooth || 0)*0.7 + gForce*0.3;
+      const gForce = Math.abs(k) * (c.v*c.v) / G_SCALE + Math.abs(slope) * G_SLOPE_WEIGHT;
+      c._gSmooth = (c._gSmooth || 0)*(1-G_SMOOTH_A) + gForce*G_SMOOTH_A;
       const gShown = c._gSmooth;
       state.maxG = Math.max(state.maxG, gShown);
-      const speedKmh = Math.abs(c.v) * 0.18; // arbitrary mapping
+      const speedKmh = Math.abs(c.v) * SPEED_KMH_MULT;
       state.maxSpeed = Math.max(state.maxSpeed, speedKmh);
 
       // UI
@@ -2802,13 +2815,7 @@ function tick(){
 
       // Fail level escalation
       let L = 0;
-      if (gShown > 1.2) L = 1;
-      if (gShown > 2.0) L = 2;
-      if (gShown > 2.8) L = 3;
-      if (gShown > 3.4) L = 4;
-      if (gShown > 4.0) L = 5;
-      if (gShown > 4.6) L = 6;
-      if (gShown > 5.0) L = 7;
+      for (let _gi = 1; _gi < G_FAIL.length; _gi++) if (gShown > G_FAIL[_gi]) L = _gi;
       if (L > state.failLevel) setFailLevel(L);
       c.panicked = state.failLevel >= 5;
       c.shake = state.failLevel * 0.6;
@@ -2849,7 +2856,7 @@ function tick(){
       // Loop 360° node
       if (sample.kind === 'loop' && !c._loopCool) {
         c._loopCool = true;
-        if (c.v >= 280) { // ~50 km/h minimum
+        if (c.v >= INVERSOR_MIN_V) { // ~50 km/h minimum
           c._looping = true;
           c._loopRadius = 100;
           c._loopDir = (c.lastDir && c.lastDir.x < 0) ? -1 : 1;
@@ -2905,11 +2912,11 @@ function tick(){
       if (sample.kind === 'inversor'){
         if (!c._inversorIn){
           c._inversorIn = true;
-          if (Math.abs(c.v) < 280){ // ~50 km/h — not enough speed
+          if (Math.abs(c.v) < INVERSOR_MIN_V){ // ~50 km/h — not enough speed
             c.flying = true;
             const dir = c.lastDir || {x:1, y:0};
             c.vx = dir.x * c.v;
-            c.vy = 700;
+            c.vy = CANNON_LAUNCH_VY;
             setFailLevel(Math.max(state.failLevel, 7));
             showToast('🙃 SEM VELOCIDADE PARA INVERTER!', '#FF4757');
           } else {
