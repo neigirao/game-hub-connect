@@ -11,23 +11,38 @@ function IndexRedirect() {
 
   useEffect(() => {
     let cancelled = false;
+    const params = new URLSearchParams(window.location.search);
+    const hasCallback = params.has("code") || params.has("access_token");
+
+    if (hasCallback) {
+      // OAuth callback: aguarda Supabase trocar o code por uma sessão
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (cancelled) return;
+        if (event === "SIGNED_IN" && session) {
+          subscription.unsubscribe();
+          navigate({ to: "/campaign", replace: true });
+        }
+      });
+      // Verificação imediata caso Supabase já tenha processado antes do mount
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (cancelled || !session) return;
+        subscription.unsubscribe();
+        navigate({ to: "/campaign", replace: true });
+      });
+      return () => { cancelled = true; subscription.unsubscribe(); };
+    }
+
+    // Sem callback OAuth: fluxo normal
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (cancelled) return;
       if (session) {
-        // Authenticated → vai para a campanha (área logada)
         navigate({ to: "/campaign", replace: true });
-      } else {
-        // Anônimo → landing estática em /home.html
-        // Usamos location.replace porque home.html não é uma rota TanStack
-        if (typeof window !== "undefined") {
-          window.location.replace("/home.html");
-        }
+      } else if (typeof window !== "undefined") {
+        window.location.replace("/home.html");
       }
     }).catch(() => {
       if (cancelled) return;
-      if (typeof window !== "undefined") {
-        window.location.replace("/home.html");
-      }
+      if (typeof window !== "undefined") window.location.replace("/home.html");
     });
     return () => { cancelled = true; };
   }, [navigate]);
