@@ -8,6 +8,20 @@
 
 ## [Não lançado] — Em desenvolvimento
 
+### Sessão 16 — 2026-05-15: Navegação SPA em links restantes
+
+**Objetivo:** eliminar full reloads ao navegar entre rotas React do app e do admin.
+
+#### Alterado
+- `src/routes/admin.tsx`: sub-navbar do painel admin agora usa `<Link to>` (era `<a href>`), preservando QueryClient e cache entre `/admin`, `/admin/levels`, `/admin/blueprints`, `/admin/users`.
+- `src/routes/shop.tsx`: botão "Entrar com Google" (estado deslogado) agora usa `<Link to="/login">`.
+
+#### Mantido como `<a href>` (intencional)
+- `/play.html` e `/home.html` em qualquer rota — são arquivos estáticos fora do roteador React e exigem navegação real do browser.
+- Botão "Início" no `errorComponent` de `__root.tsx` — full reload é desejável após erro fatal para resetar o estado do app.
+
+---
+
 ### Sessão 15 — 2026-05-15: UX da toolbar, login direto e botão Campanha no Game Over
 
 **Objetivo:** três correções pedidas pelo usuário — toolbar do editor cabendo na viewport, login caindo direto na campanha, e atalho para campanha no modal de fim de corrida.

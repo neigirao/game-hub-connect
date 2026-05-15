@@ -472,8 +472,8 @@ export function ShopPage() {
             <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 20, color: "#fff", marginBottom: 16 }}>
               Faça login para usar a loja
             </div>
-            <a
-              href="/login"
+            <Link
+              to="/login"
               style={{
                 fontFamily: "'Fredoka',system-ui,sans-serif",
                 fontWeight: 700,
@@ -487,7 +487,7 @@ export function ShopPage() {
               }}
             >
               Entrar com Google
-            </a>
+            </Link>
           </div>
         ) : error ? (
           <PageError message={error} onRetry={() => setRetryCount((c) => c + 1)} />
