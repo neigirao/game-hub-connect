@@ -354,6 +354,9 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 | `<a href>` vs `<Link to>` | Links internos de rotas React devem usar `<Link to>`, não `<a href>` — caso contrário perdem o cache do QueryClient a cada navegação |
 | canvasPoint() deve converter com câmera | Após adicionar câmera livre, `canvasPoint()` deve usar `cam.x + (sx - W/2) / cam.z` — sem isso, cliques em nós ficam deslocados quando câmera está em posição diferente do centro |
 | track_data formato duplo | Blueprints antigos têm track_data como array JSON; novos têm `{nodes, startNodeIdx, endNodeIdx}`. Load code deve checar `Array.isArray(td) ? td : td.nodes` |
+| OAuth redirect_uri deve ir direto pra `/campaign` | `lovable.auth.signInWithOAuth` com `redirect_uri: origin` causa salto duplo via `IndexRedirect` e pode flashar `/home.html` se o `getSession()` chegar antes do cookie. Sempre usar `origin + "/campaign"` para login do app |
+| `head({ search })` não compila no TanStack atual | A função `head` em `createFileRoute` não recebe `search` como prop; usar `head({ match })` e ler `match.search` (com cast para o schema do `validateSearch`) |
+| Toolbar do editor estoura viewport | `.tools` é grid 2 colunas com `overflow-y:auto`. Ao adicionar nova ferramenta, manter ícones em 22×22 e label em 8px para caber em 769px de altura |
 
 ---
 
