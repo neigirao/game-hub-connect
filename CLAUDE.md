@@ -357,6 +357,8 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 | OAuth redirect_uri deve ir direto pra `/campaign` | `lovable.auth.signInWithOAuth` com `redirect_uri: origin` causa salto duplo via `IndexRedirect` e pode flashar `/home.html` se o `getSession()` chegar antes do cookie. Sempre usar `origin + "/campaign"` para login do app |
 | `head({ search })` não compila no TanStack atual | A função `head` em `createFileRoute` não recebe `search` como prop; usar `head({ match })` e ler `match.search` (com cast para o schema do `validateSearch`) |
 | Toolbar do editor estoura viewport | `.tools` é grid 2 colunas com `overflow-y:auto`. Ao adicionar nova ferramenta, manter ícones em 22×22 e label em 8px para caber em 769px de altura |
+| #levelPanel sobrepõe toolbar | O painel de campanha é `position:fixed` — se `left` for menor que a largura da toolbar+padding ele cobre os botões. Valor correto: `left: 178px` (14px grid-padding + 150px tools + 14px gap) |
+| index.tsx getSession() vs OAuth callback | Quando `/?code=` chega (OAuth callback), `getSession()` retorna null porque o Supabase ainda está trocando o code. Usar `onAuthStateChange('SIGNED_IN')` para aguardar a sessão ser estabelecida |
 
 ---
 
