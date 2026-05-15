@@ -414,6 +414,11 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 - [x] CI/CD GitHub Actions: lint + tsc + build + tests + play.html syntax check (E1)
 - [x] Pre-commit hooks: husky + lint-staged (ESLint + Prettier em arquivos staged) (E5)
 - [x] Vitest configurado com 9 testes: `shop-items` e `creativity-score` (E6)
+- [x] `src/lib/game-constants.ts` criado — `XP_PER_LEVEL`, `COINS_PER_STAR`; importado em `profile.tsx` (A5)
+- [x] `window.location.href` substituído por `useNavigate()` em `login.tsx`, `profile.tsx`, `shop.tsx`, `tracks.tsx` (A8)
+- [x] Content-Security-Policy + security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`) adicionados ao Worker em `src/server.ts` (E4)
+- [x] Creativity score exibido no leaderboard: coluna `🎨{creativity_score}` (rosa) ao lado de S/A/C (G11)
+- [x] `role="toolbar" aria-label="Ferramentas do editor"` na aside tools; `aria-label="Editor de pista" role="img"` no canvas de `play.html` (X7)
 
 ### Pendente (pós-MVP / V2+)
 
