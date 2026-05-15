@@ -104,15 +104,17 @@
     background:linear-gradient(180deg,#34197a,#231055);
     border:2px solid #4a2aa6;border-bottom-color:#1a0a48;
     border-radius:18px;
-    padding:10px 8px;
-    display:flex;flex-direction:column;gap:8px;align-items:center;
+    padding:8px 6px;
+    display:grid;grid-template-columns:repeat(2,1fr);gap:6px;
+    align-content:start;justify-items:stretch;
+    max-height:calc(100vh - 80px);overflow-y:auto;
     box-shadow: 0 6px 0 rgba(0,0,0,.35), inset 0 -3px 0 rgba(0,0,0,.25);
   }
   .tool{
-    width:64px;height:64px;border-radius:14px;border:0;cursor:pointer;
+    width:100%;height:54px;border-radius:12px;border:0;cursor:pointer;
     background:#1a0a48; color:#fff;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-    font-family:'Fredoka';font-weight:600;font-size:10px;letter-spacing:.5px;
+    font-family:'Fredoka';font-weight:600;font-size:9px;letter-spacing:.4px;
     border:2px solid #4a2aa6; border-bottom-color:#0a0420;
     box-shadow: 0 3px 0 rgba(0,0,0,.35);
     transition: transform .08s ease, background .15s;
@@ -134,11 +136,11 @@
   .tool[data-tool="set-start"].active{background:linear-gradient(180deg,#FFA502,#a86a00);border-color:#FFA502}
   .tool[data-tool="set-end"].active{background:linear-gradient(180deg,#70A1FF,#3b6acc);border-color:#70A1FF}
   .tool:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
-  .tool svg{width:26px;height:26px;display:block}
-  .tool .label{font-size:9px;color:#fff;line-height:1;opacity:.9}
-  .tools .divider{height:2px;background:rgba(255,255,255,.07);width:60%;margin:6px 0;border-radius:2px}
-  .tools .hint{font-size:9px;color:var(--ink-dim);text-align:center;line-height:1.2;padding:0 4px;margin-top:auto;font-family:'JetBrains Mono'}
-  .legend-btn{width:40px;height:32px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:var(--ink-dim);font-size:14px;cursor:pointer;margin:2px auto 0;display:block}
+  .tool svg{width:22px;height:22px;display:block}
+  .tool .label{font-size:8px;color:#fff;line-height:1;opacity:.9}
+  .tools .divider{grid-column:1 / -1;height:2px;background:rgba(255,255,255,.07);margin:4px 0;border-radius:2px}
+  .tools .hint{grid-column:1 / -1;font-size:9px;color:var(--ink-dim);text-align:center;line-height:1.2;padding:0 4px;font-family:'JetBrains Mono'}
+  .legend-btn{grid-column:1 / -1;width:100%;height:30px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:var(--ink-dim);font-size:14px;cursor:pointer}
   .legend-btn:hover{background:rgba(255,255,255,.12)}
   .legend-panel{position:fixed;left:68px;top:50%;transform:translateY(-50%);background:#1a0f40;border:1.5px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 16px;z-index:999;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
   .legend-panel h4{margin:0 0 10px;font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono'}
@@ -806,6 +808,10 @@
       <button class="bbtn reset" id="rcBuildBtn">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
         Editar Pista
+      </button>
+      <button class="bbtn" id="rcCampaignBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4l-6 3v13l6-3 6 3 6-3V4l-6 3z"/><path d="M9 4v13M15 7v13"/></svg>
+        Campanha
       </button>
       <button class="bbtn launch" id="rcPlayAgainBtn">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -3553,6 +3559,9 @@ document.getElementById('rcShareBtn').addEventListener('click', ()=>{
 document.getElementById('rcBuildBtn').addEventListener('click', ()=>{
   document.getElementById('runCompleteModal').classList.remove('show');
   setMode('build');
+});
+document.getElementById('rcCampaignBtn').addEventListener('click', ()=>{
+  window.location.href = '/campaign';
 });
 document.getElementById('rcPlayAgainBtn').addEventListener('click', ()=>{
   document.getElementById('runCompleteModal').classList.remove('show');

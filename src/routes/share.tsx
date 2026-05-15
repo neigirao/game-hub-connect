@@ -11,7 +11,10 @@ export const Route = createFileRoute("/share")({
     a: Number(search.a ?? 0),
     c: Number(search.c ?? 0),
   }),
-  head: ({ search }) => {
+  head: ({ match }) => {
+    const search = match.search as {
+      score: number; stars: number; speed: number; g: number;
+    };
     const ogImage = `/api/og/share?score=${search.score}&stars=${search.stars}&speed=${search.speed}&g=${search.g}`;
     const starEmoji = "⭐".repeat(Math.min(3, search.stars));
     const title = `${search.score} pts ${starEmoji} — Crash Coaster 🎢`;

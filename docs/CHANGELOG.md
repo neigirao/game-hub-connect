@@ -8,6 +8,22 @@
 
 ## [Não lançado] — Em desenvolvimento
 
+### Sessão 15 — 2026-05-15: UX da toolbar, login direto e botão Campanha no Game Over
+
+**Objetivo:** três correções pedidas pelo usuário — toolbar do editor cabendo na viewport, login caindo direto na campanha, e atalho para campanha no modal de fim de corrida.
+
+#### Alterado — `public/play.html`
+- **Toolbar `.tools` agora é grid 2 colunas** (era flex coluna única). Botões `.tool` reduzidos de 64×64 para 54×54, ícones SVG de 26 para 22, label de 9px para 8px. `.divider`, `.hint` e `.legend-btn` ocupam linha inteira (`grid-column:1 / -1`). Mantém `overflow-y:auto` com `max-height:calc(100vh - 80px)` como fallback para viewports muito baixas. Resultado: 14 botões + dividers visíveis sem scroll em 1462×769.
+- **Modal de resultado** ganhou botão `#rcCampaignBtn` ("🗺️ Campanha") entre "Editar Pista" e "Jogar de Novo". Handler navega para `/campaign`. Visível em vitória e crash.
+
+#### Alterado — `src/routes/login.tsx`
+- `redirect_uri` do Google OAuth passou de `window.location.origin` para `window.location.origin + "/campaign"`. Elimina o salto duplo `/` → `/campaign` que dependia do `IndexRedirect` ler a sessão a tempo.
+
+#### Corrigido — `src/routes/share.tsx`
+- `head({ search })` quebrava o build na versão atual do TanStack Start (a função `head` não recebe `search` direto). Trocado por `head({ match })` com `match.search` tipado, mantendo o og:image dinâmico.
+
+---
+
 ### Sessão 14 — 2026-05-14: Correções no editor/Test mode e landing
 
 **Objetivo da sessão:** Desbloquear o modo Testar logo no primeiro acesso, corrigir erros de console e restaurar a landing `home.html` na rota `/`.
