@@ -119,7 +119,10 @@ function UserExpanded({
       .update({ xp: editXp, coins: editCoins })
       .eq("id", user.id);
     setSaving(false);
-    if (error) { setSaveMsg("Erro: " + error.message); return; }
+    if (error) {
+      setSaveMsg("Erro: " + error.message);
+      return;
+    }
     setSaveMsg("Salvo!");
     setTimeout(() => setSaveMsg(null), 2000);
     onSave(editXp, editCoins);
@@ -138,17 +141,28 @@ function UserExpanded({
   };
 
   return (
-    <div style={{
-      background: "rgba(0,0,0,.2)",
-      borderTop: "1px solid rgba(255,255,255,.08)",
-      padding: "16px 14px 14px",
-      display: "flex",
-      gap: 24,
-      flexWrap: "wrap" as const,
-    }}>
+    <div
+      style={{
+        background: "rgba(0,0,0,.2)",
+        borderTop: "1px solid rgba(255,255,255,.08)",
+        padding: "16px 14px 14px",
+        display: "flex",
+        gap: 24,
+        flexWrap: "wrap" as const,
+      }}
+    >
       {/* Recent runs */}
       <div style={{ flex: 1, minWidth: 200 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".8px", color: "#B7AEE0", textTransform: "uppercase" as const, marginBottom: 8 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: ".8px",
+            color: "#B7AEE0",
+            textTransform: "uppercase" as const,
+            marginBottom: 8,
+          }}
+        >
           Últimas corridas
         </div>
         {loadingData ? (
@@ -158,7 +172,15 @@ function UserExpanded({
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
             {runs.map((r, i) => (
-              <div key={i} style={{ display: "flex", gap: 10, fontSize: 12, fontFamily: "'JetBrains Mono',monospace" }}>
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  fontSize: 12,
+                  fontFamily: "'JetBrains Mono',monospace",
+                }}
+              >
                 <span style={{ color: "#FFA502", minWidth: 40 }}>{r.total_score ?? "—"}</span>
                 <span style={{ color: "#B7AEE0" }}>{r.season ?? ""}</span>
                 <span style={{ color: "#6b5fa0" }}>
@@ -172,7 +194,16 @@ function UserExpanded({
 
       {/* Blueprints */}
       <div style={{ flex: 1, minWidth: 180 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".8px", color: "#B7AEE0", textTransform: "uppercase" as const, marginBottom: 8 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: ".8px",
+            color: "#B7AEE0",
+            textTransform: "uppercase" as const,
+            marginBottom: 8,
+          }}
+        >
           Pistas salvas
         </div>
         {loadingData ? (
@@ -182,16 +213,31 @@ function UserExpanded({
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
             {blueprints.map((b) => (
-              <div key={b.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
+              <div
+                key={b.id}
+                style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}
+              >
                 <a
                   href={`/play.html?blueprint=${b.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "#70A1FF", textDecoration: "none", fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 600, fontSize: 13 }}
+                  style={{
+                    color: "#70A1FF",
+                    textDecoration: "none",
+                    fontFamily: "'Fredoka',system-ui,sans-serif",
+                    fontWeight: 600,
+                    fontSize: 13,
+                  }}
                 >
                   ▶ {b.name}
                 </a>
-                <span style={{ color: "#6b5fa0", fontFamily: "'JetBrains Mono',monospace", fontSize: 11 }}>
+                <span
+                  style={{
+                    color: "#6b5fa0",
+                    fontFamily: "'JetBrains Mono',monospace",
+                    fontSize: 11,
+                  }}
+                >
                   {new Date(b.created_at).toLocaleDateString("pt-BR")}
                 </span>
               </div>
@@ -202,7 +248,16 @@ function UserExpanded({
 
       {/* Edit XP / Coins */}
       <div style={{ minWidth: 220 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".8px", color: "#B7AEE0", textTransform: "uppercase" as const, marginBottom: 8 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: ".8px",
+            color: "#B7AEE0",
+            textTransform: "uppercase" as const,
+            marginBottom: 8,
+          }}
+        >
           Editar XP / Coins
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" as const }}>
@@ -217,7 +272,9 @@ function UserExpanded({
             />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            <label style={{ fontSize: 10, color: "#B7AEE0", letterSpacing: ".5px" }}>🪙 Coins</label>
+            <label style={{ fontSize: 10, color: "#B7AEE0", letterSpacing: ".5px" }}>
+              🪙 Coins
+            </label>
             <input
               type="number"
               style={panelInput}
@@ -230,12 +287,21 @@ function UserExpanded({
             <button
               onClick={handleSave}
               disabled={saving}
-              style={{ ...S.btn("linear-gradient(180deg,#2ED573,#1a8a46)"), opacity: saving ? 0.6 : 1 }}
+              style={{
+                ...S.btn("linear-gradient(180deg,#2ED573,#1a8a46)"),
+                opacity: saving ? 0.6 : 1,
+              }}
             >
               {saving ? "…" : "Salvar"}
             </button>
             {saveMsg && (
-              <span style={{ fontSize: 11, color: saveMsg.startsWith("Erro") ? "#FF4757" : "#2ED573", marginTop: 2 }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  color: saveMsg.startsWith("Erro") ? "#FF4757" : "#2ED573",
+                  marginTop: 2,
+                }}
+              >
                 {saveMsg}
               </span>
             )}
@@ -272,7 +338,9 @@ export function AdminUsersPage() {
     }
   }
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   function showToast(msg: string, ok = true) {
     setToast({ msg, ok });
@@ -280,20 +348,36 @@ export function AdminUsersPage() {
   }
 
   async function toggleBan(u: Profile) {
-    if (!u.is_banned && !window.confirm(`Banir ${u.username}? O usuário não conseguirá mais acessar o jogo.`)) return;
-    const { error } = await supabase.from("profiles").update({ is_banned: !u.is_banned }).eq("id", u.id);
-    if (error) { showToast(error.message, false); return; }
+    if (
+      !u.is_banned &&
+      !window.confirm(`Banir ${u.username}? O usuário não conseguirá mais acessar o jogo.`)
+    )
+      return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_banned: !u.is_banned })
+      .eq("id", u.id);
+    if (error) {
+      showToast(error.message, false);
+      return;
+    }
     showToast(u.is_banned ? `${u.username} desbanido.` : `${u.username} banido.`);
-    setUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, is_banned: !x.is_banned } : x));
+    setUsers((prev) => prev.map((x) => (x.id === u.id ? { ...x, is_banned: !x.is_banned } : x)));
   }
 
   async function toggleAdmin(u: Profile) {
     const action = u.is_admin ? "revogar admin de" : "tornar admin";
     if (!window.confirm(`Deseja ${action} ${u.username}?`)) return;
-    const { error } = await supabase.from("profiles").update({ is_admin: !u.is_admin }).eq("id", u.id);
-    if (error) { showToast(error.message, false); return; }
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_admin: !u.is_admin })
+      .eq("id", u.id);
+    if (error) {
+      showToast(error.message, false);
+      return;
+    }
     showToast(u.is_admin ? `Admin revogado de ${u.username}.` : `${u.username} agora é admin.`);
-    setUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, is_admin: !x.is_admin } : x));
+    setUsers((prev) => prev.map((x) => (x.id === u.id ? { ...x, is_admin: !x.is_admin } : x)));
   }
 
   const FILTER_OPTS = [
@@ -315,28 +399,76 @@ export function AdminUsersPage() {
   return (
     <div style={S.content}>
       {toast && (
-        <div style={{ position: "fixed", top: 80, right: 24, zIndex: 999, background: toast.ok ? "linear-gradient(135deg,#2ED573,#1a8a46)" : "linear-gradient(135deg,#FF4757,#a02030)", border: `2px solid ${toast.ok ? "#2ED573" : "#FF4757"}`, borderRadius: 14, padding: "12px 20px", fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 15, color: "#fff", boxShadow: "0 4px 20px rgba(0,0,0,.4)", animation: "slideIn .2s ease both" }}>
+        <div
+          style={{
+            position: "fixed",
+            top: 80,
+            right: 24,
+            zIndex: 999,
+            background: toast.ok
+              ? "linear-gradient(135deg,#2ED573,#1a8a46)"
+              : "linear-gradient(135deg,#FF4757,#a02030)",
+            border: `2px solid ${toast.ok ? "#2ED573" : "#FF4757"}`,
+            borderRadius: 14,
+            padding: "12px 20px",
+            fontFamily: "'Fredoka',system-ui,sans-serif",
+            fontWeight: 700,
+            fontSize: 15,
+            color: "#fff",
+            boxShadow: "0 4px 20px rgba(0,0,0,.4)",
+            animation: "slideIn .2s ease both",
+          }}
+        >
           {toast.ok ? "✓" : "✕"} {toast.msg}
         </div>
       )}
       <style>{`@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}`}</style>
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap" as const,
+          gap: 12,
+        }}
+      >
         <div>
-          <h1 style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 28, margin: 0 }}>👥 Usuários</h1>
+          <h1
+            style={{
+              fontFamily: "'Fredoka',system-ui,sans-serif",
+              fontWeight: 700,
+              fontSize: 28,
+              margin: 0,
+            }}
+          >
+            👥 Usuários
+          </h1>
           <p style={{ color: "#B7AEE0", fontSize: 14, margin: "4px 0 0" }}>
             {filtered.length} de {users.length} usuários
           </p>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" as const }}>
           {/* Filter tabs */}
-          <div style={{ display: "flex", background: "rgba(0,0,0,.3)", borderRadius: 10, padding: 3, gap: 2 }}>
+          <div
+            style={{
+              display: "flex",
+              background: "rgba(0,0,0,.3)",
+              borderRadius: 10,
+              padding: 3,
+              gap: 2,
+            }}
+          >
             {FILTER_OPTS.map((o) => (
               <button
                 key={o.key}
                 onClick={() => setFilterMode(o.key)}
                 style={{
-                  ...S.btn(filterMode === o.key ? "linear-gradient(180deg,#FF6BD6,#a8329c)" : "transparent"),
+                  ...S.btn(
+                    filterMode === o.key
+                      ? "linear-gradient(180deg,#FF6BD6,#a8329c)"
+                      : "transparent",
+                  ),
                   padding: "5px 14px",
                   fontSize: 13,
                   border: "none",
@@ -360,10 +492,28 @@ export function AdminUsersPage() {
         {error ? (
           <PageError message={error} onRetry={fetchUsers} />
         ) : loading ? (
-          <div style={{ textAlign: "center", padding: 48, color: "#B7AEE0", fontFamily: "'Fredoka',system-ui,sans-serif", fontSize: 18 }}>Carregando usuários…</div>
+          <div
+            style={{
+              textAlign: "center",
+              padding: 48,
+              color: "#B7AEE0",
+              fontFamily: "'Fredoka',system-ui,sans-serif",
+              fontSize: 18,
+            }}
+          >
+            Carregando usuários…
+          </div>
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: 48 }}>
-            <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 18 }}>Nenhum usuário encontrado</div>
+            <div
+              style={{
+                fontFamily: "'Fredoka',system-ui,sans-serif",
+                fontWeight: 700,
+                fontSize: 18,
+              }}
+            >
+              Nenhum usuário encontrado
+            </div>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -378,24 +528,80 @@ export function AdminUsersPage() {
                 }}
               >
                 {/* User row */}
-                <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 14px" }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 14px" }}
+                >
                   {/* Avatar */}
                   {u.avatar_url ? (
-                    <img src={u.avatar_url} alt={u.username} style={{ width: 36, height: 36, borderRadius: "50%", border: "2px solid #4a2aa6", flexShrink: 0, objectFit: "cover" }} />
+                    <img
+                      src={u.avatar_url}
+                      alt={u.username}
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: "50%",
+                        border: "2px solid #4a2aa6",
+                        flexShrink: 0,
+                        objectFit: "cover",
+                      }}
+                    />
                   ) : (
-                    <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#FF6BD6,#70A1FF)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 14, color: "#0E0726", flexShrink: 0 }}>
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: "50%",
+                        background: "linear-gradient(135deg,#FF6BD6,#70A1FF)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontFamily: "'Fredoka',system-ui,sans-serif",
+                        fontWeight: 700,
+                        fontSize: 14,
+                        color: "#0E0726",
+                        flexShrink: 0,
+                      }}
+                    >
                       {u.username[0]?.toUpperCase() ?? "?"}
                     </div>
                   )}
 
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
-                      <span style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 15 }}>{u.username}</span>
-                      {u.is_admin && <span style={S.badge("#FFA502", "rgba(255,165,2,.15)")}>ADMIN</span>}
-                      {u.is_banned && <span style={S.badge("#FF4757", "rgba(255,71,87,.15)")}>BANIDO</span>}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        flexWrap: "wrap" as const,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: "'Fredoka',system-ui,sans-serif",
+                          fontWeight: 700,
+                          fontSize: 15,
+                        }}
+                      >
+                        {u.username}
+                      </span>
+                      {u.is_admin && (
+                        <span style={S.badge("#FFA502", "rgba(255,165,2,.15)")}>ADMIN</span>
+                      )}
+                      {u.is_banned && (
+                        <span style={S.badge("#FF4757", "rgba(255,71,87,.15)")}>BANIDO</span>
+                      )}
                     </div>
-                    <div style={{ fontSize: 11, color: "#B7AEE0", marginTop: 2, display: "flex", gap: 10, flexWrap: "wrap" as const }}>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#B7AEE0",
+                        marginTop: 2,
+                        display: "flex",
+                        gap: 10,
+                        flexWrap: "wrap" as const,
+                      }}
+                    >
                       <span>{u.email}</span>
                       <span>Lv.{u.level}</span>
                       <span>✨ {u.xp} XP</span>
@@ -408,7 +614,11 @@ export function AdminUsersPage() {
                   <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                     <button
                       onClick={() => setExpandedId(expandedId === u.id ? null : u.id)}
-                      style={S.btn(expandedId === u.id ? "linear-gradient(180deg,#FF6BD6,#a8329c)" : "rgba(255,255,255,.1)")}
+                      style={S.btn(
+                        expandedId === u.id
+                          ? "linear-gradient(180deg,#FF6BD6,#a8329c)"
+                          : "rgba(255,255,255,.1)",
+                      )}
                     >
                       {expandedId === u.id ? "▲ Fechar" : "▼ Detalhes"}
                     </button>
@@ -421,7 +631,11 @@ export function AdminUsersPage() {
                     </button>
                     <button
                       onClick={() => toggleBan(u)}
-                      style={S.btn(u.is_banned ? "linear-gradient(180deg,#2ED573,#1a8a46)" : "rgba(255,71,87,.2)")}
+                      style={S.btn(
+                        u.is_banned
+                          ? "linear-gradient(180deg,#2ED573,#1a8a46)"
+                          : "rgba(255,71,87,.2)",
+                      )}
                       title={u.is_banned ? "Desbanir" : "Banir"}
                     >
                       {u.is_banned ? "✓ Desbanir" : "🚫 Banir"}
@@ -434,7 +648,9 @@ export function AdminUsersPage() {
                   <UserExpanded
                     user={u}
                     onSave={(xp, coins) => {
-                      setUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, xp, coins } : x));
+                      setUsers((prev) =>
+                        prev.map((x) => (x.id === u.id ? { ...x, xp, coins } : x)),
+                      );
                     }}
                   />
                 )}

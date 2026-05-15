@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageError, PulseSkeleton } from "@/components/page-error";
@@ -7,7 +7,11 @@ export const Route = createFileRoute("/tracks")({
   head: () => ({
     meta: [
       { title: "Pistas da Comunidade — Crash Coaster" },
-      { name: "description", content: "Descubra e jogue as melhores pistas criadas pela comunidade do Crash Coaster. Curta suas favoritas e inspire-se para construir a próxima." },
+      {
+        name: "description",
+        content:
+          "Descubra e jogue as melhores pistas criadas pela comunidade do Crash Coaster. Curta suas favoritas e inspire-se para construir a próxima.",
+      },
     ],
   }),
   component: TracksPage,
@@ -73,16 +77,22 @@ function LikeButton({
   initialLiked: boolean;
   userId: string | null;
 }) {
+  const navigate = useNavigate();
   const [liked, setLiked] = useState(initialLiked);
   const [likes, setLikes] = useState(initialLikes);
   const [loading, setLoading] = useState(false);
 
   async function handleToggle(e: React.MouseEvent) {
     e.preventDefault();
-    if (!userId) { window.location.href = "/login"; return; }
+    if (!userId) {
+      navigate({ to: "/login" });
+      return;
+    }
     if (loading) return;
     setLoading(true);
-    const { data, error } = await supabase.rpc("toggle_blueprint_like", { p_blueprint_id: blueprintId });
+    const { data, error } = await supabase.rpc("toggle_blueprint_like", {
+      p_blueprint_id: blueprintId,
+    });
     if (!error && data) {
       setLiked((data as { liked: boolean }).liked);
       setLikes((data as { likes: number }).likes);
@@ -133,34 +143,46 @@ function BlueprintCard({
     >
       {/* Featured badge */}
       {bp.is_featured && (
-        <div style={{
-          background: "linear-gradient(90deg,#FFA502,#FF6BD6)",
-          padding: "4px 14px",
-          fontSize: 10,
-          fontFamily: "'Fredoka',system-ui,sans-serif",
-          fontWeight: 700,
-          letterSpacing: 1,
-          textTransform: "uppercase" as const,
-          color: "#fff",
-          textAlign: "center" as const,
-        }}>
+        <div
+          style={{
+            background: "linear-gradient(90deg,#FFA502,#FF6BD6)",
+            padding: "4px 14px",
+            fontSize: 10,
+            fontFamily: "'Fredoka',system-ui,sans-serif",
+            fontWeight: 700,
+            letterSpacing: 1,
+            textTransform: "uppercase" as const,
+            color: "#fff",
+            textAlign: "center" as const,
+          }}
+        >
           ⭐ Destaque da Equipe
         </div>
       )}
 
-      <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column" as const, gap: 12, flex: 1 }}>
+      <div
+        style={{
+          padding: "16px 18px",
+          display: "flex",
+          flexDirection: "column" as const,
+          gap: 12,
+          flex: 1,
+        }}
+      >
         {/* Title + creator */}
         <div>
-          <div style={{
-            fontFamily: "'Fredoka',system-ui,sans-serif",
-            fontWeight: 700,
-            fontSize: 16,
-            color: "#fff",
-            marginBottom: 3,
-            whiteSpace: "nowrap" as const,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}>
+          <div
+            style={{
+              fontFamily: "'Fredoka',system-ui,sans-serif",
+              fontWeight: 700,
+              fontSize: 16,
+              color: "#fff",
+              marginBottom: 3,
+              whiteSpace: "nowrap" as const,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
             {bp.name}
           </div>
           <div style={{ fontSize: 11, color: "#B7AEE0" }}>
@@ -174,15 +196,26 @@ function BlueprintCard({
             { label: "Score", value: bp.best_total_score, color: "#FFA502" },
             { label: "Nós", value: bp.node_count, color: "#70A1FF" },
           ].map((s) => (
-            <div key={s.label} style={{
-              background: "rgba(0,0,0,.3)",
-              border: "1px solid rgba(255,255,255,.08)",
-              borderRadius: 8,
-              padding: "5px 10px",
-              fontSize: 12,
-            }}>
-              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, color: s.color }}>{s.value}</span>
-              {" "}<span style={{ color: "#B7AEE0", fontSize: 10 }}>{s.label}</span>
+            <div
+              key={s.label}
+              style={{
+                background: "rgba(0,0,0,.3)",
+                border: "1px solid rgba(255,255,255,.08)",
+                borderRadius: 8,
+                padding: "5px 10px",
+                fontSize: 12,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "'JetBrains Mono',monospace",
+                  fontWeight: 700,
+                  color: s.color,
+                }}
+              >
+                {s.value}
+              </span>{" "}
+              <span style={{ color: "#B7AEE0", fontSize: 10 }}>{s.label}</span>
             </div>
           ))}
         </div>
@@ -212,7 +245,9 @@ function BlueprintCard({
               gap: 6,
             }}
           >
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+              <path d="M8 5v14l11-7z" />
+            </svg>
             Jogar
           </a>
           <LikeButton
@@ -240,17 +275,23 @@ export function TracksPage() {
     setLoading(true);
     setError(null);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const uid = session?.user.id ?? null;
       setUserId(uid);
 
       let query = supabase
         .from("blueprints")
-        .select("id,name,creator_id,best_total_score,likes,node_count,is_featured,created_at,profiles(username)")
+        .select(
+          "id,name,creator_id,best_total_score,likes,node_count,is_featured,created_at,profiles(username)",
+        )
         .eq("is_public", true);
 
       if (currentSort === "featured") {
-        query = query.order("is_featured", { ascending: false }).order("likes", { ascending: false });
+        query = query
+          .order("is_featured", { ascending: false })
+          .order("likes", { ascending: false });
       } else if (currentSort === "likes") {
         query = query.order("likes", { ascending: false });
       } else if (currentSort === "score") {
@@ -269,7 +310,9 @@ export function TracksPage() {
       if (bpRes.error) throw bpRes.error;
 
       setBlueprints((bpRes.data ?? []) as Blueprint[]);
-      setLikedIds(new Set((likesRes.data ?? []).map((r: { blueprint_id: string }) => r.blueprint_id)));
+      setLikedIds(
+        new Set((likesRes.data ?? []).map((r: { blueprint_id: string }) => r.blueprint_id)),
+      );
       setLoading(false);
     } catch {
       setError("Não foi possível carregar as pistas.");
@@ -277,7 +320,9 @@ export function TracksPage() {
     }
   }, []);
 
-  useEffect(() => { load(sort); }, [sort, load, retryCount]);
+  useEffect(() => {
+    load(sort);
+  }, [sort, load, retryCount]);
 
   const featured = blueprints.filter((b) => b.is_featured);
   const rest = blueprints.filter((b) => !b.is_featured || sort !== "featured");
@@ -291,7 +336,15 @@ export function TracksPage() {
       <div style={S.content}>
         {/* Header */}
         <div>
-          <h1 style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 36, margin: 0, lineHeight: 1 }}>
+          <h1
+            style={{
+              fontFamily: "'Fredoka',system-ui,sans-serif",
+              fontWeight: 700,
+              fontSize: 36,
+              margin: 0,
+              lineHeight: 1,
+            }}
+          >
             🎢 Pistas da Comunidade
           </h1>
           <p style={{ color: "#B7AEE0", fontSize: 15, marginTop: 8, marginBottom: 0 }}>
@@ -327,22 +380,37 @@ export function TracksPage() {
         {error ? (
           <PageError message={error} onRetry={() => setRetryCount((c) => c + 1)} />
         ) : loading ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 18 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))",
+              gap: 18,
+            }}
+          >
             {Array.from({ length: 9 }).map((_, i) => (
               <PulseSkeleton key={i} height={200} borderRadius={20} delay={i * 0.07} />
             ))}
           </div>
         ) : blueprints.length === 0 ? (
-          <div style={{
-            background: "linear-gradient(180deg,#2e1870,#1a0e50)",
-            border: "2px solid #4a2aa6",
-            borderRadius: 20,
-            padding: 48,
-            textAlign: "center" as const,
-            color: "#B7AEE0",
-          }}>
+          <div
+            style={{
+              background: "linear-gradient(180deg,#2e1870,#1a0e50)",
+              border: "2px solid #4a2aa6",
+              borderRadius: 20,
+              padding: 48,
+              textAlign: "center" as const,
+              color: "#B7AEE0",
+            }}
+          >
             <div style={{ fontSize: 52, marginBottom: 12 }}>🏗️</div>
-            <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 20, color: "#fff" }}>
+            <div
+              style={{
+                fontFamily: "'Fredoka',system-ui,sans-serif",
+                fontWeight: 700,
+                fontSize: 20,
+                color: "#fff",
+              }}
+            >
               Nenhuma pista pública ainda
             </div>
             <div style={{ fontSize: 14, marginTop: 8 }}>
@@ -372,10 +440,25 @@ export function TracksPage() {
             {/* Featured section */}
             {sort === "featured" && featured.length > 0 && (
               <div>
-                <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase" as const, color: "#FFA502", fontWeight: 700, marginBottom: 14 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    letterSpacing: 1,
+                    textTransform: "uppercase" as const,
+                    color: "#FFA502",
+                    fontWeight: 700,
+                    marginBottom: 14,
+                  }}
+                >
                   Destaques da equipe
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 18 }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))",
+                    gap: 18,
+                  }}
+                >
                   {featured.map((bp, i) => (
                     <div key={bp.id} style={{ animation: `slideIn .3s ease ${i * 0.06}s both` }}>
                       <BlueprintCard bp={bp} likedIds={likedIds} userId={userId} />
@@ -383,14 +466,30 @@ export function TracksPage() {
                   ))}
                 </div>
                 {rest.length > 0 && (
-                  <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase" as const, color: "#B7AEE0", fontWeight: 700, marginTop: 28, marginBottom: 14 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      letterSpacing: 1,
+                      textTransform: "uppercase" as const,
+                      color: "#B7AEE0",
+                      fontWeight: 700,
+                      marginTop: 28,
+                      marginBottom: 14,
+                    }}
+                  >
                     Todas as pistas
                   </div>
                 )}
               </div>
             )}
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 18 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))",
+                gap: 18,
+              }}
+            >
               {(sort === "featured" ? rest : blueprints).map((bp, i) => (
                 <div key={bp.id} style={{ animation: `slideIn .3s ease ${i * 0.04}s both` }}>
                   <BlueprintCard bp={bp} likedIds={likedIds} userId={userId} />
@@ -401,8 +500,18 @@ export function TracksPage() {
         )}
 
         {!loading && !userId && blueprints.length > 0 && (
-          <div style={{ textAlign: "center" as const, color: "#B7AEE0", fontSize: 13, paddingBottom: 8 }}>
-            <Link to="/login" style={{ color: "#FF6BD6", textDecoration: "none", fontWeight: 700 }}>Faça login</Link> para curtir pistas e salvar suas favoritas.
+          <div
+            style={{
+              textAlign: "center" as const,
+              color: "#B7AEE0",
+              fontSize: 13,
+              paddingBottom: 8,
+            }}
+          >
+            <Link to="/login" style={{ color: "#FF6BD6", textDecoration: "none", fontWeight: 700 }}>
+              Faça login
+            </Link>{" "}
+            para curtir pistas e salvar suas favoritas.
           </div>
         )}
       </div>

@@ -4,17 +4,18 @@
 
 ## 1) Donos por documento
 
-| Documento | Dono primário | Backup |
-|---|---|---|
-| `ARCHITECTURE.md` | Tech Lead / Arquiteto | Dev responsável pela feature que alterou fluxo |
-| `API_MATRIX.md` | Dev de integração/backoffice | QA técnico / IA revisora |
-| `ROADMAP.md` | PM/Lead | Tech Lead |
-| `CHANGELOG.md` | Autor da PR | Reviewer da PR |
-| `ONBOARDING.md` | Tech Lead | Dev onboarding buddy |
+| Documento         | Dono primário                | Backup                                         |
+| ----------------- | ---------------------------- | ---------------------------------------------- |
+| `ARCHITECTURE.md` | Tech Lead / Arquiteto        | Dev responsável pela feature que alterou fluxo |
+| `API_MATRIX.md`   | Dev de integração/backoffice | QA técnico / IA revisora                       |
+| `ROADMAP.md`      | PM/Lead                      | Tech Lead                                      |
+| `CHANGELOG.md`    | Autor da PR                  | Reviewer da PR                                 |
+| `ONBOARDING.md`   | Tech Lead                    | Dev onboarding buddy                           |
 
 ## 2) Regra de atualização (Definition of Done)
 
 Uma PR só está pronta quando:
+
 - [ ] Código implementado e validado;
 - [ ] Docs impactados atualizados;
 - [ ] `CHANGELOG.md` atualizado com data da sessão;
@@ -45,6 +46,7 @@ Uma PR só está pronta quando:
 ## 6) Protocolo de correção rápida
 
 Ao encontrar inconsistência documental:
+
 1. Abrir PR pequena “docs sync”.
 2. Corrigir arquivo fonte da verdade.
 3. Atualizar referências cruzadas.

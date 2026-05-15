@@ -7,8 +7,13 @@ export function useIsAdmin(): { isAdmin: boolean; loading: boolean } {
 
   useEffect(() => {
     async function check() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setLoading(false); return; }
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        setLoading(false);
+        return;
+      }
 
       const { data } = await supabase
         .from("profiles")

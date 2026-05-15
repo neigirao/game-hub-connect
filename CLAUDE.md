@@ -10,9 +10,9 @@
 
 **Crash Coaster** é um jogo sandbox 2D de construção de montanhas-russas para web browser.
 
-**Tagline:** *"The game where failing is more fun than winning."*
+**Tagline:** _"The game where failing is more fun than winning."_
 
-**Emoção central:** O jogador deve pensar constantemente em *"Isso é hilário."*
+**Emoção central:** O jogador deve pensar constantemente em _"Isso é hilário."_
 
 O entretenimento vem dos acidentes espetaculares, quase-falhas e explosões cômicas — não da perfeição. O jogo recompensa **caos controlado**, não segurança.
 
@@ -22,19 +22,19 @@ O entretenimento vem dos acidentes espetaculares, quase-falhas e explosões côm
 
 ## 2. Stack Atual
 
-| Camada | Tecnologia | Versão |
-|---|---|---|
-| Meta-framework | TanStack Start | 1.167.x |
-| Roteamento | TanStack Router | 1.168.x |
-| UI | React | 19.2.0 |
-| Estilo | Tailwind CSS | 4.2.x |
-| Componentes | Shadcn / Radix UI | — |
-| Renderização do jogo | HTML5 Canvas (vanilla JS) | — |
-| Estado do jogo | Objeto JS global em `play.html` | — |
-| Backend | Supabase (PostgreSQL + Auth + Storage) | 2.105.x |
-| Auth | Google OAuth via Lovable Cloud Auth | 1.1.x |
-| Hosting | Cloudflare Workers | — |
-| Build | Vite | 7.3.x |
+| Camada               | Tecnologia                             | Versão  |
+| -------------------- | -------------------------------------- | ------- |
+| Meta-framework       | TanStack Start                         | 1.167.x |
+| Roteamento           | TanStack Router                        | 1.168.x |
+| UI                   | React                                  | 19.2.0  |
+| Estilo               | Tailwind CSS                           | 4.2.x   |
+| Componentes          | Shadcn / Radix UI                      | —       |
+| Renderização do jogo | HTML5 Canvas (vanilla JS)              | —       |
+| Estado do jogo       | Objeto JS global em `play.html`        | —       |
+| Backend              | Supabase (PostgreSQL + Auth + Storage) | 2.105.x |
+| Auth                 | Google OAuth via Lovable Cloud Auth    | 1.1.x   |
+| Hosting              | Cloudflare Workers                     | —       |
+| Build                | Vite                                   | 7.3.x   |
 
 > **Pendente do GDD:** PixiJS (renderização GPU), Zustand (state management) — ainda não implementados.
 
@@ -100,6 +100,7 @@ O entretenimento vem dos acidentes espetaculares, quase-falhas e explosões côm
 ## 4. Como o Jogo Funciona Hoje
 
 ### Fluxo de jogo
+
 ```
 Landing (home.html) → Login (Google OAuth) → /campaign → /play.html
 ```
@@ -113,33 +114,91 @@ redireciona para `/login?redirectTo=/play.html`.
 O jogo inteiro roda em um único arquivo HTML com JS vanilla e Canvas 2D (`<script type="module">`).
 
 **Estado global:**
+
 ```js
 state = {
-  mode: 'build' | 'test',
-  nodes: [{ x, y, kind: 'normal'|'booster'|'brake'|'launcher'|'loop'|
-                          'spring'|'firework'|'ice'|'inversor'|'cannon'|'portal' }],
+  mode: "build" | "test",
+  nodes: [
+    {
+      x,
+      y,
+      kind:
+        "normal" |
+        "booster" |
+        "brake" |
+        "launcher" |
+        "loop" |
+        "spring" |
+        "firework" |
+        "ice" |
+        "inversor" |
+        "cannon" |
+        "portal",
+    },
+  ],
   cart: {
-    x, y, vx, vy, s, v, angle, alive, flying, shake, panicked, finished,
-    lastDir, timeOnTrack, stallTime, _gSmooth,
+    x,
+    y,
+    vx,
+    vy,
+    s,
+    v,
+    angle,
+    alive,
+    flying,
+    shake,
+    panicked,
+    finished,
+    lastDir,
+    timeOnTrack,
+    stallTime,
+    _gSmooth,
     // cooldown flags (todas declaradas em initCart()):
-    _launchCool, _loopCool, _looping, _springCool, _fireworkCool,
-    _inversorIn, _cannonCool, _portalCool, _iceCool, _stalledOut,
+    _launchCool,
+    _loopCool,
+    _looping,
+    _springCool,
+    _fireworkCool,
+    _inversorIn,
+    _cannonCool,
+    _portalCool,
+    _iceCool,
+    _stalledOut,
   },
   closedLoop: boolean,
-  tool: 'add'|'move'|'booster'|'brake'|'launcher'|'loop-node'|
-        'spring'|'firework'|'ice'|'inversor'|'cannon'|'portal'|
-        'set-start'|'set-end'|'delete',
-  startNodeIdx: number,   // índice do nó de EMBARQUE (default: 0)
-  endNodeIdx: number,     // índice do nó de DESEMBARQUE (-1 = último nó automático)
+  tool:
+    "add" |
+    "move" |
+    "booster" |
+    "brake" |
+    "launcher" |
+    "loop-node" |
+    "spring" |
+    "firework" |
+    "ice" |
+    "inversor" |
+    "cannon" |
+    "portal" |
+    "set-start" |
+    "set-end" |
+    "delete",
+  startNodeIdx: number, // índice do nó de EMBARQUE (default: 0)
+  endNodeIdx: number, // índice do nó de DESEMBARQUE (-1 = último nó automático)
   scores: { survival, adrenaline, chaos, smoothness, creativity },
-  particles: [],   // limitado a MAX_PARTICLES = 2000
+  particles: [], // limitado a MAX_PARTICLES = 2000
   ghosts: [],
   debris: [],
-  maxSpeed, maxG, laps, nearMisses, bestScore, failLevel,
-}
+  maxSpeed,
+  maxG,
+  laps,
+  nearMisses,
+  bestScore,
+  failLevel,
+};
 ```
 
 **Física:**
+
 - Interpolação Catmull-Rom para curvas suaves
 - Cache de `buildPath()` por hash dos nós — recomputa só quando nós mudam (performance)
 - G-force: `Math.hypot(ax, ay) / 9.8`
@@ -147,11 +206,13 @@ state = {
 - 60 FPS com deltaTime normalizado
 
 **Limites de G-force:**
+
 - Seguro: -1G até 4.5G
 - Aviso: 4.5G até 5G
 - Crash: acima de 5G
 
 **Ferramentas do editor (teclado):**
+
 - `A` — Adicionar nó
 - `M` — Mover nó (arrastar fundo vazio = pan câmera)
 - `B` — Booster
@@ -173,6 +234,7 @@ state = {
 - `-` / `_` — Zoom Out (câmera livre)
 
 **Câmera livre no editor (modo Build):**
+
 - `state.cam.freeX/Y/Z` controlam a posição e zoom da câmera livre
 - Move tool + arrastar fundo vazio → pan câmera (drag to pan)
 - Scroll do mouse → pan horizontal/vertical
@@ -181,12 +243,14 @@ state = {
 - Ao voltar do modo Testar → câmera centraliza no nó de EMBARQUE
 
 **Ferramentas de estação:**
+
 - Botão `INI` (tool `set-start`) → clica em nó → define EMBARQUE
 - Botão `FIM` (tool `set-end`) → clica em nó → define DESEMBARQUE
 - Estações salvas em `track_data: { nodes, startNodeIdx, endNodeIdx }` (JSONB)
 - Backward compatible: blueprints antigos (array) carregam com startNodeIdx=0, endNodeIdx=-1
 
 **Sons (Web Audio API, síntese — zero assets externos):**
+
 - Rail hum (oscilador sawtooth proporcional à velocidade)
 - Boost burst
 - Crash noise
@@ -202,20 +266,18 @@ state = {
 | Creativity | Originalidade do traçado |
 
 **Escala de falha (9 níveis):**
+
 1. Trilho vibra → 2. Faíscas → 3. Parafusos soltam → 4. Carrinho balança
-→ 5. Pânico dos passageiros → 6. Estrutura entorta → 7. Descarrilamento
-→ 8. Explosão → 9. Fantasmas aparecem
+   → 5. Pânico dos passageiros → 6. Estrutura entorta → 7. Descarrilamento
+   → 8. Explosão → 9. Fantasmas aparecem
 
 ### Paleta de cores (CSS vars no play.html)
+
 ```css
---danger:  #FF4757   /* perigo / crash */
---safe:    #2ED573   /* seguro */
---boost:   #FFA502   /* booster / aviso */
---ghost:   #70A1FF   /* fantasmas */
---boom:    #FF7F50   /* explosões */
---candy:   #FF6BD6   /* destaque UI */
---rail:    #FFE9A8   /* trilho */
---bg-0:    #170C3D   /* fundo primário */
+--danger: #ff4757 /* perigo / crash */ --safe: #2ed573 /* seguro */ --boost: #ffa502
+  /* booster / aviso */ --ghost: #70a1ff /* fantasmas */ --boom: #ff7f50 /* explosões */
+  --candy: #ff6bd6 /* destaque UI */ --rail: #ffe9a8 /* trilho */ --bg-0: #170c3d
+  /* fundo primário */;
 ```
 
 ---
@@ -227,14 +289,14 @@ state = {
 
 ### Schema (migrations em `supabase/migrations/`)
 
-| Tabela | Descrição |
-|---|---|
-| `profiles` | Usuários — criado automaticamente via trigger; campo `is_admin` |
-| `blueprints` | Pistas salvas — `is_featured` protegido por RLS (só admin pode setar) |
-| `levels` | Fases da campanha (gerenciadas pelo admin) |
-| `leaderboard_entries` | Ranking global e mensal — CHECK constraint: valores ≥ 0 |
-| `daily_picks` | Pista do desafio diário |
-| `shop_items` / `purchases` | Loja de cosméticos |
+| Tabela                     | Descrição                                                             |
+| -------------------------- | --------------------------------------------------------------------- |
+| `profiles`                 | Usuários — criado automaticamente via trigger; campo `is_admin`       |
+| `blueprints`               | Pistas salvas — `is_featured` protegido por RLS (só admin pode setar) |
+| `levels`                   | Fases da campanha (gerenciadas pelo admin)                            |
+| `leaderboard_entries`      | Ranking global e mensal — CHECK constraint: valores ≥ 0               |
+| `daily_picks`              | Pista do desafio diário                                               |
+| `shop_items` / `purchases` | Loja de cosméticos                                                    |
 
 **Views:** `leaderboard_with_profiles` — top scores com rank e username
 
@@ -273,18 +335,19 @@ para `/login?redirectTo=/play.html` em vez de tentar OAuth com sbClient = null.
 
 O Worker intercepta todas as requests antes do TanStack SSR:
 
-| Rota | Comportamento |
-|---|---|
-| `GET /` (sem `?code=`) | 302 → `/home.html` (elimina hydration flash) |
-| `GET /?code=...` | Passa para TanStack (callback OAuth) |
-| `GET /api/og/share?score=&stars=&speed=&g=` | Retorna SVG 1200×630 (og:image do /share) |
-| Qualquer outra | TanStack SSR |
+| Rota                                        | Comportamento                                |
+| ------------------------------------------- | -------------------------------------------- |
+| `GET /` (sem `?code=`)                      | 302 → `/home.html` (elimina hydration flash) |
+| `GET /?code=...`                            | Passa para TanStack (callback OAuth)         |
+| `GET /api/og/share?score=&stars=&speed=&g=` | Retorna SVG 1200×630 (og:image do /share)    |
+| Qualquer outra                              | TanStack SSR                                 |
 
 ---
 
 ## 8. O que Está Implementado vs. Pendente
 
 ### Implementado
+
 - [x] Engine do jogo (física, trilhos, colisões, score)
 - [x] Editor de pistas com snapping, splines e Catmull-Rom cacheado
 - [x] Sistema de G-force e crash detection
@@ -329,19 +392,36 @@ O Worker intercepta todas as requests antes do TanStack SSR:
   - [x] `/admin/users` — listar, buscar, banir e promover usuários
 
 ### Pendente (MVP restante)
+
 - [ ] Perfil: animação de ganho de XP/coins ao receber recompensas
 - [ ] Geração de GIF/replay
 - [ ] Trilha de fundo (música)
 
 ### Implementado (sprint recente)
+
 - [x] Botão "Compartilhar" no modal pós-corrida abre `/share` em nova aba (além de copiar URL)
 - [x] Botão 🗑️ em cada blueprint do perfil — apaga com confirmação, atualiza lista localmente
 - [x] Challenge page: quando blueprint do desafio foi deletado, mostra aviso em vez de travar
 - [x] Loja mostra callout explicando como ganhar coins (jogar Campanha, +100 por estrela) (P2)
 - [x] Confirmação antes de comprar item na loja — `window.confirm` com nome e custo do item (P5)
 - [x] Challenge page sem desafio exibe CTAs secundários: "Ir para Campanha" e "Jogar Livre" (P4)
+- [x] `PlayerAvatar` extraído para `src/components/player-avatar.tsx` — usado em `profile.tsx`, `game-nav.tsx` (A4)
+- [x] `SHOP_ITEMS` e `ShopItem` movidos para `src/lib/shop-items.ts` — importado por `shop.tsx` e `profile.tsx` (A12)
+- [x] Creativity score com bônus de diversidade: +20 quando ≥3 tipos especiais diferentes e ≥4 nós especiais (G5)
+- [x] `.env.example` criado com placeholders das variáveis necessárias (E10)
+- [x] `README.md` criado com setup de 5 passos e links para documentação (E13)
+- [x] Constantes de física nomeadas em `play.html`: `GRAVITY`, `BOOSTER_ACCEL`, `G_SCALE`, `G_FAIL[]`, etc. (X9)
+- [x] CI/CD GitHub Actions: lint + tsc + build + tests + play.html syntax check (E1)
+- [x] Pre-commit hooks: husky + lint-staged (ESLint + Prettier em arquivos staged) (E5)
+- [x] Vitest configurado com 9 testes: `shop-items` e `creativity-score` (E6)
+- [x] `src/lib/game-constants.ts` criado — `XP_PER_LEVEL`, `COINS_PER_STAR`; importado em `profile.tsx` (A5)
+- [x] `window.location.href` substituído por `useNavigate()` em `login.tsx`, `profile.tsx`, `shop.tsx`, `tracks.tsx` (A8)
+- [x] Content-Security-Policy + security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`) adicionados ao Worker em `src/server.ts` (E4)
+- [x] Creativity score exibido no leaderboard: coluna `🎨{creativity_score}` (rosa) ao lado de S/A/C (G11)
+- [x] `role="toolbar" aria-label="Ferramentas do editor"` na aside tools; `aria-label="Editor de pista" role="img"` no canvas de `play.html` (X7)
 
 ### Pendente (pós-MVP / V2+)
+
 - [ ] Migrar engine para PixiJS
 - [ ] Zustand para state management
 - [ ] Skins e sistema de gacha
@@ -353,43 +433,47 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 
 ## 9. Armadilhas Conhecidas (não repetir)
 
-| Armadilha | Detalhe |
-|---|---|
-| Stray brace em play.html | Um `}` extra quebra o `<script type="module">` inteiro — nenhum código executa |
-| Worker redirect intercepta OAuth | Nunca redirecionar `/` se `?code=` estiver na URL — o token OAuth seria descartado |
-| sbClient = null em play.html | Usuário que vai direto para /play.html não tem cc_sb_url no localStorage; usar optional chaining silencia o erro mas o clique vira no-op |
-| @import inline causa FOUC | Não adicionar `@import url(google fonts)` dentro de `<style>` em componentes React — consolidar em `__root.tsx` head links |
-| `<a href>` vs `<Link to>` | Links internos de rotas React devem usar `<Link to>`, não `<a href>` — caso contrário perdem o cache do QueryClient a cada navegação |
-| canvasPoint() deve converter com câmera | Após adicionar câmera livre, `canvasPoint()` deve usar `cam.x + (sx - W/2) / cam.z` — sem isso, cliques em nós ficam deslocados quando câmera está em posição diferente do centro |
-| track_data formato duplo | Blueprints antigos têm track_data como array JSON; novos têm `{nodes, startNodeIdx, endNodeIdx}`. Load code deve checar `Array.isArray(td) ? td : td.nodes` |
+| Armadilha                                         | Detalhe                                                                                                                                                                                                                      |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stray brace em play.html                          | Um `}` extra quebra o `<script type="module">` inteiro — nenhum código executa                                                                                                                                               |
+| Worker redirect intercepta OAuth                  | Nunca redirecionar `/` se `?code=` estiver na URL — o token OAuth seria descartado                                                                                                                                           |
+| sbClient = null em play.html                      | Usuário que vai direto para /play.html não tem cc_sb_url no localStorage; usar optional chaining silencia o erro mas o clique vira no-op                                                                                     |
+| @import inline causa FOUC                         | Não adicionar `@import url(google fonts)` dentro de `<style>` em componentes React — consolidar em `__root.tsx` head links                                                                                                   |
+| `<a href>` vs `<Link to>`                         | Links internos de rotas React devem usar `<Link to>`, não `<a href>` — caso contrário perdem o cache do QueryClient a cada navegação                                                                                         |
+| canvasPoint() deve converter com câmera           | Após adicionar câmera livre, `canvasPoint()` deve usar `cam.x + (sx - W/2) / cam.z` — sem isso, cliques em nós ficam deslocados quando câmera está em posição diferente do centro                                            |
+| track_data formato duplo                          | Blueprints antigos têm track_data como array JSON; novos têm `{nodes, startNodeIdx, endNodeIdx}`. Load code deve checar `Array.isArray(td) ? td : td.nodes`                                                                  |
 | OAuth redirect_uri deve ir direto pra `/campaign` | `lovable.auth.signInWithOAuth` com `redirect_uri: origin` causa salto duplo via `IndexRedirect` e pode flashar `/home.html` se o `getSession()` chegar antes do cookie. Sempre usar `origin + "/campaign"` para login do app |
-| `head({ search })` não compila no TanStack atual | A função `head` em `createFileRoute` não recebe `search` como prop; usar `head({ match })` e ler `match.search` (com cast para o schema do `validateSearch`) |
-| Toolbar do editor estoura viewport | `.tools` é grid 2 colunas com `overflow-y:auto`. Ao adicionar nova ferramenta, manter ícones em 22×22 e label em 8px para caber em 769px de altura |
-| #levelPanel sobrepõe toolbar | O painel de campanha é `position:fixed` — se `left` for menor que a largura da toolbar+padding ele cobre os botões. Valor correto: `left: 178px` (14px grid-padding + 150px tools + 14px gap) |
-| index.tsx getSession() vs OAuth callback | Quando `/?code=` chega (OAuth callback), `getSession()` retorna null porque o Supabase ainda está trocando o code. Usar `onAuthStateChange('SIGNED_IN')` para aguardar a sessão ser estabelecida |
+| `head({ search })` não compila no TanStack atual  | A função `head` em `createFileRoute` não recebe `search` como prop; usar `head({ match })` e ler `match.search` (com cast para o schema do `validateSearch`)                                                                 |
+| Toolbar do editor estoura viewport                | `.tools` é grid 2 colunas com `overflow-y:auto`. Ao adicionar nova ferramenta, manter ícones em 22×22 e label em 8px para caber em 769px de altura                                                                           |
+| #levelPanel sobrepõe toolbar                      | O painel de campanha é `position:fixed` — se `left` for menor que a largura da toolbar+padding ele cobre os botões. Valor correto: `left: 178px` (14px grid-padding + 150px tools + 14px gap)                                |
+| index.tsx getSession() vs OAuth callback          | Quando `/?code=` chega (OAuth callback), `getSession()` retorna null porque o Supabase ainda está trocando o code. Usar `onAuthStateChange('SIGNED_IN')` para aguardar a sessão ser estabelecida                             |
 
 ---
 
 ## 10. Princípios de Desenvolvimento
 
 ### Filosofia do produto
+
 - **Caos controlado** é o objetivo, não perfeição
 - Falhas devem ser engraçadas, progressivas e compartilháveis
 - Nunca pay-to-win — monetização só por cosméticos
 - UI deve lembrar brinquedos e painéis de parque temático
 
 ### Direção visual
+
 - Estilo: **Theme Park Toy** + influência Cartoon Network
 - Formas arredondadas, cores vibrantes, animações exageradas
 - Nunca: realismo extremo, sangue, horror, texturas complexas
 
 ### Código
+
 - `play.html` é o coração do jogo — sempre verificar sintaxe com `node --check` após editar
 - Não introduzir breaking changes na física sem testar o score system
 - Sempre atualizar `src/integrations/supabase/types.ts` após migrations
 - Commits devem ser descritivos com escopo (ex: `fix(play.html):`, `feat(campaign):`)
 
 ### Performance
+
 - Target: 60 FPS em notebooks modestos e browsers modernos
 - `buildPath()` tem cache por hash dos nós — não chamar fora do cache
 - Partículas limitadas a `MAX_PARTICLES = 2000`
@@ -428,21 +512,21 @@ npx wrangler deploy
 
 ## 12. Roadmap
 
-| Fase | Foco |
-|---|---|
+| Fase    | Foco                                                                                            |
+| ------- | ----------------------------------------------------------------------------------------------- |
 | **MVP** | ~~Campanha~~ ✅ · ~~Física melhorada~~ ✅ · ~~Navegação SPA~~ ✅ · Replay/GIF · Trilha de fundo |
-| **V2** | Skins + gacha, PixiJS, temporadas, mobile |
-| **V3** | Creator economy, marketplace, desafios especiais |
+| **V2**  | Skins + gacha, PixiJS, temporadas, mobile                                                       |
+| **V3**  | Creator economy, marketplace, desafios especiais                                                |
 
 ---
 
 ## 13. Contatos e Acessos
 
-| Papel | Detalhe |
-|---|---|
-| Admin principal | `neigirao@gmail.com` |
-| Supabase project | `sekuurohkxqktpllebdd` |
-| Repositório | `neigirao/game-hub-connect` |
+| Papel                     | Detalhe                               |
+| ------------------------- | ------------------------------------- |
+| Admin principal           | `neigirao@gmail.com`                  |
+| Supabase project          | `sekuurohkxqktpllebdd`                |
+| Repositório               | `neigirao/game-hub-connect`           |
 | Branch de desenvolvimento | `claude/understand-application-WSjdS` |
 
 ---
@@ -450,6 +534,7 @@ npx wrangler deploy
 ## Como Atualizar Este Arquivo
 
 **Atualizar o CLAUDE.md sempre que:**
+
 - Uma nova tabela for criada no banco
 - Uma feature for implementada ou removida
 - A stack tecnológica mudar (nova lib, remoção de lib)

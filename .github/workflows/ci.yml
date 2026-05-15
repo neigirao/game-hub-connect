@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-build:
+    name: Lint & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+  play-html-syntax:
+    name: play.html syntax
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check play.html JS syntax
+        run: |
+          node -e "
+          const fs = require('fs'), html = fs.readFileSync('public/play.html','utf8'), lines = html.split('\n');
+          let start = -1, end = -1;
+          for (let i = 0; i < lines.length; i++) {
+            if (start < 0 && lines[i].includes('<script type=\"module\">')) { start = i; continue; }
+            if (start >= 0 && lines[i].includes('</script>')) { end = i; break; }
+          }
+          fs.writeFileSync('/tmp/pc.mjs', lines.slice(start+1, end).join('\n'));
+          "
+          node --check /tmp/pc.mjs && echo "✓ Sintaxe OK"

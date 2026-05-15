@@ -1,114 +1,21 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageError, PulseSkeleton } from "@/components/page-error";
+import { SHOP_ITEMS, type ShopItem } from "@/lib/shop-items";
 
 export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
       { title: "Loja — Crash Coaster" },
-      { name: "description", content: "Gaste suas moedas em badges, skins e cenários exclusivos do Crash Coaster." },
+      {
+        name: "description",
+        content: "Gaste suas moedas em badges, skins e cenários exclusivos do Crash Coaster.",
+      },
     ],
   }),
   component: ShopPage,
 });
-
-type ShopItem = {
-  id: string;
-  name: string;
-  description: string;
-  cost: number;
-  category: "badge" | "skin" | "scenario";
-  emoji: string;
-  color: string;
-};
-
-export const SHOP_ITEMS: ShopItem[] = [
-  // Badges
-  {
-    id: "badge_parque",
-    name: "Mestre do Parque",
-    description: "Para quem domina os loops e as curvas do parque",
-    cost: 200,
-    category: "badge",
-    emoji: "🎡",
-    color: "#2ED573",
-  },
-  {
-    id: "badge_vulcao",
-    name: "Explorador de Vulcão",
-    description: "Não tem medo do magma nem de 5G de força",
-    cost: 500,
-    category: "badge",
-    emoji: "🌋",
-    color: "#FF4757",
-  },
-  {
-    id: "badge_praia",
-    name: "Surfista do Caos",
-    description: "Relaxa mesmo na curva mais insana da praia",
-    cost: 800,
-    category: "badge",
-    emoji: "🏖️",
-    color: "#FFA502",
-  },
-  {
-    id: "badge_espaco",
-    name: "Astronauta do Descarrilamento",
-    description: "Caiu do trilho e foi parar na órbita",
-    cost: 1500,
-    category: "badge",
-    emoji: "🚀",
-    color: "#70A1FF",
-  },
-  // Skins do carrinho
-  {
-    id: "skin_candy",
-    name: "Carrinho Candy",
-    description: "Skin rosa chiclete — doce e imparável",
-    cost: 1000,
-    category: "skin",
-    emoji: "🍬",
-    color: "#FF6BD6",
-  },
-  {
-    id: "skin_gold",
-    name: "Carrinho Dourado",
-    description: "Reservado para os campeões do caos",
-    cost: 3000,
-    category: "skin",
-    emoji: "🏆",
-    color: "#FFA502",
-  },
-  {
-    id: "skin_rocket",
-    name: "Foguete Supersônico",
-    description: "Mais aerodinâmico, mais caótico, mais fogo",
-    cost: 2000,
-    category: "skin",
-    emoji: "🚀",
-    color: "#FF4757",
-  },
-  // Cenários
-  {
-    id: "cenario_praia",
-    name: "Cenário Praia",
-    description: "Areia, sol e ondas — caos com bronzeado garantido",
-    cost: 600,
-    category: "scenario",
-    emoji: "🏖️",
-    color: "#FFA502",
-  },
-  {
-    id: "cenario_noite",
-    name: "Cenário Noite",
-    description: "Céu estrelado — crashes mais dramáticos sob a lua",
-    cost: 900,
-    category: "scenario",
-    emoji: "🌙",
-    color: "#70A1FF",
-  },
-];
 
 const S = {
   page: {
@@ -161,11 +68,7 @@ function ShopCard({
         background: owned
           ? "linear-gradient(180deg,#1a3a1a,#0e2010)"
           : "linear-gradient(180deg,#2e1870,#1a0e50)",
-        border: equipped
-          ? "2px solid #FFA502"
-          : owned
-          ? "2px solid #2ED573"
-          : "2px solid #4a2aa6",
+        border: equipped ? "2px solid #FFA502" : owned ? "2px solid #2ED573" : "2px solid #4a2aa6",
         borderRadius: 20,
         padding: "20px 20px 16px",
         display: "flex",
@@ -174,8 +77,8 @@ function ShopCard({
         boxShadow: equipped
           ? "0 6px 0 #6e3f00, 0 0 0 3px rgba(255,165,2,.15)"
           : owned
-          ? "0 6px 0 #0a1a0a"
-          : "0 6px 0 rgba(0,0,0,.3)",
+            ? "0 6px 0 #0a1a0a"
+            : "0 6px 0 rgba(0,0,0,.3)",
         transition: "transform .15s ease",
         position: "relative" as const,
       }}
@@ -183,60 +86,70 @@ function ShopCard({
       onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
     >
       {equipped && (
-        <div style={{
-          position: "absolute" as const,
-          top: 10,
-          right: 10,
-          fontSize: 9,
-          fontFamily: "'Fredoka',system-ui,sans-serif",
-          fontWeight: 700,
-          letterSpacing: 1,
-          textTransform: "uppercase" as const,
-          padding: "2px 8px",
-          borderRadius: 8,
-          background: "rgba(255,165,2,.25)",
-          color: "#FFA502",
-          border: "1px solid rgba(255,165,2,.5)",
-        }}>
+        <div
+          style={{
+            position: "absolute" as const,
+            top: 10,
+            right: 10,
+            fontSize: 9,
+            fontFamily: "'Fredoka',system-ui,sans-serif",
+            fontWeight: 700,
+            letterSpacing: 1,
+            textTransform: "uppercase" as const,
+            padding: "2px 8px",
+            borderRadius: 8,
+            background: "rgba(255,165,2,.25)",
+            color: "#FFA502",
+            border: "1px solid rgba(255,165,2,.5)",
+          }}
+        >
           ✓ Equipado
         </div>
       )}
 
       {/* Icon */}
-      <div style={{ fontSize: 48, textAlign: "center" as const, filter: `drop-shadow(0 2px 8px ${item.color}60)` }}>
+      <div
+        style={{
+          fontSize: 48,
+          textAlign: "center" as const,
+          filter: `drop-shadow(0 2px 8px ${item.color}60)`,
+        }}
+      >
         {item.emoji}
       </div>
 
       {/* Info */}
       <div style={{ textAlign: "center" as const }}>
-        <div style={{
-          fontFamily: "'Fredoka',system-ui,sans-serif",
-          fontWeight: 700,
-          fontSize: 16,
-          color: equipped ? "#FFA502" : owned ? "#2ED573" : "#fff",
-          marginBottom: 4,
-        }}>
+        <div
+          style={{
+            fontFamily: "'Fredoka',system-ui,sans-serif",
+            fontWeight: 700,
+            fontSize: 16,
+            color: equipped ? "#FFA502" : owned ? "#2ED573" : "#fff",
+            marginBottom: 4,
+          }}
+        >
           {item.name}
         </div>
-        <div style={{ fontSize: 11, color: "#B7AEE0", lineHeight: 1.4 }}>
-          {item.description}
-        </div>
+        <div style={{ fontSize: 11, color: "#B7AEE0", lineHeight: 1.4 }}>{item.description}</div>
       </div>
 
       {/* Category tag */}
       <div style={{ textAlign: "center" as const }}>
-        <span style={{
-          fontSize: 10,
-          fontFamily: "'Fredoka',system-ui,sans-serif",
-          fontWeight: 700,
-          letterSpacing: 1,
-          textTransform: "uppercase" as const,
-          padding: "2px 10px",
-          borderRadius: 20,
-          background: `${item.color}22`,
-          color: item.color,
-          border: `1px solid ${item.color}55`,
-        }}>
+        <span
+          style={{
+            fontSize: 10,
+            fontFamily: "'Fredoka',system-ui,sans-serif",
+            fontWeight: 700,
+            letterSpacing: 1,
+            textTransform: "uppercase" as const,
+            padding: "2px 10px",
+            borderRadius: 20,
+            background: `${item.color}22`,
+            color: item.color,
+            border: `1px solid ${item.color}55`,
+          }}
+        >
           {categoryLabel(item.category)}
         </span>
       </div>
@@ -265,14 +178,16 @@ function ShopCard({
             </button>
           )}
           {(!isEquippable || equipped) && (
-            <div style={{
-              textAlign: "center" as const,
-              fontFamily: "'Fredoka',system-ui,sans-serif",
-              fontWeight: 700,
-              fontSize: 14,
-              color: equipped ? "#FFA502" : "#2ED573",
-              padding: "8px",
-            }}>
+            <div
+              style={{
+                textAlign: "center" as const,
+                fontFamily: "'Fredoka',system-ui,sans-serif",
+                fontWeight: 700,
+                fontSize: 14,
+                color: equipped ? "#FFA502" : "#2ED573",
+                padding: "8px",
+              }}
+            >
               {equipped ? "✓ Equipado" : "✓ Você tem este item"}
             </div>
           )}
@@ -305,6 +220,7 @@ function ShopCard({
 }
 
 export function ShopPage() {
+  const navigate = useNavigate();
   const [coins, setCoins] = useState(0);
   const [inventory, setInventory] = useState<string[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
@@ -314,10 +230,10 @@ export function ShopPage() {
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [equippedSkin, setEquippedSkin] = useState<string>(() =>
-    typeof window !== "undefined" ? localStorage.getItem("cc_cart_skin") ?? "" : ""
+    typeof window !== "undefined" ? (localStorage.getItem("cc_cart_skin") ?? "") : "",
   );
   const [equippedScenario, setEquippedScenario] = useState<string>(() =>
-    typeof window !== "undefined" ? localStorage.getItem("cc_scenario") ?? "" : ""
+    typeof window !== "undefined" ? (localStorage.getItem("cc_scenario") ?? "") : "",
   );
 
   function showToast(msg: string, ok = true) {
@@ -330,8 +246,13 @@ export function ShopPage() {
       setLoading(true);
       setError(null);
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) { setLoading(false); return; }
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session?.user) {
+          setLoading(false);
+          return;
+        }
         setUserId(session.user.id);
 
         const { data, error: err } = await supabase
@@ -342,7 +263,7 @@ export function ShopPage() {
 
         if (err) throw err;
         setCoins(data.coins ?? 0);
-        setInventory(Array.isArray(data.inventory) ? data.inventory as string[] : []);
+        setInventory(Array.isArray(data.inventory) ? (data.inventory as string[]) : []);
         setLoading(false);
       } catch {
         setError("Não foi possível carregar a loja.");
@@ -353,7 +274,10 @@ export function ShopPage() {
   }, [retryCount]);
 
   async function handleBuy(item: ShopItem) {
-    if (!userId) { window.location.href = "/login"; return; }
+    if (!userId) {
+      navigate({ to: "/login" });
+      return;
+    }
     if (!window.confirm(`Gastar ${item.cost.toLocaleString()} moedas em "${item.name}"?`)) return;
     setBuying(item.id);
     const { data, error: err } = await supabase.rpc("purchase_shop_item", {
@@ -406,30 +330,50 @@ export function ShopPage() {
 
       {/* Toast */}
       {toast && (
-        <div style={{
-          position: "fixed",
-          top: 80,
-          right: 20,
-          zIndex: 9999,
-          background: toast.ok ? "linear-gradient(135deg,#2ED573,#1a8a46)" : "linear-gradient(135deg,#FF4757,#8a1a1a)",
-          color: "#fff",
-          borderRadius: 14,
-          padding: "12px 20px",
-          fontFamily: "'Fredoka',system-ui,sans-serif",
-          fontWeight: 700,
-          fontSize: 15,
-          boxShadow: "0 4px 20px rgba(0,0,0,.4)",
-          animation: "toastIn .3s ease",
-        }}>
+        <div
+          style={{
+            position: "fixed",
+            top: 80,
+            right: 20,
+            zIndex: 9999,
+            background: toast.ok
+              ? "linear-gradient(135deg,#2ED573,#1a8a46)"
+              : "linear-gradient(135deg,#FF4757,#8a1a1a)",
+            color: "#fff",
+            borderRadius: 14,
+            padding: "12px 20px",
+            fontFamily: "'Fredoka',system-ui,sans-serif",
+            fontWeight: 700,
+            fontSize: 15,
+            boxShadow: "0 4px 20px rgba(0,0,0,.4)",
+            animation: "toastIn .3s ease",
+          }}
+        >
           {toast.msg}
         </div>
       )}
 
       <div style={S.content}>
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            flexWrap: "wrap" as const,
+            gap: 12,
+          }}
+        >
           <div>
-            <h1 style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 36, margin: 0, lineHeight: 1 }}>
+            <h1
+              style={{
+                fontFamily: "'Fredoka',system-ui,sans-serif",
+                fontWeight: 700,
+                fontSize: 36,
+                margin: 0,
+                lineHeight: 1,
+              }}
+            >
               🛒 Loja
             </h1>
             <p style={{ color: "#B7AEE0", fontSize: 15, marginTop: 8, marginBottom: 0 }}>
@@ -437,22 +381,39 @@ export function ShopPage() {
             </p>
           </div>
           {userId && !loading && (
-            <div style={{
-              background: "linear-gradient(180deg,#2e1870,#1a0e50)",
-              border: "2px solid #4a2aa6",
-              borderRadius: 16,
-              padding: "12px 20px",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              boxShadow: "0 4px 0 rgba(0,0,0,.3)",
-            }}>
+            <div
+              style={{
+                background: "linear-gradient(180deg,#2e1870,#1a0e50)",
+                border: "2px solid #4a2aa6",
+                borderRadius: 16,
+                padding: "12px 20px",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                boxShadow: "0 4px 0 rgba(0,0,0,.3)",
+              }}
+            >
               <span style={{ fontSize: 20 }}>🪙</span>
               <div>
-                <div style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 22, color: "#FFA502", lineHeight: 1 }}>
+                <div
+                  style={{
+                    fontFamily: "'JetBrains Mono',monospace",
+                    fontWeight: 700,
+                    fontSize: 22,
+                    color: "#FFA502",
+                    lineHeight: 1,
+                  }}
+                >
                   {coins.toLocaleString()}
                 </div>
-                <div style={{ fontSize: 10, color: "#B7AEE0", letterSpacing: 1, textTransform: "uppercase" as const }}>
+                <div
+                  style={{
+                    fontSize: 10,
+                    color: "#B7AEE0",
+                    letterSpacing: 1,
+                    textTransform: "uppercase" as const,
+                  }}
+                >
                   moedas
                 </div>
               </div>
@@ -462,35 +423,61 @@ export function ShopPage() {
 
         {/* Coins callout */}
         {userId && !loading && (
-          <div style={{
-            background: "linear-gradient(135deg,rgba(255,165,2,.12),rgba(255,165,2,.04))",
-            border: "1px solid rgba(255,165,2,.3)",
-            borderRadius: 16,
-            padding: "14px 20px",
-            display: "flex",
-            alignItems: "center",
-            gap: 14,
-          }}>
+          <div
+            style={{
+              background: "linear-gradient(135deg,rgba(255,165,2,.12),rgba(255,165,2,.04))",
+              border: "1px solid rgba(255,165,2,.3)",
+              borderRadius: 16,
+              padding: "14px 20px",
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+            }}
+          >
             <span style={{ fontSize: 26, flexShrink: 0 }}>💡</span>
-            <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontSize: 14, color: "#B7AEE0", lineHeight: 1.5 }}>
-              <span style={{ color: "#FFA502", fontWeight: 700 }}>Como ganhar moedas:</span> jogue corridas na{" "}
-              <Link to="/campaign" style={{ color: "#FF6BD6", fontWeight: 700, textDecoration: "none" }}>Campanha</Link>
-              {" "}— ganhe <span style={{ color: "#FFA502", fontWeight: 700 }}>+100 moedas</span> por estrela nova conquistada.
+            <div
+              style={{
+                fontFamily: "'Fredoka',system-ui,sans-serif",
+                fontSize: 14,
+                color: "#B7AEE0",
+                lineHeight: 1.5,
+              }}
+            >
+              <span style={{ color: "#FFA502", fontWeight: 700 }}>Como ganhar moedas:</span> jogue
+              corridas na{" "}
+              <Link
+                to="/campaign"
+                style={{ color: "#FF6BD6", fontWeight: 700, textDecoration: "none" }}
+              >
+                Campanha
+              </Link>{" "}
+              — ganhe <span style={{ color: "#FFA502", fontWeight: 700 }}>+100 moedas</span> por
+              estrela nova conquistada.
             </div>
           </div>
         )}
 
         {!userId && !loading ? (
-          <div style={{
-            background: "linear-gradient(180deg,#2e1870,#1a0e50)",
-            border: "2px solid #4a2aa6",
-            borderRadius: 20,
-            padding: 48,
-            textAlign: "center" as const,
-            color: "#B7AEE0",
-          }}>
+          <div
+            style={{
+              background: "linear-gradient(180deg,#2e1870,#1a0e50)",
+              border: "2px solid #4a2aa6",
+              borderRadius: 20,
+              padding: 48,
+              textAlign: "center" as const,
+              color: "#B7AEE0",
+            }}
+          >
             <div style={{ fontSize: 52, marginBottom: 12 }}>🔐</div>
-            <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 20, color: "#fff", marginBottom: 16 }}>
+            <div
+              style={{
+                fontFamily: "'Fredoka',system-ui,sans-serif",
+                fontWeight: 700,
+                fontSize: 20,
+                color: "#fff",
+                marginBottom: 16,
+              }}
+            >
               Faça login para usar a loja
             </div>
             <Link
@@ -513,7 +500,13 @@ export function ShopPage() {
         ) : error ? (
           <PageError message={error} onRetry={() => setRetryCount((c) => c + 1)} />
         ) : loading ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 18 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))",
+              gap: 18,
+            }}
+          >
             {Array.from({ length: 9 }).map((_, i) => (
               <PulseSkeleton key={i} height={240} borderRadius={20} delay={i * 0.06} />
             ))}
@@ -522,10 +515,25 @@ export function ShopPage() {
           <>
             {/* Badges */}
             <div>
-              <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase" as const, color: "#B7AEE0", fontWeight: 700, marginBottom: 16 }}>
+              <div
+                style={{
+                  fontSize: 12,
+                  letterSpacing: 1,
+                  textTransform: "uppercase" as const,
+                  color: "#B7AEE0",
+                  fontWeight: 700,
+                  marginBottom: 16,
+                }}
+              >
                 Badges de perfil
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 18 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))",
+                  gap: 18,
+                }}
+              >
                 {badges.map((item, i) => (
                   <div key={item.id} style={{ animation: `slideIn .3s ease ${i * 0.07}s both` }}>
                     <ShopCard
@@ -544,12 +552,30 @@ export function ShopPage() {
 
             {/* Skins do carrinho */}
             <div>
-              <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase" as const, color: "#B7AEE0", fontWeight: 700, marginBottom: 16 }}>
+              <div
+                style={{
+                  fontSize: 12,
+                  letterSpacing: 1,
+                  textTransform: "uppercase" as const,
+                  color: "#B7AEE0",
+                  fontWeight: 700,
+                  marginBottom: 16,
+                }}
+              >
                 Skins do carrinho
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 18 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))",
+                  gap: 18,
+                }}
+              >
                 {skins.map((item, i) => (
-                  <div key={item.id} style={{ animation: `slideIn .3s ease ${(badges.length + i) * 0.07}s both` }}>
+                  <div
+                    key={item.id}
+                    style={{ animation: `slideIn .3s ease ${(badges.length + i) * 0.07}s both` }}
+                  >
                     <ShopCard
                       item={item}
                       owned={inventory.includes(item.id)}
@@ -566,12 +592,32 @@ export function ShopPage() {
 
             {/* Cenários */}
             <div>
-              <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase" as const, color: "#B7AEE0", fontWeight: 700, marginBottom: 16 }}>
+              <div
+                style={{
+                  fontSize: 12,
+                  letterSpacing: 1,
+                  textTransform: "uppercase" as const,
+                  color: "#B7AEE0",
+                  fontWeight: 700,
+                  marginBottom: 16,
+                }}
+              >
                 Cenários
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 18 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))",
+                  gap: 18,
+                }}
+              >
                 {scenarios.map((item, i) => (
-                  <div key={item.id} style={{ animation: `slideIn .3s ease ${(badges.length + skins.length + i) * 0.07}s both` }}>
+                  <div
+                    key={item.id}
+                    style={{
+                      animation: `slideIn .3s ease ${(badges.length + skins.length + i) * 0.07}s both`,
+                    }}
+                  >
                     <ShopCard
                       item={item}
                       owned={inventory.includes(item.id)}
@@ -586,7 +632,14 @@ export function ShopPage() {
               </div>
             </div>
 
-            <div style={{ textAlign: "center" as const, color: "#B7AEE0", fontSize: 12, paddingBottom: 8 }}>
+            <div
+              style={{
+                textAlign: "center" as const,
+                color: "#B7AEE0",
+                fontSize: 12,
+                paddingBottom: 8,
+              }}
+            >
               Ganhe moedas jogando corridas e conquistando estrelas nas fases da campanha.
             </div>
           </>
