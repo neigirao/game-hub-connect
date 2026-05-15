@@ -31,7 +31,9 @@ const S = {
     flexShrink: 0,
   },
   badge: {
-    width: 30, height: 30, borderRadius: 8,
+    width: 30,
+    height: 30,
+    borderRadius: 8,
     background: "conic-gradient(from 220deg,#FFA502,#FF6BD6,#70A1FF,#2ED573,#FFA502)",
     boxShadow: "0 2px 0 #1a0a48",
     flexShrink: 0,
@@ -53,27 +55,39 @@ const S = {
     color: "#FF6BD6",
   },
   avatar: (url: string) => ({
-    width: 28, height: 28, borderRadius: "50%",
+    width: 28,
+    height: 28,
+    borderRadius: "50%",
     border: "2px solid #4a2aa6",
     objectFit: "cover" as const,
     flexShrink: 0,
   }),
   avatarInitial: {
-    width: 28, height: 28, borderRadius: "50%",
+    width: 28,
+    height: 28,
+    borderRadius: "50%",
     background: "linear-gradient(135deg,#FF6BD6,#70A1FF)",
-    display: "flex", alignItems: "center", justifyContent: "center",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
     fontFamily: "'Fredoka',system-ui,sans-serif",
-    fontWeight: 700, fontSize: 12, color: "#0E0726",
+    fontWeight: 700,
+    fontSize: 12,
+    color: "#0E0726",
     border: "2px solid #4a2aa6",
     flexShrink: 0,
   },
   loginBtn: {
     fontFamily: "'Fredoka',system-ui,sans-serif",
-    fontWeight: 700, fontSize: 12,
-    padding: "5px 14px", borderRadius: 10,
+    fontWeight: 700,
+    fontSize: 12,
+    padding: "5px 14px",
+    borderRadius: 10,
     background: "linear-gradient(180deg,#FF6BD6,#a8329c)",
-    color: "#fff", textDecoration: "none",
-    border: "none", cursor: "pointer",
+    color: "#fff",
+    textDecoration: "none",
+    border: "none",
+    cursor: "pointer",
     flexShrink: 0,
   },
 };
@@ -109,7 +123,9 @@ export function GameNav() {
         });
       }
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_, session) => {
       if (session?.user) {
         setUser({
           name: session.user.user_metadata?.full_name ?? session.user.email ?? "Jogador",
@@ -135,11 +151,7 @@ export function GameNav() {
       <div style={S.spacer} />
       {LINKS.map((l) =>
         l.href.endsWith(".html") ? (
-          <a
-            key={l.href}
-            href={l.href}
-            style={S.link}
-          >
+          <a key={l.href} href={l.href} style={S.link}>
             {l.label}
           </a>
         ) : (
@@ -153,18 +165,34 @@ export function GameNav() {
           >
             {l.label}
           </Link>
-        )
+        ),
       )}
       <div style={{ width: 1, height: 24, background: "rgba(255,255,255,.12)", flexShrink: 0 }} />
       {user ? (
-        <Link to="/profile" style={{ display: "flex", alignItems: "center", gap: 7, textDecoration: "none" }}>
+        <Link
+          to="/profile"
+          style={{ display: "flex", alignItems: "center", gap: 7, textDecoration: "none" }}
+        >
           <PlayerAvatar name={user.name} url={user.avatar} size={28} />
-          <span style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 600, fontSize: 13, color: "#fff", maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span
+            style={{
+              fontFamily: "'Fredoka',system-ui,sans-serif",
+              fontWeight: 600,
+              fontSize: 13,
+              color: "#fff",
+              maxWidth: 100,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
             {user.name.split(" ")[0]}
           </span>
         </Link>
       ) : (
-        <Link to="/login" style={S.loginBtn}>Entrar</Link>
+        <Link to="/login" style={S.loginBtn}>
+          Entrar
+        </Link>
       )}
     </nav>
   );

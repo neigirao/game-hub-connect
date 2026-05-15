@@ -1,6 +1,6 @@
 # Crash Coaster
 
-> *"The game where failing is more fun than winning."*
+> _"The game where failing is more fun than winning."_
 
 Jogo sandbox 2D de construção de montanhas-russas para web browser. Construa pistas, lance o carrinho, acumule G-force e compartilhe o caos.
 
@@ -31,13 +31,13 @@ O jogo fica disponível em `http://localhost:3000/play.html`.
 
 ## Comandos úteis
 
-| Comando | O que faz |
-|---|---|
-| `npm run dev` | Servidor de desenvolvimento |
-| `npm run build` | Build de produção |
-| `npm run lint` | ESLint |
-| `npx wrangler deploy` | Deploy Cloudflare Workers |
-| Ver CLAUDE.md § 11 | Verificar sintaxe do `play.html` e outros comandos |
+| Comando               | O que faz                                          |
+| --------------------- | -------------------------------------------------- |
+| `npm run dev`         | Servidor de desenvolvimento                        |
+| `npm run build`       | Build de produção                                  |
+| `npm run lint`        | ESLint                                             |
+| `npx wrangler deploy` | Deploy Cloudflare Workers                          |
+| Ver CLAUDE.md § 11    | Verificar sintaxe do `play.html` e outros comandos |
 
 ---
 

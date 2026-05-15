@@ -7,7 +7,11 @@ export const Route = createFileRoute("/challenge")({
   head: () => ({
     meta: [
       { title: "Desafio do Dia — Crash Coaster" },
-      { name: "description", content: "Jogue o Desafio do Dia do Crash Coaster. Todos jogam a mesma pista — quem faz o maior score?" },
+      {
+        name: "description",
+        content:
+          "Jogue o Desafio do Dia do Crash Coaster. Todos jogam a mesma pista — quem faz o maior score?",
+      },
     ],
   }),
   component: ChallengePage,
@@ -79,8 +83,27 @@ function Countdown() {
   const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 14, color: "#FFA502" }}>
-      <span style={{ fontSize: 12, color: "#B7AEE0", fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 600 }}>Renova em</span>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        fontFamily: "'JetBrains Mono',monospace",
+        fontWeight: 700,
+        fontSize: 14,
+        color: "#FFA502",
+      }}
+    >
+      <span
+        style={{
+          fontSize: 12,
+          color: "#B7AEE0",
+          fontFamily: "'Fredoka',system-ui,sans-serif",
+          fontWeight: 600,
+        }}
+      >
+        Renova em
+      </span>
       {pad(h)}:{pad(m)}:{pad(s)}
     </div>
   );
@@ -89,7 +112,15 @@ function Countdown() {
 function RankTable({ entries, userId }: { entries: RankEntry[]; userId: string | null }) {
   if (entries.length === 0) {
     return (
-      <div style={{ textAlign: "center" as const, padding: "28px 0", color: "#B7AEE0", fontFamily: "'Fredoka',system-ui,sans-serif", fontSize: 15 }}>
+      <div
+        style={{
+          textAlign: "center" as const,
+          padding: "28px 0",
+          color: "#B7AEE0",
+          fontFamily: "'Fredoka',system-ui,sans-serif",
+          fontSize: 15,
+        }}
+      >
         <div style={{ fontSize: 36, marginBottom: 8 }}>🏁</div>
         Seja o primeiro a jogar o desafio de hoje!
       </div>
@@ -111,35 +142,62 @@ function RankTable({ entries, userId }: { entries: RankEntry[]; userId: string |
               gap: 12,
               padding: "10px 14px",
               borderRadius: 12,
-              background: isMe ? "rgba(255,107,214,.12)" : i % 2 === 0 ? "rgba(255,255,255,.03)" : "transparent",
+              background: isMe
+                ? "rgba(255,107,214,.12)"
+                : i % 2 === 0
+                  ? "rgba(255,255,255,.03)"
+                  : "transparent",
               border: isMe ? "1px solid rgba(255,107,214,.3)" : "1px solid transparent",
             }}
           >
-            <div style={{
-              width: 28,
-              height: 28,
-              borderRadius: "50%",
-              background: i < 3 ? `${podiumColors[i]}30` : "rgba(255,255,255,.06)",
-              border: `2px solid ${i < 3 ? podiumColors[i] : "rgba(255,255,255,.12)"}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontFamily: "'JetBrains Mono',monospace",
-              fontWeight: 700,
-              fontSize: 12,
-              color: i < 3 ? podiumColors[i] : "#B7AEE0",
-              flexShrink: 0,
-            }}>
+            <div
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: "50%",
+                background: i < 3 ? `${podiumColors[i]}30` : "rgba(255,255,255,.06)",
+                border: `2px solid ${i < 3 ? podiumColors[i] : "rgba(255,255,255,.12)"}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontFamily: "'JetBrains Mono',monospace",
+                fontWeight: 700,
+                fontSize: 12,
+                color: i < 3 ? podiumColors[i] : "#B7AEE0",
+                flexShrink: 0,
+              }}
+            >
               {i + 1}
             </div>
-            <div style={{ flex: 1, fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 14, color: isMe ? "#FF6BD6" : "#fff" }}>
+            <div
+              style={{
+                flex: 1,
+                fontFamily: "'Fredoka',system-ui,sans-serif",
+                fontWeight: 700,
+                fontSize: 14,
+                color: isMe ? "#FF6BD6" : "#fff",
+              }}
+            >
               {e.profiles?.username ?? "Anônimo"}
-              {isMe && <span style={{ marginLeft: 6, fontSize: 10, color: "#FF6BD6", fontWeight: 600 }}>você</span>}
+              {isMe && (
+                <span style={{ marginLeft: 6, fontSize: 10, color: "#FF6BD6", fontWeight: 600 }}>
+                  você
+                </span>
+              )}
             </div>
-            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 16, color: i === 0 ? "#FFA502" : "#2ED573" }}>
+            <div
+              style={{
+                fontFamily: "'JetBrains Mono',monospace",
+                fontWeight: 700,
+                fontSize: 16,
+                color: i === 0 ? "#FFA502" : "#2ED573",
+              }}
+            >
               {e.total_score}
             </div>
-            <div style={{ fontSize: 11, color: "#B7AEE0", textAlign: "right" as const, flexShrink: 0 }}>
+            <div
+              style={{ fontSize: 11, color: "#B7AEE0", textAlign: "right" as const, flexShrink: 0 }}
+            >
               <div>⚡ {e.max_speed_kmh} km/h</div>
               <div>💀 {e.max_g_force.toFixed(1)}G</div>
             </div>
@@ -164,13 +222,17 @@ export function ChallengePage() {
     setLoading(true);
     setError(null);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       setUserId(session?.user.id ?? null);
 
       const [pickRes, rankRes] = await Promise.all([
         supabase
           .from("daily_picks")
-          .select("date,blueprint_id,title,description,blueprints(id,name,node_count,best_total_score,profiles(username))")
+          .select(
+            "date,blueprint_id,title,description,blueprints(id,name,node_count,best_total_score,profiles(username))",
+          )
           .eq("date", today)
           .single(),
         supabase
@@ -192,11 +254,11 @@ export function ChallengePage() {
     }
   }, [today]);
 
-  useEffect(() => { load(); }, [load, retryCount]);
+  useEffect(() => {
+    load();
+  }, [load, retryCount]);
 
-  const playUrl = pick
-    ? `/play.html?blueprint=${pick.blueprint_id}&daily=${today}`
-    : null;
+  const playUrl = pick ? `/play.html?blueprint=${pick.blueprint_id}&daily=${today}` : null;
 
   return (
     <div style={S.page}>
@@ -207,9 +269,25 @@ export function ChallengePage() {
 
       <div style={S.content}>
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            flexWrap: "wrap" as const,
+            gap: 12,
+          }}
+        >
           <div>
-            <h1 style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 36, margin: 0, lineHeight: 1 }}>
+            <h1
+              style={{
+                fontFamily: "'Fredoka',system-ui,sans-serif",
+                fontWeight: 700,
+                fontSize: 36,
+                margin: 0,
+                lineHeight: 1,
+              }}
+            >
               🏁 Desafio do Dia
             </h1>
             <p style={{ color: "#B7AEE0", fontSize: 15, marginTop: 8, marginBottom: 0 }}>
@@ -227,19 +305,36 @@ export function ChallengePage() {
             <PulseSkeleton height={300} borderRadius={24} />
           </>
         ) : !pick ? (
-          <div style={{
-            ...S.card,
-            padding: 48,
-            textAlign: "center" as const,
-          }}>
+          <div
+            style={{
+              ...S.card,
+              padding: 48,
+              textAlign: "center" as const,
+            }}
+          >
             <div style={{ fontSize: 52, marginBottom: 12 }}>🚧</div>
-            <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 22, color: "#fff", marginBottom: 8 }}>
+            <div
+              style={{
+                fontFamily: "'Fredoka',system-ui,sans-serif",
+                fontWeight: 700,
+                fontSize: 22,
+                color: "#fff",
+                marginBottom: 8,
+              }}
+            >
               Nenhum desafio hoje (ainda)
             </div>
             <div style={{ fontSize: 14, color: "#B7AEE0", marginBottom: 24 }}>
               O admin escolhe a pista do dia — volte mais tarde ou jogue em modo livre.
             </div>
-            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" as const }}>
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                justifyContent: "center",
+                flexWrap: "wrap" as const,
+              }}
+            >
               <Link
                 to="/campaign"
                 style={{
@@ -281,43 +376,82 @@ export function ChallengePage() {
             {/* Challenge card */}
             <div style={{ ...S.card, animation: "slideIn .35s ease both" }}>
               {/* Header band */}
-              <div style={{
-                background: "linear-gradient(90deg,#FF4757,#FFA502)",
-                padding: "10px 24px",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-              }}>
+              <div
+                style={{
+                  background: "linear-gradient(90deg,#FF4757,#FFA502)",
+                  padding: "10px 24px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
                 <span style={{ fontSize: 18 }}>📅</span>
-                <span style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 14, color: "#fff" }}>
-                  {new Date(today + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
+                <span
+                  style={{
+                    fontFamily: "'Fredoka',system-ui,sans-serif",
+                    fontWeight: 700,
+                    fontSize: 14,
+                    color: "#fff",
+                  }}
+                >
+                  {new Date(today + "T12:00:00").toLocaleDateString("pt-BR", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  })}
                 </span>
               </div>
 
               <div style={{ padding: "24px 28px" }}>
-                <h2 style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 26, margin: "0 0 8px", color: "#FFA502" }}>
+                <h2
+                  style={{
+                    fontFamily: "'Fredoka',system-ui,sans-serif",
+                    fontWeight: 700,
+                    fontSize: 26,
+                    margin: "0 0 8px",
+                    color: "#FFA502",
+                  }}
+                >
                   {pick.title}
                 </h2>
                 <p style={{ color: "#B7AEE0", fontSize: 14, margin: "0 0 20px", lineHeight: 1.5 }}>
                   {pick.description}
                 </p>
 
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const, marginBottom: 24, alignItems: "center" }}>
-                  <div style={{
-                    background: "rgba(0,0,0,.3)",
-                    border: "1px solid rgba(255,255,255,.1)",
-                    borderRadius: 10,
-                    padding: "6px 12px",
-                    fontSize: 12,
-                    color: "#B7AEE0",
-                  }}>
-                    🎢 <span style={{ color: "#fff", fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 10,
+                    flexWrap: "wrap" as const,
+                    marginBottom: 24,
+                    alignItems: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      background: "rgba(0,0,0,.3)",
+                      border: "1px solid rgba(255,255,255,.1)",
+                      borderRadius: 10,
+                      padding: "6px 12px",
+                      fontSize: 12,
+                      color: "#B7AEE0",
+                    }}
+                  >
+                    🎢{" "}
+                    <span
+                      style={{
+                        color: "#fff",
+                        fontFamily: "'Fredoka',system-ui,sans-serif",
+                        fontWeight: 700,
+                      }}
+                    >
                       {pick.blueprints?.name ?? "Pista do Dia"}
                     </span>
                   </div>
                   {pick.blueprints?.profiles && (
                     <div style={{ fontSize: 11, color: "#B7AEE0" }}>
-                      por <span style={{ color: "#FF6BD6" }}>{pick.blueprints.profiles.username}</span>
+                      por{" "}
+                      <span style={{ color: "#FF6BD6" }}>{pick.blueprints.profiles.username}</span>
                     </div>
                   )}
                   <div style={{ fontSize: 11, color: "#B7AEE0" }}>
@@ -344,11 +478,22 @@ export function ChallengePage() {
                       boxShadow: "0 6px 0 #6e3f00",
                     }}
                   >
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
                     Aceitar Desafio!
                   </a>
                 ) : (
-                  <div style={{ fontSize: 13, color: "#FF4757", background: "rgba(255,71,87,.1)", border: "1px solid rgba(255,71,87,.3)", borderRadius: 10, padding: "10px 16px" }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      color: "#FF4757",
+                      background: "rgba(255,71,87,.1)",
+                      border: "1px solid rgba(255,71,87,.3)",
+                      borderRadius: 10,
+                      padding: "10px 16px",
+                    }}
+                  >
                     ⚠️ A pista deste desafio foi removida. O admin irá escolher uma nova em breve.
                   </div>
                 )}
@@ -357,19 +502,64 @@ export function ChallengePage() {
 
             {/* Leaderboard */}
             <div style={{ ...S.card, animation: "slideIn .35s ease .1s both" }}>
-              <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid rgba(255,255,255,.08)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 18, color: "#fff" }}>
+              <div
+                style={{
+                  padding: "20px 24px 16px",
+                  borderBottom: "1px solid rgba(255,255,255,.08)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "'Fredoka',system-ui,sans-serif",
+                    fontWeight: 700,
+                    fontSize: 18,
+                    color: "#fff",
+                  }}
+                >
                   🏆 Ranking de Hoje
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#2ED573" }}>
-                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#2ED573", display: "inline-block", animation: "pulse 1.5s ease infinite" }} />
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontSize: 11,
+                    color: "#2ED573",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: "50%",
+                      background: "#2ED573",
+                      display: "inline-block",
+                      animation: "pulse 1.5s ease infinite",
+                    }}
+                  />
                   AO VIVO
                 </div>
               </div>
               <div style={{ padding: "14px 20px 20px" }}>
                 {!userId ? (
-                  <div style={{ textAlign: "center" as const, padding: "20px 0", color: "#B7AEE0", fontSize: 13 }}>
-                    <Link to="/login" style={{ color: "#FF6BD6", fontWeight: 700, textDecoration: "none" }}>Faça login</Link> para aparecer no ranking.
+                  <div
+                    style={{
+                      textAlign: "center" as const,
+                      padding: "20px 0",
+                      color: "#B7AEE0",
+                      fontSize: 13,
+                    }}
+                  >
+                    <Link
+                      to="/login"
+                      style={{ color: "#FF6BD6", fontWeight: 700, textDecoration: "none" }}
+                    >
+                      Faça login
+                    </Link>{" "}
+                    para aparecer no ranking.
                   </div>
                 ) : null}
                 <RankTable entries={entries} userId={userId} />

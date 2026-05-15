@@ -89,27 +89,80 @@ const S = {
 function MiniTrack({ data }: { data: unknown }) {
   const track = data as TrackData;
   const nodes = track?.nodes ?? [];
-  if (nodes.length < 2) return (
-    <div style={{ width: 120, height: 50, borderRadius: 6, background: "rgba(0,0,0,.25)", border: "2px dashed rgba(255,255,255,.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#B7AEE0", fontSize: 10, flexShrink: 0 }}>
-      Sem pista
-    </div>
-  );
-  const PAD = 6, W = 120, H = 50;
-  const xs = nodes.map((n) => n.x), ys = nodes.map((n) => n.y);
-  const minX = Math.min(...xs), maxX = Math.max(...xs);
-  const minY = Math.min(...ys), maxY = Math.max(...ys);
-  const rX = maxX - minX || 1, rY = maxY - minY || 1;
+  if (nodes.length < 2)
+    return (
+      <div
+        style={{
+          width: 120,
+          height: 50,
+          borderRadius: 6,
+          background: "rgba(0,0,0,.25)",
+          border: "2px dashed rgba(255,255,255,.1)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#B7AEE0",
+          fontSize: 10,
+          flexShrink: 0,
+        }}
+      >
+        Sem pista
+      </div>
+    );
+  const PAD = 6,
+    W = 120,
+    H = 50;
+  const xs = nodes.map((n) => n.x),
+    ys = nodes.map((n) => n.y);
+  const minX = Math.min(...xs),
+    maxX = Math.max(...xs);
+  const minY = Math.min(...ys),
+    maxY = Math.max(...ys);
+  const rX = maxX - minX || 1,
+    rY = maxY - minY || 1;
   const sx = (x: number) => PAD + ((x - minX) / rX) * (W - PAD * 2);
   const sy = (y: number) => PAD + ((y - minY) / rY) * (H - PAD * 2);
   const col = (kind: string) =>
-    kind === "booster" ? "#FFA502" : kind === "brake" ? "#FF4757" : kind === "launcher" ? "#2ED573" : kind === "loop" ? "#FF6BD6" : "rgba(255,255,255,0.2)";
+    kind === "booster"
+      ? "#FFA502"
+      : kind === "brake"
+        ? "#FF4757"
+        : kind === "launcher"
+          ? "#2ED573"
+          : kind === "loop"
+            ? "#FF6BD6"
+            : "rgba(255,255,255,0.2)";
   return (
-    <svg width={W} height={H} style={{ borderRadius: 6, background: "rgba(0,0,0,.2)", flexShrink: 0 }}>
-      <polyline points={nodes.map((n) => `${sx(n.x)},${sy(n.y)}`).join(" ")} fill="none" stroke="#FFE9A8" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    <svg
+      width={W}
+      height={H}
+      style={{ borderRadius: 6, background: "rgba(0,0,0,.2)", flexShrink: 0 }}
+    >
+      <polyline
+        points={nodes.map((n) => `${sx(n.x)},${sy(n.y)}`).join(" ")}
+        fill="none"
+        stroke="#FFE9A8"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
       {track.loop && nodes.length > 0 && (
-        <line x1={sx(nodes[nodes.length - 1].x)} y1={sy(nodes[nodes.length - 1].y)} x2={sx(nodes[0].x)} y2={sy(nodes[0].y)} stroke="#FFE9A8" strokeWidth={1} strokeDasharray="3,2" opacity={0.4} />
+        <line
+          x1={sx(nodes[nodes.length - 1].x)}
+          y1={sy(nodes[nodes.length - 1].y)}
+          x2={sx(nodes[0].x)}
+          y2={sy(nodes[0].y)}
+          stroke="#FFE9A8"
+          strokeWidth={1}
+          strokeDasharray="3,2"
+          opacity={0.4}
+        />
       )}
-      {nodes.map((n, i) => n.kind !== "normal" ? <circle key={i} cx={sx(n.x)} cy={sy(n.y)} r={2.5} fill={col(n.kind)} /> : null)}
+      {nodes.map((n, i) =>
+        n.kind !== "normal" ? (
+          <circle key={i} cx={sx(n.x)} cy={sy(n.y)} r={2.5} fill={col(n.kind)} />
+        ) : null,
+      )}
     </svg>
   );
 }
@@ -130,7 +183,11 @@ export function AdminBlueprintsPage() {
     setError(null);
     try {
       const offset = currentPage * PAGE_SIZE;
-      const { data, error: fetchError, count } = await supabase
+      const {
+        data,
+        error: fetchError,
+        count,
+      } = await supabase
         .from("blueprints")
         .select("*", { count: "exact" })
         .eq("is_public", true)
@@ -138,7 +195,10 @@ export function AdminBlueprintsPage() {
         .range(offset, offset + PAGE_SIZE - 1);
 
       if (fetchError) throw fetchError;
-      if (!data) { setLoading(false); return; }
+      if (!data) {
+        setLoading(false);
+        return;
+      }
 
       setTotal(count ?? 0);
 
@@ -149,7 +209,10 @@ export function AdminBlueprintsPage() {
         .in("id", userIds);
 
       const usernameMap = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.username]));
-      const enriched = data.map((b) => ({ ...b, creator_username: usernameMap[b.creator_id] ?? null }));
+      const enriched = data.map((b) => ({
+        ...b,
+        creator_username: usernameMap[b.creator_id] ?? null,
+      }));
       setBlueprints(enriched as Blueprint[]);
       setLoading(false);
     } catch {
@@ -164,7 +227,6 @@ export function AdminBlueprintsPage() {
 
   useEffect(() => {
     fetchBlueprints(sort, page);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sort, page]);
 
   function showToast(msg: string, ok = true) {
@@ -173,41 +235,71 @@ export function AdminBlueprintsPage() {
   }
 
   async function toggleFeatured(b: Blueprint) {
-    const { error } = await supabase.from("blueprints").update({ is_featured: !b.is_featured }).eq("id", b.id);
-    if (error) { showToast(error.message, false); return; }
+    const { error } = await supabase
+      .from("blueprints")
+      .update({ is_featured: !b.is_featured })
+      .eq("id", b.id);
+    if (error) {
+      showToast(error.message, false);
+      return;
+    }
     showToast(b.is_featured ? "Removido dos destaques" : "Marcado como destaque!");
-    setBlueprints((prev) => prev.map((x) => x.id === b.id ? { ...x, is_featured: !x.is_featured } : x));
+    setBlueprints((prev) =>
+      prev.map((x) => (x.id === b.id ? { ...x, is_featured: !x.is_featured } : x)),
+    );
   }
 
   async function setDailyPick(b: Blueprint) {
     const today = new Date().toISOString().slice(0, 10);
     const title = window.prompt("Título do Desafio do Dia:", `Desafio — ${b.name}`);
     if (title === null) return;
-    const description = window.prompt("Descrição do desafio:", "Construa a pista mais caótica possível e supere o score!");
+    const description = window.prompt(
+      "Descrição do desafio:",
+      "Construa a pista mais caótica possível e supere o score!",
+    );
     if (description === null) return;
-    const { data: { session } } = await supabase.auth.getSession();
-    const { error } = await supabase.from("daily_picks").upsert({
-      date: today,
-      blueprint_id: b.id,
-      title: title || `Desafio — ${b.name}`,
-      description: description || "Construa a pista mais caótica possível!",
-      created_by: session?.user.id,
-    }, { onConflict: "date" });
-    if (error) { showToast(error.message, false); return; }
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const { error } = await supabase.from("daily_picks").upsert(
+      {
+        date: today,
+        blueprint_id: b.id,
+        title: title || `Desafio — ${b.name}`,
+        description: description || "Construa a pista mais caótica possível!",
+        created_by: session?.user.id,
+      },
+      { onConflict: "date" },
+    );
+    if (error) {
+      showToast(error.message, false);
+      return;
+    }
     showToast(`📅 "${b.name}" definida como pista do dia!`);
   }
 
   async function removeBlueprint(b: Blueprint) {
-    if (!window.confirm(`Remover a pista "${b.name}" de ${b.creator_username ?? "Anônimo"}? Ela ficará invisível para outros jogadores.`)) return;
+    if (
+      !window.confirm(
+        `Remover a pista "${b.name}" de ${b.creator_username ?? "Anônimo"}? Ela ficará invisível para outros jogadores.`,
+      )
+    )
+      return;
     const { error } = await supabase.from("blueprints").update({ is_public: false }).eq("id", b.id);
-    if (error) { showToast(error.message, false); return; }
+    if (error) {
+      showToast(error.message, false);
+      return;
+    }
     showToast("Pista removida do acesso público.");
     setBlueprints((prev) => prev.filter((x) => x.id !== b.id));
     setTotal((t) => t - 1);
   }
 
   const filtered = blueprints.filter((b) => {
-    const matchSearch = search === "" || b.name.toLowerCase().includes(search.toLowerCase()) || (b.creator_username ?? "").toLowerCase().includes(search.toLowerCase());
+    const matchSearch =
+      search === "" ||
+      b.name.toLowerCase().includes(search.toLowerCase()) ||
+      (b.creator_username ?? "").toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter === "all" || b.is_featured;
     return matchSearch && matchFilter;
   });
@@ -217,15 +309,51 @@ export function AdminBlueprintsPage() {
   return (
     <div style={S.content}>
       {toast && (
-        <div style={{ position: "fixed", top: 80, right: 24, zIndex: 999, background: toast.ok ? "linear-gradient(135deg,#2ED573,#1a8a46)" : "linear-gradient(135deg,#FF4757,#a02030)", border: `2px solid ${toast.ok ? "#2ED573" : "#FF4757"}`, borderRadius: 14, padding: "12px 20px", fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 15, color: "#fff", boxShadow: "0 4px 20px rgba(0,0,0,.4)", animation: "slideIn .2s ease both" }}>
+        <div
+          style={{
+            position: "fixed",
+            top: 80,
+            right: 24,
+            zIndex: 999,
+            background: toast.ok
+              ? "linear-gradient(135deg,#2ED573,#1a8a46)"
+              : "linear-gradient(135deg,#FF4757,#a02030)",
+            border: `2px solid ${toast.ok ? "#2ED573" : "#FF4757"}`,
+            borderRadius: 14,
+            padding: "12px 20px",
+            fontFamily: "'Fredoka',system-ui,sans-serif",
+            fontWeight: 700,
+            fontSize: 15,
+            color: "#fff",
+            boxShadow: "0 4px 20px rgba(0,0,0,.4)",
+            animation: "slideIn .2s ease both",
+          }}
+        >
           {toast.ok ? "✓" : "✕"} {toast.msg}
         </div>
       )}
       <style>{`@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}`}</style>
 
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          flexWrap: "wrap" as const,
+          gap: 12,
+        }}
+      >
         <div>
-          <h1 style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 28, margin: 0 }}>🎢 Moderar Pistas</h1>
+          <h1
+            style={{
+              fontFamily: "'Fredoka',system-ui,sans-serif",
+              fontWeight: 700,
+              fontSize: 28,
+              margin: 0,
+            }}
+          >
+            🎢 Moderar Pistas
+          </h1>
           <p style={{ color: "#B7AEE0", fontSize: 14, margin: "4px 0 0" }}>
             {total} pistas públicas {filter === "featured" ? "(destaques)" : ""}
             {totalPages > 1 && ` · Página ${page + 1} de ${totalPages}`}
@@ -238,16 +366,21 @@ export function AdminBlueprintsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <select
-            style={S.select}
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-          >
+          <select style={S.select} value={sort} onChange={(e) => setSort(e.target.value)}>
             {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
             ))}
           </select>
-          <button onClick={() => setFilter(filter === "all" ? "featured" : "all")} style={S.btn(filter === "featured" ? "linear-gradient(180deg,#FFA502,#c97a00)" : "rgba(255,255,255,.1)")}>
+          <button
+            onClick={() => setFilter(filter === "all" ? "featured" : "all")}
+            style={S.btn(
+              filter === "featured"
+                ? "linear-gradient(180deg,#FFA502,#c97a00)"
+                : "rgba(255,255,255,.1)",
+            )}
+          >
             {filter === "featured" ? "⭐ Destaques" : "Todos"}
           </button>
         </div>
@@ -257,23 +390,88 @@ export function AdminBlueprintsPage() {
         {error ? (
           <PageError message={error} onRetry={() => fetchBlueprints(sort, page)} />
         ) : loading ? (
-          <div style={{ textAlign: "center", padding: 48, color: "#B7AEE0", fontFamily: "'Fredoka',system-ui,sans-serif", fontSize: 18 }}>Carregando pistas…</div>
+          <div
+            style={{
+              textAlign: "center",
+              padding: 48,
+              color: "#B7AEE0",
+              fontFamily: "'Fredoka',system-ui,sans-serif",
+              fontSize: 18,
+            }}
+          >
+            Carregando pistas…
+          </div>
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: 48 }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>🎢</div>
-            <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 18 }}>Nenhuma pista encontrada</div>
+            <div
+              style={{
+                fontFamily: "'Fredoka',system-ui,sans-serif",
+                fontWeight: 700,
+                fontSize: 18,
+              }}
+            >
+              Nenhuma pista encontrada
+            </div>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {filtered.map((b) => (
-              <div key={b.id} style={{ display: "flex", alignItems: "center", gap: 14, background: "rgba(0,0,0,.25)", border: `2px solid ${b.is_featured ? "#FFA502" : "#4a2aa6"}`, borderRadius: 14, padding: "12px 14px" }}>
+              <div
+                key={b.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 14,
+                  background: "rgba(0,0,0,.25)",
+                  border: `2px solid ${b.is_featured ? "#FFA502" : "#4a2aa6"}`,
+                  borderRadius: 14,
+                  padding: "12px 14px",
+                }}
+              >
                 <MiniTrack data={b.track_data} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "flex", alignItems: "center", gap: 8 }}>
+                  <div
+                    style={{
+                      fontFamily: "'Fredoka',system-ui,sans-serif",
+                      fontWeight: 700,
+                      fontSize: 15,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
                     {b.name}
-                    {b.is_featured && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 12, background: "rgba(255,165,2,.2)", color: "#FFA502", border: "1px solid rgba(255,165,2,.4)", letterSpacing: ".5px" }}>DESTAQUE</span>}
+                    {b.is_featured && (
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: "2px 7px",
+                          borderRadius: 12,
+                          background: "rgba(255,165,2,.2)",
+                          color: "#FFA502",
+                          border: "1px solid rgba(255,165,2,.4)",
+                          letterSpacing: ".5px",
+                        }}
+                      >
+                        DESTAQUE
+                      </span>
+                    )}
                   </div>
-                  <div style={{ fontSize: 11, color: "#B7AEE0", marginTop: 2, display: "flex", gap: 10, flexWrap: "wrap" as const }}>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#B7AEE0",
+                      marginTop: 2,
+                      display: "flex",
+                      gap: 10,
+                      flexWrap: "wrap" as const,
+                    }}
+                  >
                     <span>👤 {b.creator_username ?? "Anônimo"}</span>
                     <span>🏆 {b.best_total_score}</span>
                     <span>🔗 {b.node_count} nós</span>
@@ -286,18 +484,42 @@ export function AdminBlueprintsPage() {
                     href={`/play.html?blueprint=${b.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ ...S.btn("linear-gradient(180deg,#70A1FF,#3a6fd8)"), textDecoration: "none", display: "inline-flex", alignItems: "center" }}
+                    style={{
+                      ...S.btn("linear-gradient(180deg,#70A1FF,#3a6fd8)"),
+                      textDecoration: "none",
+                      display: "inline-flex",
+                      alignItems: "center",
+                    }}
                     title="Jogar esta pista"
                   >
                     ▶ Jogar
                   </a>
-                  <button onClick={() => setDailyPick(b)} style={S.btn("rgba(112,161,255,.2)")} title="Definir como Desafio do Dia">
+                  <button
+                    onClick={() => setDailyPick(b)}
+                    style={S.btn("rgba(112,161,255,.2)")}
+                    title="Definir como Desafio do Dia"
+                  >
                     📅 Daily
                   </button>
-                  <button onClick={() => toggleFeatured(b)} style={S.btn(b.is_featured ? "linear-gradient(180deg,#FFA502,#c97a00)" : "rgba(255,165,2,.15)")} title={b.is_featured ? "Remover destaque" : "Marcar como destaque"}>
+                  <button
+                    onClick={() => toggleFeatured(b)}
+                    style={S.btn(
+                      b.is_featured
+                        ? "linear-gradient(180deg,#FFA502,#c97a00)"
+                        : "rgba(255,165,2,.15)",
+                    )}
+                    title={b.is_featured ? "Remover destaque" : "Marcar como destaque"}
+                  >
                     {b.is_featured ? "★ Destaque" : "☆ Destacar"}
                   </button>
-                  <button onClick={() => removeBlueprint(b)} style={{ ...S.btn("rgba(255,71,87,.2)"), color: "#FF4757", border: "1px solid rgba(255,71,87,.3)" }}>
+                  <button
+                    onClick={() => removeBlueprint(b)}
+                    style={{
+                      ...S.btn("rgba(255,71,87,.2)"),
+                      color: "#FF4757",
+                      border: "1px solid rgba(255,71,87,.3)",
+                    }}
+                  >
                     🗑 Remover
                   </button>
                 </div>
@@ -317,7 +539,9 @@ export function AdminBlueprintsPage() {
           >
             ← Anterior
           </button>
-          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: "#B7AEE0" }}>
+          <span
+            style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: "#B7AEE0" }}
+          >
             {page + 1} / {totalPages}
           </span>
           <button

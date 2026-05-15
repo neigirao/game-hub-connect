@@ -13,7 +13,10 @@ export const Route = createFileRoute("/share")({
   }),
   head: ({ match }) => {
     const search = match.search as {
-      score: number; stars: number; speed: number; g: number;
+      score: number;
+      stars: number;
+      speed: number;
+      g: number;
     };
     const ogImage = `/api/og/share?score=${search.score}&stars=${search.stars}&speed=${search.speed}&g=${search.g}`;
     const starEmoji = "⭐".repeat(Math.min(3, search.stars));
@@ -47,8 +50,12 @@ function SharePage() {
   const [copied, setCopied] = useState(false);
 
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
-  const whatsappText = encodeURIComponent(`Consegui ${score} pontos em Crash Coaster com ${stars} estrela${stars !== 1 ? "s" : ""}! Velocidade: ${speed} km/h, G-force: ${g}G. Venha superar: ${currentUrl}`);
-  const twitterText = encodeURIComponent(`Consegui ${score} pts com ${"⭐".repeat(stars)} no Crash Coaster! 🎢 ${speed}km/h · ${g}G · Venha superar!`);
+  const whatsappText = encodeURIComponent(
+    `Consegui ${score} pontos em Crash Coaster com ${stars} estrela${stars !== 1 ? "s" : ""}! Velocidade: ${speed} km/h, G-force: ${g}G. Venha superar: ${currentUrl}`,
+  );
+  const twitterText = encodeURIComponent(
+    `Consegui ${score} pts com ${"⭐".repeat(stars)} no Crash Coaster! 🎢 ${speed}km/h · ${g}G · Venha superar!`,
+  );
   const twitterUrl = encodeURIComponent(currentUrl);
 
   function handleCopy() {
@@ -59,74 +66,119 @@ function SharePage() {
   }
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(180deg,#1c0d52 0%,#0b052b 100%)",
-      color: "#fff",
-      fontFamily: "'Inter',system-ui,sans-serif",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "32px 16px",
-      gap: 24,
-    }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(180deg,#1c0d52 0%,#0b052b 100%)",
+        color: "#fff",
+        fontFamily: "'Inter',system-ui,sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "32px 16px",
+        gap: 24,
+      }}
+    >
       <style>{`
         @keyframes pop { 0%{transform:scale(.85);opacity:0} 70%{transform:scale(1.04)} 100%{transform:scale(1);opacity:1} }
         @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
 
       {/* Logo */}
-      <Link to="/" style={{ textDecoration: "none", fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 700, fontSize: 18, color: "#B7AEE0", display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ width: 30, height: 30, borderRadius: 8, background: "conic-gradient(from 220deg,#FFA502,#FF6BD6,#70A1FF,#2ED573,#FFA502)", boxShadow: "0 2px 0 #1a0a48" }} />
+      <Link
+        to="/"
+        style={{
+          textDecoration: "none",
+          fontFamily: "'Fredoka',system-ui,sans-serif",
+          fontWeight: 700,
+          fontSize: 18,
+          color: "#B7AEE0",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <div
+          style={{
+            width: 30,
+            height: 30,
+            borderRadius: 8,
+            background: "conic-gradient(from 220deg,#FFA502,#FF6BD6,#70A1FF,#2ED573,#FFA502)",
+            boxShadow: "0 2px 0 #1a0a48",
+          }}
+        />
         Crash Coaster
       </Link>
 
       {/* Score card */}
-      <div style={{
-        background: "linear-gradient(180deg,#2e1870,#1a0e50)",
-        border: "2px solid #4a2aa6",
-        borderRadius: 24,
-        padding: "36px 40px",
-        maxWidth: 420,
-        width: "100%",
-        textAlign: "center",
-        boxShadow: "0 8px 0 rgba(0,0,0,.35)",
-        animation: "pop .4s cubic-bezier(.22,1,.36,1) both",
-      }}>
+      <div
+        style={{
+          background: "linear-gradient(180deg,#2e1870,#1a0e50)",
+          border: "2px solid #4a2aa6",
+          borderRadius: 24,
+          padding: "36px 40px",
+          maxWidth: 420,
+          width: "100%",
+          textAlign: "center",
+          boxShadow: "0 8px 0 rgba(0,0,0,.35)",
+          animation: "pop .4s cubic-bezier(.22,1,.36,1) both",
+        }}
+      >
         {/* Stars */}
         <div style={{ fontSize: 36, marginBottom: 8, letterSpacing: 4 }}>
-          {"⭐".repeat(stars)}{"☆".repeat(Math.max(0, 3 - stars))}
+          {"⭐".repeat(stars)}
+          {"☆".repeat(Math.max(0, 3 - stars))}
         </div>
-        <div style={{
-          fontFamily: "'Fredoka',system-ui,sans-serif",
-          fontWeight: 700,
-          fontSize: 13,
-          color: STAR_COLORS[stars] ?? "#B7AEE0",
-          letterSpacing: 2,
-          textTransform: "uppercase",
-          marginBottom: 20,
-        }}>
+        <div
+          style={{
+            fontFamily: "'Fredoka',system-ui,sans-serif",
+            fontWeight: 700,
+            fontSize: 13,
+            color: STAR_COLORS[stars] ?? "#B7AEE0",
+            letterSpacing: 2,
+            textTransform: "uppercase",
+            marginBottom: 20,
+          }}
+        >
           {STAR_LABELS[stars] ?? ""}
         </div>
 
         {/* Total score */}
-        <div style={{
-          fontFamily: "'JetBrains Mono',monospace",
-          fontWeight: 700,
-          fontSize: 72,
-          color: "#FFA502",
-          lineHeight: 1,
-          textShadow: "0 4px 20px rgba(255,165,2,.4)",
-        }}>
+        <div
+          style={{
+            fontFamily: "'JetBrains Mono',monospace",
+            fontWeight: 700,
+            fontSize: 72,
+            color: "#FFA502",
+            lineHeight: 1,
+            textShadow: "0 4px 20px rgba(255,165,2,.4)",
+          }}
+        >
           {score}
         </div>
-        <div style={{ fontFamily: "'Fredoka',system-ui,sans-serif", color: "#B7AEE0", fontSize: 14, marginTop: 4, marginBottom: 24 }}>
+        <div
+          style={{
+            fontFamily: "'Fredoka',system-ui,sans-serif",
+            color: "#B7AEE0",
+            fontSize: 14,
+            marginTop: 4,
+            marginBottom: 24,
+          }}
+        >
           pontos
         </div>
 
         {/* Stats row */}
-        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 28 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            justifyContent: "center",
+            flexWrap: "wrap",
+            marginBottom: 28,
+          }}
+        >
           {[
             { label: "Velocidade", value: `${speed} km/h`, color: "#70A1FF" },
             { label: "G-force", value: `${g}G`, color: "#FF4757" },
@@ -134,17 +186,35 @@ function SharePage() {
             { label: "Adrenaline", value: a, color: "#FF6BD6" },
             { label: "Chaos", value: c, color: "#FFA502" },
           ].map((stat) => (
-            <div key={stat.label} style={{
-              background: "rgba(0,0,0,.3)",
-              border: "2px solid rgba(255,255,255,.08)",
-              borderRadius: 12,
-              padding: "8px 14px",
-              minWidth: 80,
-            }}>
-              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 18, color: stat.color }}>
+            <div
+              key={stat.label}
+              style={{
+                background: "rgba(0,0,0,.3)",
+                border: "2px solid rgba(255,255,255,.08)",
+                borderRadius: 12,
+                padding: "8px 14px",
+                minWidth: 80,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'JetBrains Mono',monospace",
+                  fontWeight: 700,
+                  fontSize: 18,
+                  color: stat.color,
+                }}
+              >
                 {stat.value}
               </div>
-              <div style={{ fontSize: 10, color: "#B7AEE0", letterSpacing: 1, textTransform: "uppercase", marginTop: 2 }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#B7AEE0",
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
+                  marginTop: 2,
+                }}
+              >
                 {stat.label}
               </div>
             </div>
@@ -161,7 +231,9 @@ function SharePage() {
               fontSize: 15,
               padding: "12px",
               borderRadius: 14,
-              background: copied ? "linear-gradient(180deg,#2ED573,#1a8a46)" : "linear-gradient(180deg,#FF6BD6,#a8329c)",
+              background: copied
+                ? "linear-gradient(180deg,#2ED573,#1a8a46)"
+                : "linear-gradient(180deg,#FF6BD6,#a8329c)",
               color: "#fff",
               border: "none",
               cursor: "pointer",
@@ -221,7 +293,14 @@ function SharePage() {
 
       {/* CTA */}
       <div style={{ animation: "slideUp .5s ease .3s both", textAlign: "center" }}>
-        <div style={{ color: "#B7AEE0", fontSize: 14, marginBottom: 14, fontFamily: "'Fredoka',system-ui,sans-serif" }}>
+        <div
+          style={{
+            color: "#B7AEE0",
+            fontSize: 14,
+            marginBottom: 14,
+            fontFamily: "'Fredoka',system-ui,sans-serif",
+          }}
+        >
           Você consegue superar esse score?
         </div>
         <a

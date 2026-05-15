@@ -13,10 +13,12 @@
 **Objetivo:** eliminar full reloads ao navegar entre rotas React do app e do admin.
 
 #### Alterado
+
 - `src/routes/admin.tsx`: sub-navbar do painel admin agora usa `<Link to>` (era `<a href>`), preservando QueryClient e cache entre `/admin`, `/admin/levels`, `/admin/blueprints`, `/admin/users`.
 - `src/routes/shop.tsx`: botão "Entrar com Google" (estado deslogado) agora usa `<Link to="/login">`.
 
 #### Mantido como `<a href>` (intencional)
+
 - `/play.html` e `/home.html` em qualquer rota — são arquivos estáticos fora do roteador React e exigem navegação real do browser.
 - Botão "Início" no `errorComponent` de `__root.tsx` — full reload é desejável após erro fatal para resetar o estado do app.
 
@@ -27,13 +29,16 @@
 **Objetivo:** três correções pedidas pelo usuário — toolbar do editor cabendo na viewport, login caindo direto na campanha, e atalho para campanha no modal de fim de corrida.
 
 #### Alterado — `public/play.html`
+
 - **Toolbar `.tools` agora é grid 2 colunas** (era flex coluna única). Botões `.tool` reduzidos de 64×64 para 54×54, ícones SVG de 26 para 22, label de 9px para 8px. `.divider`, `.hint` e `.legend-btn` ocupam linha inteira (`grid-column:1 / -1`). Mantém `overflow-y:auto` com `max-height:calc(100vh - 80px)` como fallback para viewports muito baixas. Resultado: 14 botões + dividers visíveis sem scroll em 1462×769.
 - **Modal de resultado** ganhou botão `#rcCampaignBtn` ("🗺️ Campanha") entre "Editar Pista" e "Jogar de Novo". Handler navega para `/campaign`. Visível em vitória e crash.
 
 #### Alterado — `src/routes/login.tsx`
+
 - `redirect_uri` do Google OAuth passou de `window.location.origin` para `window.location.origin + "/campaign"`. Elimina o salto duplo `/` → `/campaign` que dependia do `IndexRedirect` ler a sessão a tempo.
 
 #### Corrigido — `src/routes/share.tsx`
+
 - `head({ search })` quebrava o build na versão atual do TanStack Start (a função `head` não recebe `search` direto). Trocado por `head({ match })` com `match.search` tipado, mantendo o og:image dinâmico.
 
 ---
@@ -43,16 +48,19 @@
 **Objetivo da sessão:** Desbloquear o modo Testar logo no primeiro acesso, corrigir erros de console e restaurar a landing `home.html` na rota `/`.
 
 #### Corrigido — `public/play.html`
+
 - **`SyntaxError: Identifier 'showToast' has already been declared`** — duas declarações de `showToast` foram unificadas em uma única função `showToast(text, opt?)`, onde `opt` aceita string (cor), boolean (modo erro) ou `false` (sucesso). Renderiza em `#toast` com timeout de 2000ms. Removida a versão antiga "modal" (`#globalToast`).
 - **Carrinho parado ao apertar "Testar"** — `startTest()` agora valida o retorno de `initCart()`: se `null` (nós insuficientes), exibe toast "Construa pelo menos 2 nós para testar 🛤️", reverte `state.mode` para `'build'`, remove a classe `mode-test` e devolve o foco ao botão de Construir.
 - **404 `favicon.ico`** — adicionado `<link rel="icon">` inline (data URI SVG com gradiente azul + 🎢) no `<head>` para eliminar a request 404.
 - **Mini-rampa padrão em `initDefaultTrack()`** — alterado de 1 nó (apenas estação de partida) para 3 nós (alto 0.20/0.35 → meio 0.50/0.55 → baixo 0.80/0.65). Test mode agora funciona imediatamente em sessões novas, sem precisar carregar pista do banco.
 
 #### Adicionado — Landing pública na rota `/`
+
 - `src/routes/index.tsx` agora decide pelo estado da sessão Supabase: anônimo → `window.location.replace('/home.html')`; autenticado → `navigate({ to: '/campaign' })`. Resolve o problema de a home não aparecer mais no preview após a navbar React global ter sido introduzida na sessão 9.
 - Tela de loading minimalista com paleta do jogo durante o `getSession()`.
 
 #### Notas
+
 - O aviso `"A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received"` é ruído de extensão MV3 do Chrome — não é bug do app.
 
 ---
@@ -62,12 +70,14 @@
 **Objetivo da sessão:** Consolidar recursos sociais/economia no app React e preparar base SQL do desafio diário.
 
 #### Adicionado — Novas rotas de produto (React)
+
 - `/tracks` com listagem de pistas públicas, ordenação (destaque/likes/score/recente) e like em tempo real via RPC `toggle_blueprint_like`
 - `/shop` com catálogo de badges/skins/cenários, compra e equip de cosméticos
 - `/challenge` com "Desafio do Dia", contagem regressiva até meia-noite e ranking diário (`season = daily-YYYY-MM-DD`)
 - `/share` para fluxo dedicado de compartilhamento
 
 #### Adicionado — Migrações Supabase
+
 - `20260512000002_daily_picks.sql`: estrutura para curadoria diária de pistas
 - `20260513144056_10c92338-a77a-41e3-af4c-5cbe68dd13f0.sql`: ajustes de schema para sustentar os fluxos mais recentes
 
@@ -76,6 +86,7 @@
 **Objetivo da sessão:** Adicionar o nó de looping 360° ao editor e efeito de rastro de velocidade (motion blur) ao carrinho.
 
 #### Adicionado — Nó de looping 360° (`play.html`)
+
 - Novo tipo de nó `kind: 'loop'` (rosa `#FF6BD6`) com ícone de seta circular
 - Atalho de teclado `G` ativa ferramenta de looping no editor; botão "360°" na toolbar
 - **Física:** ao passar sobre o nó com ≥50 km/h, inicia arco circular de 100px de raio
@@ -87,6 +98,7 @@
 - Sparks rosas contínuos durante a revolução
 
 #### Adicionado — Speed trail (motion blur, `play.html`)
+
 - 4 cópias semi-transparentes do carrinho desenhadas atrás na direção de movimento
 - Ativo acima de 70 km/h; opacidade máxima de 35% em velocidade máxima
 - Cor rosa abaixo de 110 km/h; amarelo dourado (cor do trilho) acima (ultra-velocidade)
@@ -99,6 +111,7 @@
 **Objetivo da sessão:** Adicionar o nó de catapulta ao editor de pistas e criar uma navbar React global compartilhada por todas as rotas.
 
 #### Adicionado — Nó lançador (`play.html`)
+
 - Novo tipo de nó `kind: 'launcher'` (verde `#2ED573`) com ícone de seta para cima
 - Atalho de teclado `N` ativa ferramenta de lançador no editor
 - Botão "CATAP" adicionado à toolbar entre freio e deletar
@@ -108,6 +121,7 @@
 - Toast "🚀 CATAPULTADO!" + som de boost ao disparar
 
 #### Adicionado — Navbar React global (`src/components/game-nav.tsx`)
+
 - Componente `GameNav` com sticky positioning (z-index 100), paleta do jogo
 - Links: 🎢 Jogar, 🗺️ Campanha, 🏆 Ranking, 👤 Perfil — link ativo destacado em rosa
 - Avatar do usuário logado (Google img ou iniciais sobre gradiente) + primeiro nome
@@ -116,6 +130,7 @@
 - Escuta `onAuthStateChange` para atualizar em tempo real
 
 #### Alterado — Layout raiz (`src/routes/__root.tsx`)
+
 - `GameNav` adicionado ao `RootComponent` antes do `<Outlet />`
 - Navbars duplicadas removidas de `profile.tsx`, `leaderboard.tsx` e `campaign.tsx`
 
@@ -126,6 +141,7 @@
 **Objetivo da sessão:** Criar a tela de perfil React conectada ao Supabase, mostrando dados reais do jogador.
 
 #### Adicionado — Rota `/profile` (`src/routes/profile.tsx`)
+
 - Layout completo com navbar, hero (avatar + level + XP bar), stat badges, lista de pistas salvas e histórico de corridas
 - **Avatar:** imagem do Google se disponível; fallback com iniciais sobre gradiente
 - **XPBar:** barra animada com `xp % 500 / 500` de preenchimento e label de XP restante para próximo level
@@ -138,6 +154,7 @@
 - **Visual:** paleta do jogo (`#0a0420`, `#2e1870`, `#4a2aa6`, gradientes candy) + fontes Fredoka + JetBrains Mono via Google Fonts
 
 #### Alterado — `src/routeTree.gen.ts`
+
 - Adicionada rota `/profile` ao file route tree do TanStack Router (import, update, augmentation de módulo, `rootRouteChildren`)
 
 ---
@@ -147,11 +164,13 @@
 **Objetivo da sessão:** Polish do jogo — stall detection, sons sintetizados e recompensas reais de XP/coins após cada corrida.
 
 #### Adicionado — Stall detection (`play.html`)
+
 - Acúmulo de `c.stallTime` quando `|v| < 5` e pista plana (`|slope| < 0.05`)
 - Após 3s parado: toast de aviso, status "PARADO! 😴", penalidade de -30 survival e encerra a corrida 1.5s depois
 - Velocidade reversa máxima limitada de -200 para -80 px/s (evita pista andando para trás indefinidamente)
 
 #### Adicionado — Sons via Web Audio API (`play.html`)
+
 - Zero dependências externas — gerados por síntese em tempo real
 - **Rail hum** (`updateRailSound`): oscilador sawtooth contínuo, frequência proporcional à velocidade (40–220 Hz), volume máximo 0.12 para não sobrepor o gameplay
 - **Boost burst** (`playBoostSound`): oscilador square 520→980 Hz em 0.12s, throttle de 200ms para não travar em boosters longos
@@ -160,12 +179,13 @@
 - `AudioContext` inicializado no primeiro uso (política de autoplay dos browsers)
 
 #### Adicionado — Sistema de Coins/XP (`play.html` + Supabase)
+
 - Migration `create_award_run_rewards`: função PL/pgSQL `award_run_rewards(p_user_id, p_stars, p_crashed)`
   - Crash: +10 XP, +5 coins · Completo: +50 XP + 30 XP/estrela, +100 coins/estrela
   - Atualiza `profiles.xp`, `coins` e recalcula `level` (1 level = 500 XP) atomicamente
   - Retorna `{xp_gained, coins_gained, new_xp, new_coins, new_level}` como jsonb
 - `awardRewards(crashed)` no play.html: chama `sbClient.rpc('award_run_rewards', ...)` após cada corrida
-- Toast "**+XP  🪙 +coins**" visível ao jogador assim que a função retorna
+- Toast "**+XP 🪙 +coins**" visível ao jogador assim que a função retorna
 
 ---
 
@@ -174,6 +194,7 @@
 **Objetivo da sessão:** Criar a tela de seleção de fases, seed com 3 níveis e integração com play.html via `?level=`.
 
 #### Adicionado — Rota `/campaign` (`src/routes/campaign.tsx`)
+
 - Grid responsivo de cards de fase com banner colorido por cenário (parque/montanha/vulcão)
 - **MiniTrack:** preview SVG da pista starter gerado a partir dos nós do `starter_track`
 - **LevelCard:** emoji de cenário, badge de dificuldade, título, descrição, lista de objetivos, thresholds de estrelas (⭐⭐⭐), recompensas (coins + XP) e botão "Jogar"
@@ -183,17 +204,20 @@
 - CTA de login para usuários não autenticados
 
 #### Adicionado — Seed de 3 fases (`migration: seed_starter_levels`)
+
 - **Fase 1 — Primeira Descida** (Fácil, cenário `parque`): 7 nós, objetivos de sobrevivência e 60km/h, recompensa 50🪙 +100XP
 - **Fase 2 — Loopings e Boosters** (Médio, cenário `montanha`): 8 nós com boosters, objetivos de 100km/h e G-force, recompensa 100🪙 +200XP
 - **Fase 3 — Caos Total** (Difícil, cenário `vulcao`): 9 nós com boosters e freio, objetivos de 120km/h e quase-mortes, recompensa 200🪙 +400XP
 
 #### Adicionado — Suporte a `?level=` no `play.html`
+
 - `loadLevelFromUrl()` async: busca o nível via Supabase REST API (sem dependência do init do cliente JS)
 - Carrega `starter_track` no estado e chama `pushHistory()` para registrar no undo stack
 - Painel `#levelPanel` fixo à esquerda com: link "← Campanha", título da fase, lista de objetivos e thresholds de estrelas
 - CSS do painel com backdrop-filter, animação slideIn e tema da paleta do jogo
 
 #### Alterado — `src/routeTree.gen.ts`
+
 - Adicionada rota `/campaign` ao file route tree
 
 ---
@@ -203,6 +227,7 @@
 **Objetivo da sessão:** Criar a tela de ranking usando a view `leaderboard_with_profiles` já disponível no banco.
 
 #### Adicionado — Rota `/leaderboard` (`src/routes/leaderboard.tsx`)
+
 - Tabela com top 50 corridas, ordenadas por `rank` da view `leaderboard_with_profiles`
 - **RankBadge:** medals 🥇🥈🥉 para top 3; `#N` para demais
 - **LeaderboardRow:** avatar com iniciais, username, breakdowns coloridos (S/A/C), velocidade e G máximos, estrelas calculadas
@@ -214,6 +239,7 @@
 - Queries sem auth guard — ranking é público
 
 #### Alterado — `src/routeTree.gen.ts`
+
 - Adicionada rota `/leaderboard` ao file route tree
 
 ---
@@ -223,6 +249,7 @@
 **Objetivo da sessão:** Evoluir do MVP isolado (play.html sem backend) para uma aplicação conectada ao Supabase, com persistência real de pistas, ranking e compartilhamento.
 
 #### Adicionado — Sistema de documentação viva (ADR-010)
+
 - `CLAUDE.md` — fonte primária de verdade do projeto, lida automaticamente pelo Claude Code a cada sessão; contém stack, estrutura de arquivos, estado atual (implementado vs. pendente), decisões e acessos
 - `docs/GDD.md` — Game Design Document condensado (conceito, pilares, física, score, progressão, monetização)
 - `docs/ARCHITECTURE.md` — arquitetura técnica com diagrama ASCII browser → Cloudflare → Supabase
@@ -232,6 +259,7 @@
 - `.claude/hooks/post-commit-docs.sh` — script pós-commit que detecta quais arquivos mudaram e exibe lembretes contextuais específicos (CHANGELOG, ARCHITECTURE ou CLAUDE.md)
 
 #### Adicionado — Schema do banco de dados (projeto `hafxruwnggitvtyngedy`, sa-east-1)
+
 - `supabase/migrations/20260511000001_create_profiles.sql` — estende tabela existente com colunas CC (`username`, `coins`, `inventory`, `is_admin`, `updated_at`); mantém colunas legadas (`full_name`, `points`, etc.) via `ADD COLUMN IF NOT EXISTS`
 - `supabase/migrations/20260511000002_create_blueprints.sql` — pistas salvas pelos usuários; RLS completo (ver público, CRUD próprio); índices para queries de ranking
 - `supabase/migrations/20260511000003_create_levels.sql` — fases da campanha gerenciadas por admin; políticas separadas para admin vs. jogador
@@ -241,10 +269,12 @@
 - `src/integrations/supabase/types.ts` — tipos TypeScript completos para todas as tabelas e views
 
 #### Adicionado — Bridge Supabase para play.html (ADR-007)
+
 - `src/integrations/supabase/client.ts` — grava `cc_sb_url` e `cc_sb_key` no localStorage após inicializar, tornando as credenciais acessíveis ao `play.html` sem duplicação e sem hardcode
 - `play.html` — inicializa `@supabase/supabase-js@2` via CDN ESM; reutiliza sessão OAuth do React app automaticamente (mesmo domínio, mesmo localStorage)
 
 #### Adicionado — Save / Load / Share em play.html
+
 - Botão **Salvar** — abre modal com campo de nome e lista de pistas do usuário
 - Botão **Pistas** — abre a mesma modal diretamente na lista de pistas salvas
 - **Carregar pista** da lista com um clique (substitui trilha atual no editor)
@@ -258,6 +288,7 @@
 **Objetivo:** Consolidar o trabalho das sessões 1-3 em PR, criar backlog estruturado de tarefas.
 
 #### Adicionado
+
 - `docs/ROADMAP.md` — backlog priorizado por fase (MVP → V2 → V3) com critérios de aceite, dependências e recomendação de próximo passo para cada dev/IA que abrir o projeto
 - PR #2 criado: `feat: banco de dados, save/load/share, câmera, modal de resultado e undo`
 - `CLAUDE.md` seção 10 atualizada com referência ao ROADMAP e próximos passos recomendados
@@ -269,26 +300,31 @@
 **Objetivo da sessão:** Tornar o jogo mais cinematográfico, responsivo e polish — câmera que acompanha o carrinho, feedback de fim de corrida e undo no editor.
 
 #### Corrigido — Bug crítico
+
 - Removido segundo bloco `<script>` com URL Supabase obsoleta (`sekuurohkxqktpllebdd`) que chamava `game_progress` e RPC `record_run` inexistentes, gerando erros silenciosos a cada corrida
 
 #### Adicionado — Câmera dinâmica (test mode)
+
 - No modo Testar, a câmera faz zoom em 1.3x e segue o carrinho suavemente com interpolação (lerp 9%)
 - Ao voltar ao modo Construir, a câmera recua suavemente para visão geral
 - Background desenhado em screen-space (não scroll) para manter referência visual; objetos do mundo em world-space com transform de câmera
 
 #### Adicionado — Modal de resultado pós-corrida
+
 - Após cada corrida (sucesso ou crash), aparece modal com: emoji contextual, título animado, score total com count-up animado, barras de categoria preenchendo com transição CSS, 3 estrelas acendendo em sequência
 - Título e emoji variam: 🏆 (score > 75), 🎢 (score > 40), 😬 (score baixo), 💥 (crash)
 - Botões: Compartilhar (copia URL), Editar Pista (volta ao build), Jogar de Novo (reinicia test)
 - Crash espetacular (L9 com impacto no chão) abre o modal após 1.8s de drama
 
 #### Adicionado — Ctrl+Z / Undo no editor
+
 - Stack de histórico de até 60 snapshots de nós + estado de loop
 - Push automático após: adicionar nó, soltar drag, deletar nó, mudar tipo (booster/freio), toggle de loop
 - Ctrl+Z (ou Cmd+Z no Mac) desfaz a última operação com toast de confirmação
 - Undo desabilitado no modo Testar (não interfere na física)
 
 #### Adicionado — Auth chip integrado
+
 - Chip de login com Google (top-right) migrado para o bloco principal do Supabase bridge
 - Exibe avatar + nome do usuário logado; clique abre signOut
 - Não logado: exibe botão "Entrar com Google" com ícone oficial
@@ -306,6 +342,7 @@
 **Objetivo:** Criar o protótipo jogável e conectar a infraestrutura base (auth, hosting, banco).
 
 ### Adicionado
+
 - Engine do jogo em `public/play.html` (~1800 linhas, Canvas 2D + vanilla JS)
   - Editor de pistas com nós e interpolação Catmull-Rom
   - Tipos de nó: normal, booster, freio
@@ -325,6 +362,7 @@
 - 40+ componentes Shadcn/Radix UI disponíveis
 
 ### Stack
+
 - React 19.2.0, TanStack Start 1.167.x, TanStack Router 1.168.x
 - Tailwind CSS 4.2.x, Vite 7.3.x
 - Supabase 2.105.x, Cloudflare Workers
@@ -334,6 +372,7 @@
 ## Como Atualizar Este Arquivo
 
 Ao mergear um PR, adicione uma entrada na seção `[Não lançado]` com:
+
 - O que foi adicionado/alterado/corrigido
 - Impacto em gameplay ou arquitetura (se houver)
 

@@ -231,6 +231,7 @@
 **Contexto:** A `home.html` atual tem apenas `<title>` e `<meta viewport>`. Para ranquear bem no Google é preciso cobrir on-page SEO, dados estruturados, Core Web Vitals e sinais de autoridade.
 
 **Estado atual da `home.html`:**
+
 - ✅ `<title>` descritivo
 - ✅ `<meta description>`
 - ✅ Open Graph / Twitter Card
@@ -242,6 +243,7 @@
 - ❌ Sem preload de recursos críticos
 
 #### On-page básico (impacto imediato)
+
 - [x] `<meta name="description">` — 150–160 chars descrevendo o jogo em PT-BR
 - [x] Open Graph: `og:title`, `og:description`, `og:image` (screenshot 1200×630 do jogo), `og:url`, `og:type`
 - [x] Twitter Card: `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image`
@@ -250,15 +252,18 @@
 - [x] `<html lang="pt-BR">` — sinalizar idioma para o Google
 
 #### Arquivos de descoberta
+
 - [x] `public/sitemap.xml` — listar `/`, `/campaign`, `/leaderboard` com `<lastmod>` e `<priority>`
 - [x] `public/robots.txt` — `Allow: /`, apontar para sitemap
 
 #### Dados estruturados (JSON-LD)
+
 - [x] `VideoGame` schema em `home.html` — nome, description, URL, applicationCategory, genre, offer price
 - [ ] `BreadcrumbList` nas páginas internas (`/campaign`, `/leaderboard`)
 - [x] `FAQPage` JSON-LD na home com 5 perguntas sobre o jogo
 
 #### Performance e Core Web Vitals
+
 - [x] `<link rel="preload">` para a fonte Fredoka (carregamento não-bloqueante)
 - [ ] Substituir imagens por formato WebP e adicionar `width`/`height` para evitar CLS
 - [ ] Lazy loading em imagens abaixo do fold (`loading="lazy"`)
@@ -266,6 +271,7 @@
 - [ ] Verificar LCP < 2.5s, FID < 100ms, CLS < 0.1 via Lighthouse
 
 #### Conteúdo e autoridade
+
 - [x] H1 único: nav `<h1>` virou `<span class="brand">`, hero mantém o único H1
 - [x] Seção "Comece a jogar agora" com texto indexável e links para /campaign, /leaderboard, /play.html
 - [x] Links internos: nav e footer apontam para /campaign, /leaderboard, /login
@@ -364,33 +370,33 @@
 
 Sugestões de próximos passos baseadas no impacto:
 
-| Opção | Impacto | Complexidade | Recomendação |
-|---|---|---|---|
-| 🔴 Fix preview Lovable | Bloqueante (não consegue ver o app) | Média (debug de config) | ⭐ Urgente |
-| Admin: Blueprints `/admin/blueprints` | Médio (moderação) | Baixa | Em seguida |
-| Admin: Usuários `/admin/users` | Médio (gestão) | Baixa | Depois |
-| Admin: Dashboard `/admin` | Alto (visibilidade do jogo) | Média | Depois |
+| Opção                                 | Impacto                             | Complexidade            | Recomendação |
+| ------------------------------------- | ----------------------------------- | ----------------------- | ------------ |
+| 🔴 Fix preview Lovable                | Bloqueante (não consegue ver o app) | Média (debug de config) | ⭐ Urgente   |
+| Admin: Blueprints `/admin/blueprints` | Médio (moderação)                   | Baixa                   | Em seguida   |
+| Admin: Usuários `/admin/users`        | Médio (gestão)                      | Baixa                   | Depois       |
+| Admin: Dashboard `/admin`             | Alto (visibilidade do jogo)         | Média                   | Depois       |
 
 ---
 
 ## Histórico de conclusões
 
-| Data | Tarefa | Sessão |
-|---|---|---|
-| 2026-05-11 | Documentação viva (CLAUDE.md + docs/) | Sessão 1 |
-| 2026-05-11 | Schema banco (4 tabelas + view) | Sessão 2 |
-| 2026-05-11 | Save/Load/Share em play.html | Sessão 2 |
-| 2026-05-11 | Submit de score ao leaderboard | Sessão 2 |
-| 2026-05-11 | Câmera dinâmica no modo Testar | Sessão 3 |
-| 2026-05-11 | Modal de resultado pós-corrida | Sessão 3 |
-| 2026-05-11 | Ctrl+Z undo no editor | Sessão 3 |
-| 2026-05-11 | Auth chip integrado | Sessão 3 |
-| 2026-05-11 | Tela de Perfil `/profile` (React + Supabase) | Sessão 5 |
-| 2026-05-11 | Ranking Global `/leaderboard` (top 50 + season toggle) | Sessão 6 |
-| 2026-05-11 | Campanha `/campaign` (3 fases seed + painel de objetivos no play.html) | Sessão 7 |
-| 2026-05-11 | Stall detection, sons Web Audio, sistema Coins/XP | Sessão 8 |
-| 2026-05-11 | Nó lançador (catapulta) e navbar React global | Sessão 9 |
-| 2026-05-11 | Looping 360° (nó loop) e speed trail (motion blur) | Sessão 10 |
-| 2026-05-11 | Painel de Admin — infraestrutura + /admin/levels CRUD | Sessão 11 |
+| Data       | Tarefa                                                                            | Sessão    |
+| ---------- | --------------------------------------------------------------------------------- | --------- |
+| 2026-05-11 | Documentação viva (CLAUDE.md + docs/)                                             | Sessão 1  |
+| 2026-05-11 | Schema banco (4 tabelas + view)                                                   | Sessão 2  |
+| 2026-05-11 | Save/Load/Share em play.html                                                      | Sessão 2  |
+| 2026-05-11 | Submit de score ao leaderboard                                                    | Sessão 2  |
+| 2026-05-11 | Câmera dinâmica no modo Testar                                                    | Sessão 3  |
+| 2026-05-11 | Modal de resultado pós-corrida                                                    | Sessão 3  |
+| 2026-05-11 | Ctrl+Z undo no editor                                                             | Sessão 3  |
+| 2026-05-11 | Auth chip integrado                                                               | Sessão 3  |
+| 2026-05-11 | Tela de Perfil `/profile` (React + Supabase)                                      | Sessão 5  |
+| 2026-05-11 | Ranking Global `/leaderboard` (top 50 + season toggle)                            | Sessão 6  |
+| 2026-05-11 | Campanha `/campaign` (3 fases seed + painel de objetivos no play.html)            | Sessão 7  |
+| 2026-05-11 | Stall detection, sons Web Audio, sistema Coins/XP                                 | Sessão 8  |
+| 2026-05-11 | Nó lançador (catapulta) e navbar React global                                     | Sessão 9  |
+| 2026-05-11 | Looping 360° (nó loop) e speed trail (motion blur)                                | Sessão 10 |
+| 2026-05-11 | Painel de Admin — infraestrutura + /admin/levels CRUD                             | Sessão 11 |
 | 2026-05-11 | Admin completo — dashboard, /admin/blueprints, /admin/users + fix preview Lovable | Sessão 12 |
-| 2026-05-11 | QA fixes — level_id em leaderboard, stars por fase na campanha, feedback offline | Sessão 13 |
+| 2026-05-11 | QA fixes — level_id em leaderboard, stars por fase na campanha, feedback offline  | Sessão 13 |
