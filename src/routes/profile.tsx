@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { PageError } from "@/components/page-error";
-import { SHOP_ITEMS } from "./shop";
+import { SHOP_ITEMS } from "@/lib/shop-items";
+import { PlayerAvatar } from "@/components/player-avatar";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -124,44 +125,7 @@ const S = {
   },
 };
 
-function Avatar({ name, url, size = 72 }: { name: string; url?: string | null; size?: number }) {
-  const initials = name
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase())
-    .join("");
-
-  if (url) {
-    return (
-      <img
-        src={url}
-        alt={name}
-        style={{
-          width: size, height: size, borderRadius: "50%",
-          border: "3px solid #4a2aa6",
-          boxShadow: "0 4px 0 rgba(0,0,0,.3)",
-          objectFit: "cover",
-        }}
-      />
-    );
-  }
-  return (
-    <div
-      style={{
-        width: size, height: size, borderRadius: "50%",
-        background: "linear-gradient(135deg,#FF6BD6,#70A1FF)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontFamily: "'Fredoka',system-ui,sans-serif",
-        fontWeight: 700, fontSize: size * 0.36, color: "#0E0726",
-        border: "3px solid #4a2aa6",
-        boxShadow: "0 4px 0 rgba(0,0,0,.3)",
-        flexShrink: 0,
-      }}
-    >
-      {initials || "?"}
-    </div>
-  );
-}
+const Avatar = PlayerAvatar;
 
 function XPBar({ xp, level, animateFromXp }: { xp: number; level: number; animateFromXp?: number }) {
   const [displayXp, setDisplayXp] = useState(animateFromXp ?? xp);

@@ -340,6 +340,11 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 - [x] Loja mostra callout explicando como ganhar coins (jogar Campanha, +100 por estrela) (P2)
 - [x] Confirmação antes de comprar item na loja — `window.confirm` com nome e custo do item (P5)
 - [x] Challenge page sem desafio exibe CTAs secundários: "Ir para Campanha" e "Jogar Livre" (P4)
+- [x] `PlayerAvatar` extraído para `src/components/player-avatar.tsx` — usado em `profile.tsx`, `game-nav.tsx` (A4)
+- [x] `SHOP_ITEMS` e `ShopItem` movidos para `src/lib/shop-items.ts` — importado por `shop.tsx` e `profile.tsx` (A12)
+- [x] Creativity score com bônus de diversidade: +20 quando ≥3 tipos especiais diferentes e ≥4 nós especiais (G5)
+- [x] `.env.example` criado com placeholders das variáveis necessárias (E10)
+- [x] `README.md` criado com setup de 5 passos e links para documentação (E13)
 
 ### Pendente (pós-MVP / V2+)
 - [ ] Migrar engine para PixiJS

@@ -2795,7 +2795,10 @@ function tick(){
       }
       state.scores.smoothness = Math.max(0, state.scores.smoothness - gShown*5*dt);
       state.scores.survival = Math.min(100, state.scores.survival + 8*dt);
-      state.scores.creativity = Math.min(100, 30 + state.nodes.length*4 + (state.nodes.filter(n=>n.kind!=='normal').length*5));
+      const _specials = state.nodes.filter(n=>n.kind!=='normal');
+      const _uniqueKinds = new Set(_specials.map(n=>n.kind)).size;
+      const _diversityBonus = (_uniqueKinds >= 3 && _specials.length >= 4) ? 20 : 0;
+      state.scores.creativity = Math.min(100, 30 + state.nodes.length*4 + _specials.length*5 + _diversityBonus);
 
       // Fail level escalation
       let L = 0;

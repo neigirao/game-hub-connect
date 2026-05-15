@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouterState, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { PlayerAvatar } from "@/components/player-avatar";
 
 const S = {
   navbar: {
@@ -157,11 +158,7 @@ export function GameNav() {
       <div style={{ width: 1, height: 24, background: "rgba(255,255,255,.12)", flexShrink: 0 }} />
       {user ? (
         <Link to="/profile" style={{ display: "flex", alignItems: "center", gap: 7, textDecoration: "none" }}>
-          {user.avatar ? (
-            <img src={user.avatar} alt={user.name} style={S.avatar(user.avatar)} />
-          ) : (
-            <div style={S.avatarInitial}>{initial}</div>
-          )}
+          <PlayerAvatar name={user.name} url={user.avatar} size={28} />
           <span style={{ fontFamily: "'Fredoka',system-ui,sans-serif", fontWeight: 600, fontSize: 13, color: "#fff", maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {user.name.split(" ")[0]}
           </span>
