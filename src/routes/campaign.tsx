@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageError, PulseSkeleton } from "@/components/page-error";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -529,6 +529,7 @@ function LevelCard({
 }
 
 export function CampaignPage() {
+  const navigate = useNavigate();
   const [levels, setLevels] = useState<Level[]>([]);
   const [bestScores, setBestScores] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
@@ -545,6 +546,14 @@ export function CampaignPage() {
           data: { session },
         } = await supabase.auth.getSession();
         const uid = session?.user.id ?? null;
+        if (!uid) {
+          navigate({
+            to: "/login",
+            search: { redirect: "/campaign" },
+            replace: true,
+          });
+          return;
+        }
         setUserId(uid);
 
         const [lvlsRes, scoresRes] = await Promise.all([
