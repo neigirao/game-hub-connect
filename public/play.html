@@ -346,6 +346,128 @@
         line-height: 1;
         opacity: 0.9;
       }
+      /* Rich tooltip for editor tools */
+      #toolTooltip {
+        position: fixed;
+        z-index: 1500;
+        pointer-events: none;
+        background: linear-gradient(180deg, #2a1565, #170c3d);
+        border: 2px solid #4a2aa6;
+        border-radius: 12px;
+        padding: 10px 12px;
+        max-width: 260px;
+        font-family: "Fredoka", system-ui, sans-serif;
+        color: #fff;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        transform: translateY(-4px);
+        transition: opacity 0.12s ease, transform 0.12s ease;
+      }
+      #toolTooltip.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      #toolTooltip .tt-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+      #toolTooltip .tt-name {
+        font-weight: 700;
+        font-size: 14px;
+        color: #ffe9a8;
+      }
+      #toolTooltip .tt-key {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        font-weight: 700;
+        background: rgba(255, 107, 214, 0.2);
+        border: 1px solid #ff6bd6;
+        color: #ff6bd6;
+        border-radius: 6px;
+        padding: 1px 6px;
+      }
+      #toolTooltip .tt-desc {
+        font-size: 12px;
+        line-height: 1.4;
+        color: #ddd;
+        margin-bottom: 6px;
+      }
+      #toolTooltip .tt-tip {
+        font-size: 11px;
+        line-height: 1.4;
+        color: #a8ff78;
+        font-style: italic;
+      }
+      /* Auth-gate overlay (full screen when no session) */
+      #authGate {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        background: linear-gradient(180deg, #1c0d52 0%, #0b052b 100%);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        font-family: "Fredoka", system-ui, sans-serif;
+        color: #fff;
+      }
+      #authGate.show {
+        display: flex;
+      }
+      #authGate .card {
+        background: linear-gradient(180deg, #3a1f8a, #2a1565);
+        border: 2px solid #4a2aa6;
+        border-radius: 18px;
+        padding: 36px 32px;
+        text-align: center;
+        max-width: 380px;
+        width: calc(100% - 32px);
+        box-shadow: 0 12px 0 rgba(0, 0, 0, 0.35);
+      }
+      #authGate .emoji {
+        font-size: 48px;
+        margin-bottom: 12px;
+      }
+      #authGate h2 {
+        margin: 0 0 6px;
+        font-size: 22px;
+        font-weight: 700;
+      }
+      #authGate p {
+        margin: 0 0 22px;
+        color: #b7aee0;
+        font-size: 14px;
+      }
+      #authGate button {
+        width: 100%;
+        padding: 12px 16px;
+        border: none;
+        border-radius: 12px;
+        background: #fff;
+        color: #1f1f1f;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+      }
+      #authGate button:hover {
+        transform: translateY(-1px);
+      }
+      #authGate .skip {
+        margin-top: 14px;
+        font-size: 12px;
+        color: #b7aee0;
+      }
+      #authGate .skip a {
+        color: #ff6bd6;
+        text-decoration: none;
+      }
       .tools .divider {
         grid-column: 1 / -1;
         height: 2px;
