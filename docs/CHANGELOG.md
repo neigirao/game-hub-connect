@@ -8,6 +8,30 @@
 
 ## [Não lançado] — Em desenvolvimento
 
+### Sessão 17 — 2026-05-16: Tooltips ricos, rail-catch, login obrigatório
+
+**Objetivo:** explicar as peças no hover, deixar o voo do carrinho divertido (cair de volta no trilho), tornar login obrigatório com UX mais fluido.
+
+#### Adicionado
+
+- `public/play.html`: dicionário `TOOL_INFO` e tooltip flutuante `#toolTooltip` — mouseenter/focus em cada `.tool` mostra nome, atalho, descrição e dica. Substitui o `title` nativo. Acessível (aria-describedby + focus).
+- `public/play.html`: sistema de **rail-catch** no bloco `flying physics`. A cada frame voando, o carrinho procura o sample mais próximo num raio de 32px. Três regimes: aterrissagem suave (`|vNormal|<380` → volta para o trilho com toast verde e -1 fail level), quique (`|vNormal|<820` → reflete normal e perde energia com toast laranja), esmagamento (acima → crash normal). Funciona com catapulta, trampolim, canhão e inversor sem velocidade.
+- `public/play.html`: overlay `#authGate` full-screen — se não houver sessão, bloqueia o jogo e oferece "Entrar com Google" (com fallback para `/login?redirect=...` se a CDN do Supabase falhar).
+- `src/routes/login.tsx`: `validateSearch` aceita `?redirect=` e usa como `redirect_uri`. Card maior com paleta do jogo (gradiente roxo, Fredoka), botão Google maior, estado de loading "Abrindo Google…", link "Como funciona →" para `/home.html`.
+- `src/routes/campaign.tsx`: guard inline — se `getSession()` retornar null, redireciona para `/login?redirect=/campaign`.
+
+#### Alterado
+
+- `public/home.html`: CTAs principais "Jogar Agora" e "LANÇAR PROTÓTIPO" agora vão para `/campaign` (que redireciona para `/login` se não logado) em vez de `/play.html` direto. Funil de login único.
+- `public/play.html`: `initSupabase()` sempre mostra `#authGate` quando não há `cc_sb_url`/`cc_sb_key` no localStorage ou quando `getUser()` retorna null. `onAuthStateChange` esconde/mostra o overlay reativamente.
+
+#### Notas
+
+- Não foi necessário criar layout `_authenticated` (evita risco no `routeTree.gen`). Guard inline em `campaign.tsx` + `authGate` em `play.html` cobrem o login obrigatório. `profile.tsx` e `shop.tsx` já redirecionavam.
+- Constantes do rail-catch (`RAIL_CATCH_RADIUS`, `LANDING_VNORMAL_MAX`, `BOUNCE_VNORMAL_MAX`) ficam inline no bloco para facilitar tuning.
+
+---
+
 ### Sessão 16 — 2026-05-15: Navegação SPA em links restantes
 
 **Objetivo:** eliminar full reloads ao navegar entre rotas React do app e do admin.
