@@ -2691,7 +2691,10 @@
         renderAuthChip(null);
         const url = localStorage.getItem("cc_sb_url");
         const key = localStorage.getItem("cc_sb_key");
-        if (!url || !key) return;
+        if (!url || !key) {
+          showAuthGate();
+          return;
+        }
 
         try {
           const { createClient } =
@@ -2704,13 +2707,55 @@
           } = await sbClient.auth.getUser();
           currentUser = user;
           renderAuthChip(user);
+          if (!user) {
+            showAuthGate();
+          } else {
+            hideAuthGate();
+          }
           sbClient.auth.onAuthStateChange((_ev, session) => {
             currentUser = session?.user ?? null;
             renderAuthChip(currentUser);
+            if (currentUser) hideAuthGate();
+            else showAuthGate();
           });
         } catch (e) {
           console.warn("[CC] Supabase init failed:", e);
+          // CDN ou rede falhou — mesmo assim mostra o overlay com fallback /login
+          showAuthGate();
         }
+      }
+
+      // ---- AUTH GATE (login obrigatório) ----
+      function showAuthGate() {
+        const gate = document.getElementById("authGate");
+        if (!gate) return;
+        gate.classList.add("show");
+        gate.setAttribute("aria-hidden", "false");
+        const btn = document.getElementById("authGateBtn");
+        if (btn && !btn._wired) {
+          btn._wired = true;
+          btn.addEventListener("click", () => {
+            const dest = window.location.pathname + window.location.search;
+            if (sbClient) {
+              sbClient.auth
+                .signInWithOAuth({
+                  provider: "google",
+                  options: { redirectTo: window.location.origin + dest },
+                })
+                .catch(() => {
+                  window.location.href = "/login?redirect=" + encodeURIComponent(dest);
+                });
+            } else {
+              window.location.href = "/login?redirect=" + encodeURIComponent(dest);
+            }
+          });
+        }
+      }
+      function hideAuthGate() {
+        const gate = document.getElementById("authGate");
+        if (!gate) return;
+        gate.classList.remove("show");
+        gate.setAttribute("aria-hidden", "true");
       }
 
       // (showToast unificada está definida mais abaixo, próximo ao loop do jogo)
