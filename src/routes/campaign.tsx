@@ -529,6 +529,7 @@ function LevelCard({
 }
 
 export function CampaignPage() {
+  const navigate = useNavigate();
   const [levels, setLevels] = useState<Level[]>([]);
   const [bestScores, setBestScores] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
