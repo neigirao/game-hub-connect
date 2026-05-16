@@ -5621,6 +5621,155 @@
           b.classList.add("active");
         });
       });
+
+      // ---------------------------- TOOL TOOLTIPS (hover/focus) ----------------------------
+      const TOOL_INFO = {
+        add: {
+          name: "Adicionar nó",
+          key: "A",
+          desc: "Clica no canvas para colocar um novo ponto do trilho.",
+          tip: "Quanto mais nós, mais suave a curva.",
+        },
+        move: {
+          name: "Mover",
+          key: "M",
+          desc: "Arrasta nós para reposicioná-los. Arrasta o fundo vazio para mover a câmera.",
+          tip: "Use scroll do mouse para pan; Ctrl+scroll para zoom.",
+        },
+        booster: {
+          name: "Booster",
+          key: "B",
+          desc: "Acelera o carrinho ao passar por cima.",
+          tip: "Combina bem antes de loopings e rampas.",
+        },
+        brake: {
+          name: "Freio",
+          key: "F",
+          desc: "Reduz a velocidade do carrinho.",
+          tip: "Use antes de curvas fechadas para não passar de 5G.",
+        },
+        launcher: {
+          name: "Catapulta",
+          key: "N",
+          desc: "Lança o carrinho para o alto.",
+          tip: "O carrinho pode cair de volta no trilho — quanto mais suave a queda, maior a chance!",
+        },
+        "loop-node": {
+          name: "Looping 360°",
+          key: "G",
+          desc: "Faz o carrinho dar uma volta completa no ar.",
+          tip: "Precisa de pelo menos 50 km/h pra completar.",
+        },
+        spring: {
+          name: "Trampolim",
+          key: "T",
+          desc: "Lança o carrinho bem alto para cima.",
+          tip: "Posicione outro trecho de trilho na trajetória de queda para um pouso espetacular.",
+        },
+        firework: {
+          name: "Fogos",
+          key: "Q",
+          desc: "Solta confete e aumenta o score de Chaos.",
+          tip: "Bom para finalizar a pista com estilo.",
+        },
+        ice: {
+          name: "Gelo",
+          key: "Z",
+          desc: "Zona de baixíssimo atrito — o carrinho desliza.",
+          tip: "Use em descidas longas para ganhar muita velocidade.",
+        },
+        inversor: {
+          name: "Inversor de gravidade",
+          key: "I",
+          desc: "Inverte a gravidade dentro da zona.",
+          tip: "Precisa de 50+ km/h ao entrar, senão o carrinho voa.",
+        },
+        cannon: {
+          name: "Canhão",
+          key: "C",
+          desc: "Lança o carrinho horizontalmente em alta velocidade.",
+          tip: "Mira no próximo trecho de trilho — quique ou pouso suave dependendo da velocidade.",
+        },
+        portal: {
+          name: "Portal",
+          key: "W",
+          desc: "Teleporta o carrinho entre dois nós portal.",
+          tip: "Precisa de exatamente 2 nós portal na mesma pista.",
+        },
+        delete: {
+          name: "Deletar nó",
+          key: "D",
+          desc: "Remove o nó clicado.",
+          tip: "Use Ctrl+Z para desfazer.",
+        },
+        clear: {
+          name: "Limpar pista",
+          key: "—",
+          desc: "Apaga tudo e recomeça do zero.",
+          tip: "Pede confirmação antes de apagar.",
+        },
+        loop: {
+          name: "Fechar circuito",
+          key: "L",
+          desc: "Liga o último nó ao primeiro fazendo um circuito infinito.",
+          tip: "Bom para pistas que rodam várias voltas.",
+        },
+        "set-start": {
+          name: "Embarque (INI)",
+          key: "—",
+          desc: "Clica num nó para marcar onde o carrinho começa.",
+          tip: "O carrinho sempre nasce no nó marcado como INI.",
+        },
+        "set-end": {
+          name: "Desembarque (FIM)",
+          key: "—",
+          desc: "Clica num nó para marcar a chegada da pista.",
+          tip: "A corrida termina quando o carrinho atinge esse nó.",
+        },
+      };
+      (function wireToolTooltips() {
+        const tooltip = document.getElementById("toolTooltip");
+        if (!tooltip) return;
+        const tools = document.querySelectorAll("#tools .tool");
+        function showFor(btn) {
+          const tool = btn.dataset.tool || btn.id?.replace("Btn", "").toLowerCase();
+          const key = tool === "zoomin" ? "Z+" : tool === "zoomout" ? "Z-" : null;
+          const info =
+            TOOL_INFO[tool] ||
+            (tool === "zoomin"
+              ? { name: "Zoom +", key: "=", desc: "Aproxima a câmera.", tip: "" }
+              : tool === "zoomout"
+                ? { name: "Zoom −", key: "-", desc: "Afasta a câmera.", tip: "" }
+                : null);
+          if (!info) return;
+          tooltip.innerHTML = `
+            <div class="tt-head">
+              <span class="tt-name">${info.name}</span>
+              ${info.key && info.key !== "—" ? `<span class="tt-key">${info.key}</span>` : ""}
+            </div>
+            <div class="tt-desc">${info.desc}</div>
+            ${info.tip ? `<div class="tt-tip">💡 ${info.tip}</div>` : ""}
+          `;
+          const rect = btn.getBoundingClientRect();
+          // Posiciona à direita da toolbar
+          tooltip.style.left = rect.right + 10 + "px";
+          tooltip.style.top = Math.max(8, rect.top - 4) + "px";
+          tooltip.classList.add("show");
+          tooltip.setAttribute("aria-hidden", "false");
+        }
+        function hide() {
+          tooltip.classList.remove("show");
+          tooltip.setAttribute("aria-hidden", "true");
+        }
+        tools.forEach((b) => {
+          b.addEventListener("mouseenter", () => showFor(b));
+          b.addEventListener("focus", () => showFor(b));
+          b.addEventListener("mouseleave", hide);
+          b.addEventListener("blur", hide);
+          // Remove o title nativo (substituído pelo nosso)
+          b.removeAttribute("title");
+        });
+      })();
       window.addEventListener("keydown", (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === "z") {
           e.preventDefault();
