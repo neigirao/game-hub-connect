@@ -5064,6 +5064,73 @@
             c.angle += c.vy * 0.0008 + 0.04;
             if (state.failLevel < 8) setFailLevel(8);
 
+            // ---- RAIL CATCH — try to recapture the track mid-flight ----
+            // Procura o sample mais próximo num raio pequeno; decide entre
+            // aterrissar suave, quicar e perder energia, ou continuar voando.
+            if (path && path.pts.length > 0 && !c._railCatchCool) {
+              const RAIL_CATCH_RADIUS = 32;
+              const LANDING_VNORMAL_MAX = 380;
+              const BOUNCE_VNORMAL_MAX = 820;
+              let bestI = -1,
+                bestD2 = RAIL_CATCH_RADIUS * RAIL_CATCH_RADIUS;
+              const pts = path.pts;
+              for (let i = 0; i < pts.length; i++) {
+                const dx = pts[i].x - c.x;
+                const dy = pts[i].y - c.y;
+                const d2 = dx * dx + dy * dy;
+                if (d2 < bestD2) {
+                  bestD2 = d2;
+                  bestI = i;
+                }
+              }
+              if (bestI >= 0) {
+                const s = path.lens[bestI];
+                const sm = sampleAt(path, s);
+                const tx = sm.tx,
+                  ty = sm.ty;
+                const nx = -ty,
+                  ny = tx;
+                const vTangent = c.vx * tx + c.vy * ty;
+                const vNormal = c.vx * nx + c.vy * ny;
+                const absVN = Math.abs(vNormal);
+                if (absVN < LANDING_VNORMAL_MAX && Math.abs(vTangent) > 60) {
+                  // Aterrissagem suave — volta para o trilho
+                  c.flying = false;
+                  c.x = sm.x;
+                  c.y = sm.y;
+                  c.s = s;
+                  c.v = vTangent;
+                  c.vx = 0;
+                  c.vy = 0;
+                  c.lastDir = { x: tx, y: ty };
+                  c._railCatchCool = 0.2;
+                  if (state.failLevel > 1) setFailLevel(state.failLevel - 1);
+                  spawnSparks(c.x, c.y, 10, "#2ED573");
+                  spawnConfetti(c.x, c.y, 6);
+                  showToast("🎯 DE VOLTA AOS TRILHOS!", "#2ED573");
+                  try {
+                    playBoostSound();
+                  } catch {}
+                } else if (absVN < BOUNCE_VNORMAL_MAX) {
+                  // Quica no trilho — perde energia e segue voando
+                  const newVN = -vNormal * 0.55;
+                  const newVT = vTangent * 0.85;
+                  c.vx = newVT * tx + newVN * nx;
+                  c.vy = newVT * ty + newVN * ny;
+                  // empurra para fora para não re-colidir no mesmo frame
+                  c.x = sm.x + nx * 6 * Math.sign(vNormal || 1);
+                  c.y = sm.y + ny * 6 * Math.sign(vNormal || 1);
+                  c._railCatchCool = 0.15;
+                  spawnSparks(c.x, c.y, 6, "#FFA502");
+                  showToast("💥 QUICOU!", "#FFA502");
+                }
+                // else: bateu forte demais — segue caindo até o ground impact (crash)
+              }
+            }
+            if (c._railCatchCool) {
+              c._railCatchCool = Math.max(0, c._railCatchCool - dt);
+            }
+
             // Ground impact
             const groundY = H * 0.84;
             if (c.y > groundY - 6) {
