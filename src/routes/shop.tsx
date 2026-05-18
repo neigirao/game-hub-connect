@@ -283,6 +283,16 @@ export function ShopPage() {
       return;
     }
     if (!window.confirm(`Gastar ${item.cost.toLocaleString()} moedas em "${item.name}"?`)) return;
+
+    // Verify session is still valid before calling RPC
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      navigate({ to: "/login" });
+      return;
+    }
+
     setBuying(item.id);
     const { data, error: err } = await supabase.rpc("purchase_shop_item", {
       p_item_id: item.id,

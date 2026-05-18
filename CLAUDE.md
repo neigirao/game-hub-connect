@@ -422,6 +422,9 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 - [x] `share.tsx` — `validateSearch` clampeia todos os parâmetros numéricos (`stars` 0-3, `s/a/c` 0-100, `score/speed/g` ≥ 0) — previne DoS visual via URL
 - [x] `campaign.tsx` — `LOCK_STARS[Math.min(i, length-1)]` garante que fases 4+ também exigem estrelas em vez de ficar desbloqueadas
 - [x] `shop.tsx` — botão de compra desabilitado enquanto qualquer compra estiver em andamento (`buying !== null`), não apenas o item específico
+- [x] `login.tsx` — `beforeLoad` redireciona para `/campaign` se sessão já existe; `visibilitychange` reseta loading se usuário cancela OAuth; comentário clarifica o fluxo de redirect
+- [x] `shop.tsx` — `handleBuy` valida sessão com `getSession()` antes de chamar RPC; redireciona para `/login` se sessão expirou
+- [x] `admin.tsx` — `beforeLoad` envolto em try/catch; erro de rede redireciona para `/` em vez de mostrar tela branca
 
 ### Pendente (pós-MVP / V2+)
 

@@ -3,18 +3,24 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) throw redirect({ to: "/login" });
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) throw redirect({ to: "/login" });
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", session.user.id)
-      .single();
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", session.user.id)
+        .single();
 
-    if (!profile?.is_admin) throw redirect({ to: "/" });
+      if (error || !profile?.is_admin) throw redirect({ to: "/" });
+    } catch (e) {
+      // Re-throw TanStack Router redirects; convert network errors to safe redirect
+      if (e instanceof Response || (e as { _isRedirect?: boolean })?._isRedirect) throw e;
+      throw redirect({ to: "/" });
+    }
   },
   component: AdminLayout,
 });
