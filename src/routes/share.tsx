@@ -3,13 +3,13 @@ import { useState } from "react";
 
 export const Route = createFileRoute("/share")({
   validateSearch: (search: Record<string, unknown>) => ({
-    score: Number(search.score ?? 0),
-    stars: Number(search.stars ?? 0),
-    speed: Number(search.speed ?? 0),
-    g: Number(search.g ?? 0),
-    s: Number(search.s ?? 0),
-    a: Number(search.a ?? 0),
-    c: Number(search.c ?? 0),
+    score: Math.max(0, Number(search.score ?? 0)),
+    stars: Math.min(3, Math.max(0, Number(search.stars ?? 0))),
+    speed: Math.max(0, Number(search.speed ?? 0)),
+    g: Math.max(0, Number(search.g ?? 0)),
+    s: Math.min(100, Math.max(0, Number(search.s ?? 0))),
+    a: Math.min(100, Math.max(0, Number(search.a ?? 0))),
+    c: Math.min(100, Math.max(0, Number(search.c ?? 0))),
   }),
   head: ({ match }) => {
     const search = match.search as {

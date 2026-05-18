@@ -1,24 +1,45 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { lovable } from "@/integrations/lovable/index";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>) => ({
     redirect: typeof search.redirect === "string" ? search.redirect : "/campaign",
   }),
+  beforeLoad: async () => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) throw redirect({ to: "/campaign", replace: true });
+    } catch (e) {
+      if (e instanceof Response || (e as { _isRedirect?: boolean })?._isRedirect) throw e;
+      // network error — show login page normally
+    }
+  },
   component: LoginPage,
 });
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { redirect } = Route.useSearch();
+  const { redirect: redirectTo } = Route.useSearch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Reset loading if the page becomes visible again (e.g. user cancelled OAuth)
+  useEffect(() => {
+    const handler = () => {
+      if (document.visibilityState === "visible") setLoading(false);
+    };
+    document.addEventListener("visibilitychange", handler);
+    return () => document.removeEventListener("visibilitychange", handler);
+  }, []);
 
   const handleGoogle = async () => {
     setLoading(true);
     setError(null);
-    const target = redirect.startsWith("/") ? redirect : "/campaign";
+    const target = redirectTo.startsWith("/") ? redirectTo : "/campaign";
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin + target,
     });
@@ -27,10 +48,9 @@ function LoginPage() {
       setLoading(false);
       return;
     }
-    if (result.redirected) return;
-    if (typeof window !== "undefined") {
-      window.location.replace(target);
-    } else {
+    // OAuth initiated a browser redirect — page will unload.
+    // If redirect didn't happen (e.g. popup mode), navigate manually.
+    if (!result.redirected) {
       navigate({ to: "/campaign", replace: true });
     }
   };
@@ -117,17 +137,10 @@ function LoginPage() {
           </svg>
           {loading ? "Abrindo Google…" : "Entrar com Google"}
         </button>
-        {error && (
-          <p style={{ color: "#ff8080", fontSize: 13, marginTop: 14 }}>
-            {error}
-          </p>
-        )}
+        {error && <p style={{ color: "#ff8080", fontSize: 13, marginTop: 14 }}>{error}</p>}
         <p style={{ marginTop: 22, fontSize: 12, color: "#B7AEE0" }}>
           Novo por aqui?{" "}
-          <a
-            href="/home.html"
-            style={{ color: "#FF6BD6", textDecoration: "none", fontWeight: 600 }}
-          >
+          <a href="/home.html" style={{ color: "#FF6BD6", textDecoration: "none", fontWeight: 600 }}>
             Como funciona →
           </a>
         </p>
