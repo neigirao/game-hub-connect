@@ -668,7 +668,7 @@ export function CampaignPage() {
             }}
           >
             {levels.map((level, i) => {
-              const required = LOCK_STARS[i] ?? 0;
+              const required = LOCK_STARS[Math.min(i, LOCK_STARS.length - 1)] ?? 0;
               const prevLevel = i > 0 ? levels[i - 1] : null;
               const prevBest = prevLevel ? (bestScores[prevLevel.id] ?? 0) : 0;
               const prevStars = prevLevel ? getStars(prevBest, prevLevel) : 0;

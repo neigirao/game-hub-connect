@@ -419,6 +419,9 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 - [x] Content-Security-Policy + security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`) adicionados ao Worker em `src/server.ts` (E4)
 - [x] Creativity score exibido no leaderboard: coluna `🎨{creativity_score}` (rosa) ao lado de S/A/C (G11)
 - [x] `role="toolbar" aria-label="Ferramentas do editor"` na aside tools; `aria-label="Editor de pista" role="img"` no canvas de `play.html` (X7)
+- [x] `share.tsx` — `validateSearch` clampeia todos os parâmetros numéricos (`stars` 0-3, `s/a/c` 0-100, `score/speed/g` ≥ 0) — previne DoS visual via URL
+- [x] `campaign.tsx` — `LOCK_STARS[Math.min(i, length-1)]` garante que fases 4+ também exigem estrelas em vez de ficar desbloqueadas
+- [x] `shop.tsx` — botão de compra desabilitado enquanto qualquer compra estiver em andamento (`buying !== null`), não apenas o item específico
 
 ### Pendente (pós-MVP / V2+)
 

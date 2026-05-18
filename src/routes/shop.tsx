@@ -195,24 +195,28 @@ function ShopCard({
       ) : (
         <button
           onClick={() => onBuy(item)}
-          disabled={!canAfford || isLoading}
+          disabled={!canAfford || buying !== null}
           style={{
             fontFamily: "'Fredoka',system-ui,sans-serif",
             fontWeight: 700,
             fontSize: 14,
             padding: "10px",
             borderRadius: 12,
-            border: canAfford ? "2px solid #FFCB6B" : "2px solid rgba(255,255,255,.15)",
-            background: canAfford
-              ? "linear-gradient(180deg,#FFA502,#c97a00)"
-              : "rgba(255,255,255,.06)",
-            color: canAfford ? "#fff" : "#B7AEE0",
-            cursor: canAfford ? "pointer" : "not-allowed",
-            boxShadow: canAfford ? "0 3px 0 #6e3f00" : "none",
+            border:
+              canAfford && buying === null
+                ? "2px solid #FFCB6B"
+                : "2px solid rgba(255,255,255,.15)",
+            background:
+              canAfford && buying === null
+                ? "linear-gradient(180deg,#FFA502,#c97a00)"
+                : "rgba(255,255,255,.06)",
+            color: canAfford && buying === null ? "#fff" : "#B7AEE0",
+            cursor: canAfford && buying === null ? "pointer" : "not-allowed",
+            boxShadow: canAfford && buying === null ? "0 3px 0 #6e3f00" : "none",
             transition: "all .15s",
           }}
         >
-          {isLoading ? "..." : `🪙 ${item.cost.toLocaleString()} moedas`}
+          {isLoading ? "⏳ Comprando..." : `🪙 ${item.cost.toLocaleString()} moedas`}
         </button>
       )}
     </div>
