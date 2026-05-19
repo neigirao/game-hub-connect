@@ -435,6 +435,10 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 - [x] GD-14: Chaos decai 0.3/s quando G < 1.5 e sem near-misses; favorece intensidade sustentada
 - [x] GD-15: Saída lateral do canvas (x < −200 ou x > W+200) força `completeRun(true)` com toast "💨 SUMIU NO HORIZONTE!"
 - [x] GD-17: Loop e Inversor exibem label "50+ km/h" abaixo do nó em modo Build (build mode only)
+- [x] GD-1: XP e coins ganhos exibidos no modal de resultado com contador animado (não apenas toast); `awardRewards()` retorna Promise com `{xp, coins}`; modal aguarda resolução e exibe `#rcReward`
+- [x] GD-2: HUD mostra indicador de estrelas em tempo real durante teste (`#hudStarStat` / `#hudStarVal`) — atualiza a cada frame com ⭐⭐☆ + score atual
+- [x] GD-5: Spring lança verticalmente puro (vx=0, vy=-1200) com partículas verdes verticais + toast "+altitude"; Launcher mantém diagonal com smoke horizontal + `playLauncherSound()` (grave + whoosh) + toast "+horizontal"
+- [x] GD-8: Botão "Próxima Fase →" no modal de resultado — aparece quando `currentLevelId !== null` e `stars >= 1`; navega para `?level={id+1}`
 
 ### Pendente (pós-MVP / V2+)
 

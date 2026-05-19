@@ -1368,6 +1368,12 @@
         margin-top: 14px;
         flex-wrap: wrap;
       }
+      .bbtn.next-level {
+        background: linear-gradient(180deg, #2ED573, #18a348);
+        border-color: #0a7a2e;
+        color: #0E0726;
+        font-weight: 800;
+      }
       .bbtn.download {
         background: linear-gradient(180deg, #2ed573, #1a8a46);
         border-color: #7fffc4;
@@ -2069,6 +2075,10 @@
               <div class="k">Status</div>
               <div class="v safe" id="statusStat">PRONTO</div>
             </div>
+            <div class="stat" id="hudStarStat" style="display:none">
+              <div class="k">Score</div>
+              <div class="v" id="hudStarVal" style="font-size:14px">☆☆☆ 0</div>
+            </div>
           </div>
         </div>
       </main>
@@ -2404,6 +2414,9 @@
           <div class="star"></div>
           <div class="star"></div>
         </div>
+        <div id="rcReward" style="display:none;text-align:center;margin:6px 0 2px;font-family:'Fredoka',system-ui,sans-serif;font-weight:700;font-size:19px;color:#FFCB6B">
+          <span id="rcRewardXP">+0 XP</span>&nbsp;&nbsp;<span id="rcRewardCoins">🪙 +0</span>
+        </div>
         <div class="rc-breakdown" id="rcBreakdown"></div>
         <div class="rc-buttons">
           <button class="bbtn share" id="rcShareBtn">
@@ -2460,6 +2473,9 @@
             </svg>
             Campanha
           </button>
+          <button class="bbtn next-level" id="rcNextLevelBtn" style="display:none">
+            Próxima Fase →
+          </button>
           <button class="bbtn launch" id="rcPlayAgainBtn">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
               <path d="M8 5v14l11-7z" />
@@ -2513,6 +2529,7 @@
       let currentUser = null;
       let currentLevelId = null; // set when loaded via ?level= param
       let levelStar1 = null, levelStar2 = null, levelStar3 = null; // score thresholds for stars
+      let _rewardPromise = null; // Promise<{xp,coins}|null> — resolved after current run reward
       let currentBlueprintId = null; // set when a blueprint is saved or loaded
       let currentDailyDate = null; // set when loaded via ?daily= param
       let _mediaRecorder = null;
@@ -2657,6 +2674,41 @@
         g.connect(ac.destination);
         osc.start();
         osc.stop(ac.currentTime + 0.3);
+      }
+
+      function playLauncherSound() {
+        const ac = getAC();
+        // Low mechanical thud (spring release)
+        const bufSize = Math.floor(ac.sampleRate * 0.12);
+        const buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) {
+          d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 1.5) * 0.6;
+        }
+        const src = ac.createBufferSource();
+        src.buffer = buf;
+        const filter = ac.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.value = 350;
+        const g = ac.createGain();
+        g.gain.setValueAtTime(0.8, ac.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.15);
+        src.connect(filter);
+        filter.connect(g);
+        g.connect(ac.destination);
+        src.start();
+        // Whoosh tail
+        const osc = ac.createOscillator();
+        const og = ac.createGain();
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(550, ac.currentTime + 0.04);
+        osc.frequency.linearRampToValueAtTime(180, ac.currentTime + 0.38);
+        og.gain.setValueAtTime(0.14, ac.currentTime + 0.04);
+        og.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.38);
+        osc.connect(og);
+        og.connect(ac.destination);
+        osc.start(ac.currentTime + 0.04);
+        osc.stop(ac.currentTime + 0.38);
       }
 
       function playFireworkSound() {
@@ -3156,7 +3208,7 @@
       }
 
       async function awardRewards(crashed) {
-        if (!sbClient || !currentUser) return;
+        if (!sbClient || !currentUser) return null;
         const total = Math.round(
           (state.scores.survival +
             state.scores.adrenaline +
@@ -3175,17 +3227,18 @@
           if (data) {
             const xp = data.xp_gained,
               coins = data.coins_gained;
-            showToast(`+${xp} XP  🪙 +${coins}`, "#FF6BD6");
             try {
               sessionStorage.setItem(
                 "cc_last_reward",
                 JSON.stringify({ xp, coins, ts: Date.now() }),
               );
             } catch (_) {}
+            return { xp, coins };
           }
         } catch (e) {
           console.warn("[CC] awardRewards failed:", e);
         }
+        return null;
       }
 
       // Inicializa Supabase em background
@@ -4972,9 +5025,9 @@
                 c.vx = dir.x * Math.max(Math.abs(c.v), 350) * 1.2;
                 c.vy = -700;
                 spawnSparks(c.x, c.y, 10, "#2ED573");
-                spawnConfetti(c.x, c.y, 12);
-                showToast("🚀 CATAPULTADO!", "#2ED573");
-                playBoostSound();
+                spawnSmoke(c.x - dir.x * 18, c.y, 4);
+                showToast("🚀 CATAPULTADO! +horizontal", "#2ED573");
+                playLauncherSound();
               }
               // Reset launch cooldown when far from launcher zone
               if (c._launchCool && sample.kind !== "launcher") c._launchCool = false;
@@ -5005,13 +5058,15 @@
               if (sample.kind === "spring" && !c._springCool) {
                 c._springCool = true;
                 c.flying = true;
-                const dir = c.lastDir || { x: 1, y: 0 };
-                c.vx = dir.x * Math.abs(c.v) * 0.6;
-                c.vy = -1100;
-                spawnSparks(c.x, c.y, 14, "#A8FF78");
-                spawnConfetti(c.x, c.y, 16);
+                c.vx = 0; // pure vertical — no horizontal carry
+                c.vy = -1200;
+                // Vertical burst of green sparks
+                for (let _si = 0; _si < 6; _si++) {
+                  spawnSparks(c.x + (Math.random() - 0.5) * 12, c.y, 2, "#A8FF78");
+                }
+                spawnConfetti(c.x, c.y, 20);
                 playSpringSound();
-                showToast("🟢 TRAMPOLIM!", "#A8FF78");
+                showToast("🟢 TRAMPOLIM! +altitude", "#A8FF78");
               }
               if (c._springCool && sample.kind !== "spring") c._springCool = false;
 
@@ -5427,6 +5482,19 @@
               `<span style="opacity:${t>=levelStar3?1:0.5}">${s3} ${levelStar3}+</span>`;
           }
         }
+        // GD-2: HUD star indicator (visible in test mode)
+        const _hudStarStat = document.getElementById("hudStarStat");
+        const _hudStarVal = document.getElementById("hudStarVal");
+        if (_hudStarStat && _hudStarVal) {
+          if (state.mode === "test") {
+            _hudStarStat.style.display = "";
+            const t = Math.round(total);
+            const starsStr = t >= 75 ? "⭐⭐⭐" : t >= 55 ? "⭐⭐☆" : t >= 25 ? "⭐☆☆" : "☆☆☆";
+            _hudStarVal.textContent = starsStr + " " + t;
+          } else {
+            _hudStarStat.style.display = "none";
+          }
+        }
 
         document.getElementById("nodeCount").textContent =
           `${state.nodes.length} nós · ${estimateLength() | 0}m`;
@@ -5480,7 +5548,7 @@
           document.getElementById("bestScore").textContent = total + " pts";
         }
         submitScore(currentBlueprintId);
-        awardRewards(crashed);
+        _rewardPromise = awardRewards(crashed);
         setTimeout(() => showRunComplete(crashed), crashed ? 1800 : 600);
       }
 
@@ -5567,6 +5635,42 @@
         if (total > 25) setTimeout(() => starEls[0]?.classList.add("on"), 500);
         if (total > 55) setTimeout(() => starEls[1]?.classList.add("on"), 800);
         if (total > 75) setTimeout(() => starEls[2]?.classList.add("on"), 1100);
+
+        // GD-1: show XP/coins reward in modal
+        document.getElementById("rcReward").style.display = "none";
+        if (_rewardPromise) {
+          _rewardPromise.then((r) => {
+            if (r) _applyModalReward(r.xp, r.coins);
+          });
+        }
+
+        // GD-8: "Próxima Fase →" button in campaign mode
+        const nextLvlBtn = document.getElementById("rcNextLevelBtn");
+        const earnedStars = total >= 75 ? 3 : total >= 55 ? 2 : total >= 25 ? 1 : 0;
+        if (currentLevelId !== null && earnedStars >= 1) {
+          nextLvlBtn.style.display = "";
+          nextLvlBtn.onclick = () => {
+            window.location.href = `/play.html?level=${currentLevelId + 1}`;
+          };
+        } else {
+          nextLvlBtn.style.display = "none";
+        }
+      }
+
+      function _applyModalReward(xp, coins) {
+        const el = document.getElementById("rcReward");
+        if (!el) return;
+        el.style.display = "";
+        const xpEl = document.getElementById("rcRewardXP");
+        const coinsEl = document.getElementById("rcRewardCoins");
+        let cx = 0, cc = 0;
+        const iv = setInterval(() => {
+          cx = Math.min(xp, cx + Math.max(1, Math.ceil(xp / 20)));
+          cc = Math.min(coins, cc + Math.max(1, Math.ceil(coins / 20)));
+          xpEl.textContent = `+${cx} XP`;
+          coinsEl.textContent = `🪙 +${cc}`;
+          if (cx >= xp && cc >= coins) clearInterval(iv);
+        }, 40);
       }
 
       // ---------------------------- INPUT
