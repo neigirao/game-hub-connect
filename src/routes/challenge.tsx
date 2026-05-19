@@ -414,9 +414,29 @@ export function ChallengePage() {
                 >
                   {pick.title}
                 </h2>
-                <p style={{ color: "#B7AEE0", fontSize: 14, margin: "0 0 20px", lineHeight: 1.5 }}>
+                <p style={{ color: "#B7AEE0", fontSize: 14, margin: "0 0 12px", lineHeight: 1.5 }}>
                   {pick.description}
                 </p>
+                {/* GD-11: reward callout */}
+                <div
+                  style={{
+                    background: "rgba(255,203,107,0.1)",
+                    border: "1px solid rgba(255,203,107,0.3)",
+                    borderRadius: 10,
+                    padding: "8px 14px",
+                    fontSize: 13,
+                    color: "#FFCB6B",
+                    marginBottom: 20,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  🎁{" "}
+                  <span>
+                    Completar = <b>+50 XP</b> · Top 10 = <b>+200 🪙 bônus</b>
+                  </span>
+                </div>
 
                 <div
                   style={{

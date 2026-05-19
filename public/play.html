@@ -2512,6 +2512,7 @@
       let sbClient = null;
       let currentUser = null;
       let currentLevelId = null; // set when loaded via ?level= param
+      let levelStar1 = null, levelStar2 = null, levelStar3 = null; // score thresholds for stars
       let currentBlueprintId = null; // set when a blueprint is saved or loaded
       let currentDailyDate = null; // set when loaded via ?daily= param
       let _mediaRecorder = null;
@@ -2941,6 +2942,9 @@
           objEl.innerHTML = (level.objectives || [])
             .map((o) => `<div class="lp-obj-item"><span>▸</span>${o.label}</div>`)
             .join("");
+          levelStar1 = level.star1_score;
+          levelStar2 = level.star2_score;
+          levelStar3 = level.star3_score;
           document.getElementById("lpStars").innerHTML =
             `<span>⭐ ${level.star1_score}+</span><span>⭐⭐ ${level.star2_score}+</span><span>⭐⭐⭐ ${level.star3_score}+</span>`;
           document.getElementById("levelPanel").classList.add("show");
@@ -3964,6 +3968,15 @@
             ctx.lineTo(n.x + 6, n.y + 7);
             ctx.stroke();
           }
+          // GD-17: speed requirement label for loop and inversor in build mode
+          if (state.mode === "build" && (n.kind === "loop" || n.kind === "inversor")) {
+            ctx.save();
+            ctx.font = "bold 9px Inter,system-ui,sans-serif";
+            ctx.fillStyle = "rgba(255,255,255,0.5)";
+            ctx.textAlign = "center";
+            ctx.fillText("50+ km/h", n.x, n.y + 26);
+            ctx.restore();
+          }
           // cannon: horizontal arrow with circle
           if (n.kind === "cannon") {
             ctx.strokeStyle = "#0E0726";
@@ -4906,7 +4919,17 @@
                   state.scores.chaos = Math.min(100, state.scores.chaos + 2);
                 }
               }
-              state.scores.smoothness = Math.max(0, state.scores.smoothness - gShown * 5 * dt);
+              // GD-14: Chaos decays slowly when G is calm and no recent near-miss
+              if (gShown < 1.5 && state.nearMisses === 0) {
+                state.scores.chaos = Math.max(0, state.scores.chaos - 0.3 * dt);
+              }
+
+              // Smoothness: decay only when G > 2.0 (moderate curve); recover gently below 1G
+              if (gShown > 2.0) {
+                state.scores.smoothness = Math.max(0, state.scores.smoothness - (gShown - 2.0) * 8 * dt);
+              } else if (gShown < 1.0) {
+                state.scores.smoothness = Math.min(100, state.scores.smoothness + 0.5 * dt);
+              }
               state.scores.survival = Math.min(100, state.scores.survival + 8 * dt);
               const _specials = state.nodes.filter((n) => n.kind !== "normal");
               const _uniqueKinds = new Set(_specials.map((n) => n.kind)).size;
@@ -5074,12 +5097,16 @@
                       exitS = path.lens[pi];
                     }
                   }
+                  // Entry burst at current position before teleporting
+                  spawnSparks(c.x, c.y, 30, "#8B5CF6");
+                  spawnSmoke(c.x, c.y, 4);
                   c.s = exitS + 30; // skip past exit portal
                   const exitSam = sampleAt(path, c.s);
                   c.x = exitSam.x;
                   c.y = exitSam.y;
-                  spawnConfetti(c.x, c.y, 30);
-                  spawnSparks(c.x, c.y, 18, "#8B5CF6");
+                  // Exit burst at destination
+                  spawnConfetti(c.x, c.y, 20);
+                  spawnSparks(c.x, c.y, 24, "#D946EF");
                   playPortalSound();
                   showToast("🌀 TELEPORTE!", "#8B5CF6");
                   state.scores.chaos = Math.min(100, state.scores.chaos + 10);
@@ -5250,6 +5277,13 @@
               c._railCatchCool = Math.max(0, c._railCatchCool - dt);
             }
 
+            // GD-15: Lateral exit — cart disappears off screen sides
+            if ((c.x < -200 || c.x > W + 200) && state.failLevel < 9) {
+              setFailLevel(9);
+              showToast("💨 SUMIU NO HORIZONTE!", "#70A1FF");
+              setTimeout(() => completeRun(true), 1200);
+            }
+
             // Ground impact
             const groundY = H * 0.84;
             if (c.y > groundY - 6) {
@@ -5378,6 +5412,21 @@
         stars[0].classList.toggle("on", total > 25);
         stars[1].classList.toggle("on", total > 55);
         stars[2].classList.toggle("on", total > 75);
+
+        // GD-9: update campaign star panel in real time during test
+        if (state.mode === "test" && levelStar1 !== null) {
+          const lpStarsEl = document.getElementById("lpStars");
+          if (lpStarsEl) {
+            const t = Math.round(total);
+            const s1 = t >= levelStar1 ? "⭐" : "☆";
+            const s2 = t >= levelStar2 ? "⭐⭐" : "☆☆";
+            const s3 = t >= levelStar3 ? "⭐⭐⭐" : "☆☆☆";
+            lpStarsEl.innerHTML =
+              `<span style="opacity:${t>=levelStar1?1:0.5}">${s1} ${levelStar1}+</span>` +
+              `<span style="opacity:${t>=levelStar2?1:0.5}">${s2} ${levelStar2}+</span>` +
+              `<span style="opacity:${t>=levelStar3?1:0.5}">${s3} ${levelStar3}+</span>`;
+          }
+        }
 
         document.getElementById("nodeCount").textContent =
           `${state.nodes.length} nós · ${estimateLength() | 0}m`;
