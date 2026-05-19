@@ -439,6 +439,8 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 - [x] GD-2: HUD mostra indicador de estrelas em tempo real durante teste (`#hudStarStat` / `#hudStarVal`) — atualiza a cada frame com ⭐⭐☆ + score atual
 - [x] GD-5: Spring lança verticalmente puro (vx=0, vy=-1200) com partículas verdes verticais + toast "+altitude"; Launcher mantém diagonal com smoke horizontal + `playLauncherSound()` (grave + whoosh) + toast "+horizontal"
 - [x] GD-8: Botão "Próxima Fase →" no modal de resultado — aparece quando `currentLevelId !== null` e `stars >= 1`; navega para `?level={id+1}`
+- [x] GD-3: Creativity score rebalanceado com 4 componentes independentes (max 100): gate(10 se ≥4 nós) + variety(0-30: tipos únicos×9) + density(0-20: pico em 50% especiais) + elegance(0-40: coeficiente de variação dos espaçamentos entre nós — nós distribuídos uniformemente = alta elegância)
+- [x] GD-10: Onboarding de nós especiais — (a) step 5 no tutorial da Fase 1 apresenta nós especiais com atalhos de teclado; (b) micro-tooltip contextual de 3s na primeira seleção de cada ferramenta especial via botão ou teclado — persiste em `localStorage('cc_seen_tools')`
 
 ### Pendente (pós-MVP / V2+)
 

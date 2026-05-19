@@ -2518,6 +2518,14 @@
       </div>
     </div>
 
+    <!-- GD-10: contextual node tooltip (first-time use) -->
+    <div id="nodeTip" style="display:none;position:fixed;z-index:500;background:rgba(14,7,38,.95);
+      border:1.5px solid #4a2aa6;border-radius:10px;padding:8px 14px;font-size:13px;color:#fff;
+      font-family:'Fredoka',system-ui,sans-serif;max-width:220px;pointer-events:none;
+      box-shadow:0 4px 0 rgba(0,0,0,.4);transition:opacity .25s">
+      <span id="nodeTipText"></span>
+    </div>
+
     <script type="module">
       // ============================================================
       // CRASH COASTER — MVP
@@ -4984,13 +4992,39 @@
                 state.scores.smoothness = Math.min(100, state.scores.smoothness + 0.5 * dt);
               }
               state.scores.survival = Math.min(100, state.scores.survival + 8 * dt);
-              const _specials = state.nodes.filter((n) => n.kind !== "normal");
-              const _uniqueKinds = new Set(_specials.map((n) => n.kind)).size;
-              const _diversityBonus = _uniqueKinds >= 3 && _specials.length >= 4 ? 20 : 0;
-              state.scores.creativity = Math.min(
-                100,
-                30 + state.nodes.length * 4 + _specials.length * 5 + _diversityBonus,
-              );
+              // GD-3: Rebalanced creativity — 4 independent components (max 100)
+              {
+                const _N = state.nodes.length;
+                const _sp = state.nodes.filter((n) => n.kind !== "normal");
+                const _uk = new Set(_sp.map((n) => n.kind)).size;
+                // 1. Gate: need ≥4 nodes to score anything meaningful
+                const _gate = _N >= 4 ? 10 : 0;
+                // 2. Variety (0-30): unique special types × 9, capped at 30
+                const _variety = Math.min(30, _uk * 9);
+                // 3. Special density (0-20): peaks at 50% specials — penalizes 0% and 100%
+                const _ratio = _N > 0 ? _sp.length / _N : 0;
+                const _density = Math.round(20 * Math.min(1, 4 * _ratio * (1 - _ratio)));
+                // 4. Elegance (0-40): coefficient of variation of inter-node spacings
+                //    Low CV = evenly spread nodes = high elegance
+                let _elScore = 0;
+                if (_N >= 3) {
+                  let _spacings = [];
+                  for (let _ni = 1; _ni < _N; _ni++) {
+                    _spacings.push(Math.hypot(
+                      state.nodes[_ni].x - state.nodes[_ni - 1].x,
+                      state.nodes[_ni].y - state.nodes[_ni - 1].y,
+                    ));
+                  }
+                  const _mean = _spacings.reduce((a, b) => a + b, 0) / _spacings.length;
+                  if (_mean > 0) {
+                    const _cv = Math.sqrt(
+                      _spacings.reduce((a, b) => a + (b - _mean) ** 2, 0) / _spacings.length,
+                    ) / _mean;
+                    _elScore = Math.round(40 * Math.max(0, 1 - _cv * 0.7));
+                  }
+                }
+                state.scores.creativity = Math.min(100, _gate + _variety + _density + _elScore);
+              }
 
               // Fail level escalation
               let L = 0;
@@ -5885,6 +5919,7 @@
             return;
           }
           state.tool = t;
+          showNodeTip(t);
           document.querySelectorAll("#tools .tool").forEach((x) => {
             if (x.dataset.tool === "loop") return;
             x.classList.remove("active");
@@ -6064,6 +6099,7 @@
         };
         if (map[e.key]) {
           state.tool = map[e.key];
+          showNodeTip(map[e.key]);
           document.querySelectorAll("#tools .tool").forEach((x) => {
             if (x.dataset.tool === "loop") return;
             x.classList.toggle("active", x.dataset.tool === state.tool);
@@ -6279,11 +6315,52 @@
       }
 
       // ---------------------------- TUTORIAL
+      // ======================== GD-10: CONTEXTUAL NODE TOOLTIPS
+      const NODE_TIPS = {
+        booster:    "⚡ Booster — acelera o carrinho ao passar",
+        brake:      "🛑 Freio — desacelera antes de curvas perigosas",
+        launcher:   "🚀 Lançador — catapulta diagonalmente em alta velocidade",
+        "loop-node":"🌀 Looping — precisa de 50+ km/h para completar",
+        spring:     "🟢 Trampolim — lança verticalmente, ganhe altitude",
+        firework:   "🎆 Fogos — explosão de confetes e bônus de caos",
+        ice:        "🧊 Gelo — superfície escorregadia com desvio lateral",
+        inversor:   "🔃 Inversor — inverte a gravidade! Precisa de 50+ km/h",
+        cannon:     "💥 Canhão — disparo horizontal extremamente rápido",
+        portal:     "🌀 Portal — coloque 2 nós portal para teletransportar",
+      };
+      let _seenTools;
+      try { _seenTools = new Set(JSON.parse(localStorage.getItem("cc_seen_tools") || "[]")); }
+      catch (_) { _seenTools = new Set(); }
+      let _nodeTipTimer = null;
+
+      function showNodeTip(tool) {
+        const text = NODE_TIPS[tool];
+        if (!text || _seenTools.has(tool)) return;
+        _seenTools.add(tool);
+        try { localStorage.setItem("cc_seen_tools", JSON.stringify([..._seenTools])); } catch (_) {}
+        const el = document.getElementById("nodeTip");
+        document.getElementById("nodeTipText").textContent = text;
+        const btn = document.querySelector(`[data-tool="${tool}"]`);
+        if (btn) {
+          const r = btn.getBoundingClientRect();
+          el.style.left = (r.right + 10) + "px";
+          el.style.top = Math.max(8, r.top - 4) + "px";
+        }
+        el.style.opacity = "1";
+        el.style.display = "";
+        clearTimeout(_nodeTipTimer);
+        _nodeTipTimer = setTimeout(() => {
+          el.style.opacity = "0";
+          setTimeout(() => { el.style.display = "none"; }, 260);
+        }, 3200);
+      }
+
       const TUT_STEPS = [
-        { icon: '🎢', title: 'Bem-vindo!',       body: 'Você está no editor de pistas. Construa uma montanha-russa e lance o carrinho para conquistar estrelas!' },
-        { icon: '🖱️', title: 'Adicione nós',     body: 'Clique no canvas para adicionar pontos ao traçado. Use <b>A</b> para adicionar e <b>M</b> para mover nós.' },
-        { icon: '🚀', title: 'Teste sua pista',  body: 'Pressione <b>ESPAÇO</b> ou clique em <b>LANÇAR</b> para testar. O carrinho vai percorrer o traçado.' },
-        { icon: '💥', title: 'Cuidado com o G!', body: 'Curvas fechadas geram G-force alta. Acima de <b>5G</b> o carrinho descarrila — quanto mais caótico, mais divertido!' },
+        { icon: '🎢', title: 'Bem-vindo!',           body: 'Você está no editor de pistas. Construa uma montanha-russa e lance o carrinho para conquistar estrelas!' },
+        { icon: '🖱️', title: 'Adicione nós',         body: 'Clique no canvas para adicionar pontos ao traçado. Use <b>A</b> para adicionar e <b>M</b> para mover nós.' },
+        { icon: '🚀', title: 'Teste sua pista',      body: 'Pressione <b>ESPAÇO</b> ou clique em <b>LANÇAR</b> para testar. O carrinho vai percorrer o traçado.' },
+        { icon: '💥', title: 'Cuidado com o G!',     body: 'Curvas fechadas geram G-force alta. Acima de <b>5G</b> o carrinho descarrila — quanto mais caótico, mais divertido!' },
+        { icon: '🛠️', title: 'Nós especiais!',       body: 'Explore os nós da barra lateral: <b>Booster</b> (B), <b>Trampolim</b> (T), <b>Canhão</b> (C), <b>Portal</b> (W) e muito mais — cada um muda o comportamento do carrinho!' },
       ];
       let _tutStep = 0;
 
