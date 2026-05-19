@@ -427,6 +427,14 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 - [x] `admin.tsx` — `beforeLoad` envolto em try/catch; erro de rede redireciona para `/` em vez de mostrar tela branca
 - [x] Tutorial overlay em `play.html` — aparece automaticamente na Fase 1; 4 steps (boas-vindas, nós, lançar, G-force); botão Pular em cada step; persiste dispensa via `localStorage('cc_tutorial_seen')`
 - [x] Rail-catch refatorado com lógica speed-dependente — `speedT` normaliza a velocidade total entre `RAIL_SOFT_SPEED` (400 px/s) e `RAIL_CRUSH_SPEED` (1400 px/s); três outcomes: aterrissagem suave (janela de vNormal fecha com velocidade), quique (restitution 0.55→0.78, atrito 0.85→0.65, toast "RONCOU" em speedT>0.6), esmagamento (restitution >1 expulsa o carrinho, +fail level, smoke)
+- [x] Mobile MVP em `play.html` — viewport `device-width`; media query ≤767px: grid reordenado (tools vira strip horizontal inferior scrollável), rightpanel oculto, topbar compacta, levelPanel e legend-panel reposicionados; pointer events já funcionavam nativamente no mobile
+- [x] GD-4: Smoothness só decai quando G > 2.0 (penalidade proporcional a G−2); recupera +0.5/s quando G < 1.0
+- [x] GD-7: Portal — burst de sparks roxos + smoke na entrada; sparks + confetti na saída
+- [x] GD-9: Painel de campanha mostra estrelas em tempo real durante corrida usando `levelStar1/2/3`
+- [x] GD-11: Challenge page mostra callout de recompensa "+50 XP · Top 10 = +200 🪙 bônus" abaixo da descrição
+- [x] GD-14: Chaos decai 0.3/s quando G < 1.5 e sem near-misses; favorece intensidade sustentada
+- [x] GD-15: Saída lateral do canvas (x < −200 ou x > W+200) força `completeRun(true)` com toast "💨 SUMIU NO HORIZONTE!"
+- [x] GD-17: Loop e Inversor exibem label "50+ km/h" abaixo do nó em modo Build (build mode only)
 
 ### Pendente (pós-MVP / V2+)
 
