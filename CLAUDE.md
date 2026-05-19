@@ -425,6 +425,7 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 - [x] `login.tsx` — `beforeLoad` redireciona para `/campaign` se sessão já existe; `visibilitychange` reseta loading se usuário cancela OAuth; comentário clarifica o fluxo de redirect
 - [x] `shop.tsx` — `handleBuy` valida sessão com `getSession()` antes de chamar RPC; redireciona para `/login` se sessão expirou
 - [x] `admin.tsx` — `beforeLoad` envolto em try/catch; erro de rede redireciona para `/` em vez de mostrar tela branca
+- [x] Tutorial overlay em `play.html` — aparece automaticamente na Fase 1; 4 steps (boas-vindas, nós, lançar, G-force); botão Pular em cada step; persiste dispensa via `localStorage('cc_tutorial_seen')`
 
 ### Pendente (pós-MVP / V2+)
 

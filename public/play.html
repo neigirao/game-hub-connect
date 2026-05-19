@@ -2438,6 +2438,20 @@
       <div class="lp-stars" id="lpStars"></div>
     </div>
 
+    <!-- ====== TUTORIAL MODAL ====== -->
+    <div class="modal-overlay" id="tutorialModal">
+      <div style="background:linear-gradient(180deg,#2e1870,#1a0e50);border:2px solid #4a2aa6;border-radius:20px;padding:32px;max-width:400px;width:90%;text-align:center;box-shadow:0 12px 0 rgba(0,0,0,.45)">
+        <div id="tutSteps" style="display:flex;justify-content:center;gap:6px;margin-bottom:20px"></div>
+        <div id="tutIcon" style="font-size:56px;line-height:1;margin-bottom:12px"></div>
+        <div id="tutTitle" style="font-family:'Fredoka',system-ui;font-weight:700;font-size:22px;color:#fff;margin-bottom:10px"></div>
+        <div id="tutBody" style="font-size:14px;color:#B7AEE0;line-height:1.6;margin-bottom:24px"></div>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <button id="tutSkip" style="padding:9px 20px;border-radius:10px;border:2px solid #4a2aa6;background:transparent;color:#B7AEE0;font-family:'Fredoka',system-ui;font-weight:600;font-size:14px;cursor:pointer">Pular</button>
+          <button id="tutNext" style="padding:9px 24px;border-radius:10px;border:2px solid #FFCB6B;background:linear-gradient(180deg,#FFA502,#c97a00);color:#fff;font-family:'Fredoka',system-ui;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 3px 0 #6e3f00">Próximo →</button>
+        </div>
+      </div>
+    </div>
+
     <script type="module">
       // ============================================================
       // CRASH COASTER — MVP
@@ -2880,6 +2894,7 @@
           document.getElementById("lpStars").innerHTML =
             `<span>⭐ ${level.star1_score}+</span><span>⭐⭐ ${level.star2_score}+</span><span>⭐⭐⭐ ${level.star3_score}+</span>`;
           document.getElementById("levelPanel").classList.add("show");
+          if (currentLevelId === 1) showTutorial();
         } catch (e) {
           console.warn("[CC] loadLevelFromUrl failed:", e);
         }
@@ -6006,6 +6021,44 @@
           console.warn("[CC] loadLevelRanking failed:", e);
         }
       }
+
+      // ---------------------------- TUTORIAL
+      const TUT_STEPS = [
+        { icon: '🎢', title: 'Bem-vindo!',       body: 'Você está no editor de pistas. Construa uma montanha-russa e lance o carrinho para conquistar estrelas!' },
+        { icon: '🖱️', title: 'Adicione nós',     body: 'Clique no canvas para adicionar pontos ao traçado. Use <b>A</b> para adicionar e <b>M</b> para mover nós.' },
+        { icon: '🚀', title: 'Teste sua pista',  body: 'Pressione <b>ESPAÇO</b> ou clique em <b>LANÇAR</b> para testar. O carrinho vai percorrer o traçado.' },
+        { icon: '💥', title: 'Cuidado com o G!', body: 'Curvas fechadas geram G-force alta. Acima de <b>5G</b> o carrinho descarrila — quanto mais caótico, mais divertido!' },
+      ];
+      let _tutStep = 0;
+
+      function _tutRender() {
+        const s = TUT_STEPS[_tutStep];
+        document.getElementById('tutIcon').textContent  = s.icon;
+        document.getElementById('tutTitle').textContent = s.title;
+        document.getElementById('tutBody').innerHTML    = s.body;
+        document.getElementById('tutNext').textContent  = _tutStep < TUT_STEPS.length - 1 ? 'Próximo →' : 'Jogar! 🚀';
+        document.getElementById('tutSteps').innerHTML   = TUT_STEPS.map((_,i) =>
+          `<div style="width:8px;height:8px;border-radius:50%;background:${i===_tutStep?'#FFA502':'rgba(255,255,255,.2)'}"></div>`
+        ).join('');
+      }
+
+      function showTutorial() {
+        if (localStorage.getItem('cc_tutorial_seen')) return;
+        _tutStep = 0;
+        _tutRender();
+        document.getElementById('tutorialModal').classList.add('show');
+      }
+
+      function closeTutorial() {
+        localStorage.setItem('cc_tutorial_seen', '1');
+        document.getElementById('tutorialModal').classList.remove('show');
+      }
+
+      document.getElementById('tutSkip').addEventListener('click', closeTutorial);
+      document.getElementById('tutNext').addEventListener('click', () => {
+        if (_tutStep < TUT_STEPS.length - 1) { _tutStep++; _tutRender(); }
+        else closeTutorial();
+      });
 
       // ---------------------------- BOOT
       resize(); // initialize canvas + cam before loading track
