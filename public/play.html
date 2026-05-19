@@ -3181,6 +3181,13 @@
       const CANNON_LAUNCH_VY = 700; // px/s vertical launch speed for cannon/inversor
       // G-force fail thresholds (each index = fail level)
       const G_FAIL = [0, 1.2, 2.0, 2.8, 3.4, 4.0, 4.6, 5.0];
+      // Rail-catch collision thresholds
+      const RAIL_CATCH_RADIUS    = 32;   // px — detection radius around each path sample
+      const RAIL_SOFT_SPEED      = 400;  // px/s — at or below this speed, soft landing is easy
+      const RAIL_CRUSH_SPEED     = 1400; // px/s — at or above this speed, soft landing impossible
+      const RAIL_LANDING_VN_BASE = 380;  // px/s vNormal cap for soft landing (at SOFT_SPEED)
+      const RAIL_BOUNCE_VN_LO    = 820;  // px/s vNormal cap for bounce at low speed
+      const RAIL_BOUNCE_VN_HI    = 400;  // px/s vNormal cap for bounce at crush speed
 
       // ---------------------------- STATE
       const state = {
@@ -5080,13 +5087,11 @@
             c.angle += c.vy * 0.0008 + 0.04;
             if (state.failLevel < 8) setFailLevel(8);
 
-            // ---- RAIL CATCH — try to recapture the track mid-flight ----
-            // Procura o sample mais próximo num raio pequeno; decide entre
-            // aterrissar suave, quicar e perder energia, ou continuar voando.
+            // ---- RAIL CATCH — speed-dependent: land / bounce / smash ----
+            // speedT = 0 (low speed) … 1 (crush speed):
+            //   0 → easy soft landing, gentle bounce, no smash
+            //   1 → soft landing impossible, hard bounce narrower, smash likely
             if (path && path.pts.length > 0 && !c._railCatchCool) {
-              const RAIL_CATCH_RADIUS = 32;
-              const LANDING_VNORMAL_MAX = 380;
-              const BOUNCE_VNORMAL_MAX = 820;
               let bestI = -1,
                 bestD2 = RAIL_CATCH_RADIUS * RAIL_CATCH_RADIUS;
               const pts = path.pts;
@@ -5109,8 +5114,24 @@
                 const vTangent = c.vx * tx + c.vy * ty;
                 const vNormal = c.vx * nx + c.vy * ny;
                 const absVN = Math.abs(vNormal);
-                if (absVN < LANDING_VNORMAL_MAX && Math.abs(vTangent) > 60) {
-                  // Aterrissagem suave — volta para o trilho
+
+                // Normalised speed: 0 = gentle, 1 = crushing
+                const totalSpeed = Math.hypot(c.vx, c.vy);
+                const speedT = Math.max(
+                  0,
+                  Math.min(
+                    1,
+                    (totalSpeed - RAIL_SOFT_SPEED) / (RAIL_CRUSH_SPEED - RAIL_SOFT_SPEED),
+                  ),
+                );
+
+                // Landing window shrinks linearly to 0 at crush speed
+                const landingVNMax = RAIL_LANDING_VN_BASE * (1 - speedT);
+                // Bounce window shrinks from 820 → 400 as speed rises
+                const bounceVNMax = RAIL_BOUNCE_VN_LO + (RAIL_BOUNCE_VN_HI - RAIL_BOUNCE_VN_LO) * speedT;
+
+                if (absVN <= landingVNMax && Math.abs(vTangent) > 60) {
+                  // ATERRISSAGEM SUAVE — snap de volta ao trilho
                   c.flying = false;
                   c.x = sm.x;
                   c.y = sm.y;
@@ -5121,26 +5142,58 @@
                   c.lastDir = { x: tx, y: ty };
                   c._railCatchCool = 0.2;
                   if (state.failLevel > 1) setFailLevel(state.failLevel - 1);
+                  // Faster landing = more adrenaline reward
+                  const adrBonus = Math.round(speedT * 20);
+                  if (adrBonus > 0)
+                    state.scores.adrenaline = Math.min(100, state.scores.adrenaline + adrBonus);
                   spawnSparks(c.x, c.y, 10, "#2ED573");
                   spawnConfetti(c.x, c.y, 6);
                   showToast("🎯 DE VOLTA AOS TRILHOS!", "#2ED573");
                   try {
                     playBoostSound();
                   } catch {}
-                } else if (absVN < BOUNCE_VNORMAL_MAX) {
-                  // Quica no trilho — perde energia e segue voando
-                  const newVN = -vNormal * 0.55;
-                  const newVT = vTangent * 0.85;
+                } else if (absVN <= bounceVNMax) {
+                  // QUICOU — bounce com restitution e atrito dependentes da velocidade
+                  // Alto speedT → quique mais elástico (maior restitution) e mais atrito tangencial
+                  const restitution = 0.55 + speedT * 0.23; // 0.55 (suave) … 0.78 (forte)
+                  const friction = 0.85 - speedT * 0.20; // 0.85 (suave) … 0.65 (forte)
+                  const newVN = -vNormal * restitution;
+                  const newVT = vTangent * friction;
                   c.vx = newVT * tx + newVN * nx;
                   c.vy = newVT * ty + newVN * ny;
                   // empurra para fora para não re-colidir no mesmo frame
                   c.x = sm.x + nx * 6 * Math.sign(vNormal || 1);
                   c.y = sm.y + ny * 6 * Math.sign(vNormal || 1);
-                  c._railCatchCool = 0.15;
-                  spawnSparks(c.x, c.y, 6, "#FFA502");
-                  showToast("💥 QUICOU!", "#FFA502");
+                  // cooldown menor em velocidades altas (próximo impacto mais cedo)
+                  c._railCatchCool = 0.15 - speedT * 0.05;
+                  // Quique rápido escala o perigo
+                  if (speedT > 0.3) setFailLevel(Math.min(8, state.failLevel + 1));
+                  const sparkCount = Math.round(6 + speedT * 10);
+                  spawnSparks(c.x, c.y, sparkCount, "#FFA502");
+                  state.scores.chaos = Math.min(100, state.scores.chaos + Math.round(speedT * 8));
+                  if (speedT > 0.6) {
+                    showToast("💥 RONCOU NA GRADE!", "#FF4757");
+                  } else {
+                    showToast("💥 QUICOU!", "#FFA502");
+                  }
+                } else {
+                  // ESMAGOU — impacto violento demais; rebate com força excessiva
+                  // restitution > 1 propositalmente: o trilho "expulsa" o carrinho
+                  const smashRestitution = 1.2 + speedT * 0.6; // 1.2 … 1.8
+                  const newVN = -vNormal * smashRestitution;
+                  const newVT = vTangent * 0.35;
+                  c.vx = newVT * tx + newVN * nx;
+                  c.vy = newVT * ty + newVN * ny;
+                  c.x = sm.x + nx * 12 * Math.sign(vNormal || 1);
+                  c.y = sm.y + ny * 12 * Math.sign(vNormal || 1);
+                  c._railCatchCool = 0.08;
+                  setFailLevel(Math.min(9, state.failLevel + 2));
+                  spawnSparks(c.x, c.y, 20, "#FF4757");
+                  spawnSmoke(c.x, c.y, 6);
+                  state.scores.chaos = Math.min(100, state.scores.chaos + 15);
+                  state.nearMisses = (state.nearMisses || 0) + 1;
+                  showToast("💥 ESMAGOU!", "#FF4757");
                 }
-                // else: bateu forte demais — segue caindo até o ground impact (crash)
               }
             }
             if (c._railCatchCool) {
