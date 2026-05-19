@@ -427,6 +427,7 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 - [x] `admin.tsx` — `beforeLoad` envolto em try/catch; erro de rede redireciona para `/` em vez de mostrar tela branca
 - [x] Tutorial overlay em `play.html` — aparece automaticamente na Fase 1; 4 steps (boas-vindas, nós, lançar, G-force); botão Pular em cada step; persiste dispensa via `localStorage('cc_tutorial_seen')`
 - [x] Rail-catch refatorado com lógica speed-dependente — `speedT` normaliza a velocidade total entre `RAIL_SOFT_SPEED` (400 px/s) e `RAIL_CRUSH_SPEED` (1400 px/s); três outcomes: aterrissagem suave (janela de vNormal fecha com velocidade), quique (restitution 0.55→0.78, atrito 0.85→0.65, toast "RONCOU" em speedT>0.6), esmagamento (restitution >1 expulsa o carrinho, +fail level, smoke)
+- [x] Mobile MVP em `play.html` — viewport `device-width`; media query ≤767px: grid reordenado (tools vira strip horizontal inferior scrollável), rightpanel oculto, topbar compacta, levelPanel e legend-panel reposicionados; pointer events já funcionavam nativamente no mobile
 
 ### Pendente (pós-MVP / V2+)
 

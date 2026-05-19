@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>Crash Coaster — Protótipo MVP</title>
-    <meta name="viewport" content="width=1440" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -1529,6 +1529,56 @@
       .lp-btn:hover {
         background: rgba(255, 107, 214, 0.2);
         color: #ff6bd6;
+      }
+      /* ===== Mobile layout (≤ 767px) ===== */
+      @media (max-width: 767px) {
+        .app {
+          grid-template-columns: 1fr;
+          grid-template-rows: 52px 1fr auto 72px;
+          grid-template-areas:
+            "top"
+            "stage"
+            "tools"
+            "bottom";
+          gap: 6px;
+          padding: 6px;
+        }
+        /* Tools: horizontal scrollable strip */
+        .tools {
+          flex-direction: row;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          overflow-y: hidden;
+          height: auto;
+          padding: 6px 8px;
+          gap: 5px;
+          scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
+          border-radius: 14px;
+        }
+        .tools::-webkit-scrollbar { display: none; }
+        .tool {
+          min-width: 46px;
+          width: 46px;
+          height: 44px;
+          font-size: 8px;
+          flex-shrink: 0;
+        }
+        .tool svg { width: 18px; height: 18px; }
+        .tools .divider {
+          width: 1px;
+          height: 32px;
+          min-width: 1px;
+          margin: 0 3px;
+        }
+        /* Hide right panel — info visible in topbar */
+        .rightpanel { display: none; }
+        /* Topbar compact */
+        .topbar { padding: 0 10px; gap: 10px; border-radius: 12px; }
+        .logo .name { display: none; }
+        /* Adjust fixed panels */
+        #levelPanel { left: 8px; top: 60px; width: 200px; font-size: 11px; }
+        .legend-panel { left: 8px; }
       }
     </style>
   </head>
