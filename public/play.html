@@ -4404,6 +4404,65 @@
           ctx.beginPath();
           ctx.arc(13, 8, 2.5, 0, Math.PI * 2);
           ctx.fill();
+        } else if (skin === "skin_ghost") {
+          // Ghost skin — ethereal white/blue
+          ctx.fillStyle = c.alive ? "#B3ECFF" : "#5c3fb0";
+          roundRect(ctx, -22, -16, 44, 22, 6);
+          ctx.fill();
+          ctx.fillStyle = c.alive ? "rgba(70,220,255,0.5)" : "#3b2680";
+          ctx.fillRect(-22, -6, 44, 4);
+          // windows
+          ctx.fillStyle = c.alive ? "rgba(255,255,255,0.9)" : "#4a2aa6";
+          roundRect(ctx, -16, -12, 12, 8, 2); ctx.fill();
+          roundRect(ctx, 2, -12, 14, 8, 2); ctx.fill();
+          // ghost eyes
+          if (c.alive) {
+            ctx.fillStyle = "#001a33";
+            ctx.beginPath(); ctx.ellipse(-10, -8, 3, 4, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(9, -8, 3, 4, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#fff";
+            ctx.beginPath(); ctx.arc(-9, -9, 1.2, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(10, -9, 1.2, 0, Math.PI * 2); ctx.fill();
+          }
+          // wheels
+          ctx.fillStyle = c.alive ? "#5cc8e8" : "#3b2680";
+          ctx.beginPath(); ctx.arc(-13, 8, 6, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(13, 8, 6, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = c.alive ? "#B3ECFF" : "#4a2aa6";
+          ctx.beginPath(); ctx.arc(-13, 8, 2.5, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(13, 8, 2.5, 0, Math.PI * 2); ctx.fill();
+        } else if (skin === "skin_inferno") {
+          // Inferno skin — dark body with fire accents
+          ctx.fillStyle = c.alive ? "#1a0808" : "#5c3fb0";
+          roundRect(ctx, -22, -16, 44, 22, 6);
+          ctx.fill();
+          ctx.fillStyle = c.alive ? "#FF4757" : "#3b2680";
+          ctx.fillRect(-22, -6, 44, 4);
+          // windows
+          ctx.fillStyle = c.alive ? "#FF6B35" : "#4a2aa6";
+          roundRect(ctx, -16, -12, 12, 8, 2); ctx.fill();
+          roundRect(ctx, 2, -12, 14, 8, 2); ctx.fill();
+          // flame tongues on top
+          if (c.alive) {
+            const flameOffsets = [-8, 0, 8];
+            flameOffsets.forEach((fx, fi) => {
+              ctx.fillStyle = fi % 2 === 0 ? "#FFA502" : "#FF4757";
+              ctx.beginPath();
+              ctx.moveTo(fx, -16);
+              ctx.lineTo(fx + 3, -23);
+              ctx.lineTo(fx + 6, -16);
+              ctx.fill();
+            });
+          }
+          // wheels
+          ctx.fillStyle = "#2a0808";
+          ctx.beginPath(); ctx.arc(-13, 8, 6, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(13, 8, 6, 0, Math.PI * 2); ctx.fill();
+          if (c.alive) {
+            ctx.strokeStyle = "#FF4757"; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(-13, 8, 5, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(13, 8, 5, 0, Math.PI * 2); ctx.stroke();
+          }
         } else {
           // Default skin
           ctx.fillStyle = c.alive ? "#FF6BD6" : "#5c3fb0";
