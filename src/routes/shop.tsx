@@ -223,6 +223,44 @@ function ShopCard({
   );
 }
 
+type GachaResult = {
+  item_id: string;
+  tier: string;
+  duplicate: boolean;
+  coins_refund: number;
+  new_coins: number;
+};
+
+const TIER_COLORS: Record<string, string> = {
+  common: "#B7AEE0",
+  rare: "#70A1FF",
+  epic: "#8B5CF6",
+  legendary: "#FFA502",
+};
+const TIER_LABELS: Record<string, string> = {
+  common: "Comum",
+  rare: "Raro",
+  epic: "Épico",
+  legendary: "Lendário",
+};
+
+function tierColor(t: string) {
+  return TIER_COLORS[t] ?? "#fff";
+}
+function tierLabel(t: string) {
+  return TIER_LABELS[t] ?? t;
+}
+function gachaItemEmoji(id: string) {
+  return SHOP_ITEMS.find((i) => i.id === id)?.emoji ?? "🎁";
+}
+function gachaItemName(id: string) {
+  return SHOP_ITEMS.find((i) => i.id === id)?.name ?? id;
+}
+function gachaItemEquippable(id: string) {
+  const item = SHOP_ITEMS.find((i) => i.id === id);
+  return item?.category === "skin" || item?.category === "scenario";
+}
+
 export function ShopPage() {
   const navigate = useNavigate();
   const [coins, setCoins] = useState(0);
@@ -239,6 +277,8 @@ export function ShopPage() {
   const [equippedScenario, setEquippedScenario] = useState<string>(() =>
     typeof window !== "undefined" ? (localStorage.getItem("cc_scenario") ?? "") : "",
   );
+  const [pulling, setPulling] = useState(false);
+  const [gachaResult, setGachaResult] = useState<GachaResult | null>(null);
 
   function showToast(msg: string, ok = true) {
     setToast({ msg, ok });
@@ -331,15 +371,45 @@ export function ShopPage() {
     }
   }
 
+  async function handleGacha() {
+    if (!userId || pulling || coins < 150) return;
+    setPulling(true);
+    setGachaResult(null);
+    try {
+      const { data, error: err } = await supabase.rpc("gacha_pull", {
+        p_user_id: userId,
+        p_crate_cost: 150,
+      });
+      if (err) throw err;
+      const result = data as GachaResult;
+      setCoins(result.new_coins);
+      if (!result.duplicate) setInventory((prev) => [...prev, result.item_id]);
+      setGachaResult(result);
+      showToast(
+        result.duplicate
+          ? `${gachaItemEmoji(result.item_id)} Duplicata! +${result.coins_refund} 🪙 de volta`
+          : `✨ ${tierLabel(result.tier)}! ${gachaItemName(result.item_id)} desbloqueado!`,
+      );
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("insufficient_coins")) showToast("Moedas insuficientes! 🪙", false);
+      else showToast("Erro ao abrir cápsula. Tente novamente.", false);
+    } finally {
+      setPulling(false);
+    }
+  }
+
   const badges = SHOP_ITEMS.filter((i) => i.category === "badge");
-  const skins = SHOP_ITEMS.filter((i) => i.category === "skin");
+  const skins = SHOP_ITEMS.filter((i) => i.category === "skin" && !i.gachaOnly);
   const scenarios = SHOP_ITEMS.filter((i) => i.category === "scenario");
 
   return (
     <div style={S.page}>
       <style>{`
-        @keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes toastIn { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes slideIn  { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes toastIn  { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes gachaPop { from{opacity:0;transform:scale(.6)} to{opacity:1;transform:scale(1)} }
+        @keyframes gachaSpin{ 0%{transform:rotate(0deg) scale(1.1)} 100%{transform:rotate(720deg) scale(1)} }
       `}</style>
 
       {/* Toast */}
@@ -527,7 +597,228 @@ export function ShopPage() {
           </div>
         ) : (
           <>
-            {/* Badges */}
+            {/* ===== GACHA SECTION ===== */}
+            <div>
+              <div
+                style={{
+                  fontSize: 12,
+                  letterSpacing: 1,
+                  textTransform: "uppercase" as const,
+                  color: "#B7AEE0",
+                  fontWeight: 700,
+                  marginBottom: 16,
+                }}
+              >
+                🎰 Cápsula Aleatória
+              </div>
+
+              {/* Crate card */}
+              <div
+                style={{
+                  background: "linear-gradient(135deg,#2e0050 0%,#1a0e50 100%)",
+                  border: "2px solid #8B5CF6",
+                  borderRadius: 24,
+                  padding: "24px 28px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 24,
+                  flexWrap: "wrap" as const,
+                  boxShadow: "0 8px 0 rgba(0,0,0,.35), 0 0 40px rgba(139,92,246,.12)",
+                }}
+              >
+                {/* Icon */}
+                <div
+                  style={{
+                    fontSize: 60,
+                    lineHeight: 1,
+                    filter: "drop-shadow(0 0 18px #8B5CF6)",
+                    animation: pulling ? "gachaSpin 1.2s ease-in-out" : undefined,
+                  }}
+                >
+                  🎁
+                </div>
+
+                {/* Info */}
+                <div style={{ flex: 1, minWidth: 200 }}>
+                  <div
+                    style={{
+                      fontFamily: "'Fredoka',system-ui,sans-serif",
+                      fontWeight: 700,
+                      fontSize: 22,
+                      color: "#fff",
+                      marginBottom: 6,
+                    }}
+                  >
+                    Cápsula do Caos
+                  </div>
+                  <div
+                    style={{ fontSize: 13, color: "#B7AEE0", lineHeight: 1.6, marginBottom: 12 }}
+                  >
+                    Recompensa aleatória com raridade sorteada.{" "}
+                    <span style={{ color: "#8B5CF6", fontWeight: 700 }}>
+                      👻 Fantasma e 🔥 Inferno
+                    </span>{" "}
+                    só aparecem aqui!
+                  </div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
+                    {(
+                      [
+                        { label: "Comum", pct: "60%", color: "#B7AEE0" },
+                        { label: "Raro", pct: "25%", color: "#70A1FF" },
+                        { label: "Épico", pct: "10%", color: "#8B5CF6" },
+                        { label: "Lendário", pct: "5%", color: "#FFA502" },
+                      ] as const
+                    ).map((r) => (
+                      <div
+                        key={r.label}
+                        style={{
+                          background: "rgba(0,0,0,.3)",
+                          border: `1px solid ${r.color}50`,
+                          borderRadius: 8,
+                          padding: "3px 10px",
+                          fontSize: 11,
+                          fontFamily: "'Fredoka',system-ui,sans-serif",
+                          fontWeight: 700,
+                          color: r.color,
+                        }}
+                      >
+                        {r.label} {r.pct}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Buy button */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column" as const,
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: "'Fredoka',system-ui,sans-serif",
+                      fontWeight: 700,
+                      fontSize: 22,
+                      color: "#FFA502",
+                    }}
+                  >
+                    🪙 150
+                  </div>
+                  <button
+                    disabled={!userId || pulling || coins < 150}
+                    onClick={handleGacha}
+                    style={{
+                      padding: "12px 28px",
+                      borderRadius: 14,
+                      border: "2px solid #8B5CF6",
+                      background: pulling
+                        ? "rgba(139,92,246,.3)"
+                        : "linear-gradient(180deg,#8B5CF6,#5b21b6)",
+                      color: "#fff",
+                      fontFamily: "'Fredoka',system-ui,sans-serif",
+                      fontWeight: 700,
+                      fontSize: 16,
+                      cursor: !userId || coins < 150 || pulling ? "not-allowed" : "pointer",
+                      opacity: !userId || coins < 150 ? 0.5 : 1,
+                      boxShadow: pulling ? "none" : "0 4px 0 #3b0f8a",
+                      transition: "all .15s",
+                    }}
+                  >
+                    {pulling ? "Abrindo..." : "🎰 Abrir Cápsula"}
+                  </button>
+                  {userId && coins < 150 && (
+                    <div style={{ fontSize: 11, color: "#FF4757" }}>Moedas insuficientes</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Gacha reveal */}
+              {gachaResult && (
+                <div
+                  style={{
+                    marginTop: 14,
+                    padding: "20px 24px",
+                    borderRadius: 20,
+                    background: `linear-gradient(135deg,${tierColor(gachaResult.tier)}18,rgba(14,7,38,.95))`,
+                    border: `2px solid ${tierColor(gachaResult.tier)}`,
+                    boxShadow: `0 0 32px ${tierColor(gachaResult.tier)}40`,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 20,
+                    animation: "gachaPop .4s cubic-bezier(.34,1.56,.64,1) both",
+                    flexWrap: "wrap" as const,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 52,
+                      filter: `drop-shadow(0 0 14px ${tierColor(gachaResult.tier)})`,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {gachaItemEmoji(gachaResult.item_id)}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div
+                      style={{
+                        fontFamily: "'Fredoka',system-ui,sans-serif",
+                        fontWeight: 700,
+                        fontSize: 12,
+                        color: tierColor(gachaResult.tier),
+                        textTransform: "uppercase" as const,
+                        letterSpacing: 1,
+                      }}
+                    >
+                      {tierLabel(gachaResult.tier)}
+                      {gachaResult.duplicate ? " · DUPLICATA" : " · NOVO!"}
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: "'Fredoka',system-ui,sans-serif",
+                        fontWeight: 700,
+                        fontSize: 20,
+                        color: "#fff",
+                        marginTop: 2,
+                      }}
+                    >
+                      {gachaItemName(gachaResult.item_id)}
+                    </div>
+                    {gachaResult.duplicate && (
+                      <div style={{ fontSize: 13, color: "#B7AEE0", marginTop: 4 }}>
+                        Você já tinha esse item → recebeu 🪙 +{gachaResult.coins_refund} de volta
+                      </div>
+                    )}
+                  </div>
+                  {!gachaResult.duplicate && gachaItemEquippable(gachaResult.item_id) && (
+                    <button
+                      onClick={() => {
+                        const item = SHOP_ITEMS.find((i) => i.id === gachaResult.item_id);
+                        if (item) handleEquip(item);
+                      }}
+                      style={{
+                        padding: "9px 20px",
+                        borderRadius: 10,
+                        border: "none",
+                        background: tierColor(gachaResult.tier),
+                        color: "#0E0726",
+                        fontFamily: "'Fredoka',system-ui,sans-serif",
+                        fontWeight: 700,
+                        fontSize: 14,
+                        cursor: "pointer",
+                        flexShrink: 0,
+                      }}
+                    >
+                      Equipar
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* ===== Badges ===== */}
             <div>
               <div
                 style={{

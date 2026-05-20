@@ -440,12 +440,12 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 - [x] GD-3: Creativity score rebalanceado com 4 componentes independentes (max 100): gate(10 se ≥4 nós) + variety(0-30: tipos únicos×9) + density(0-20: pico em 50% especiais) + elegance(0-40: coeficiente de variação dos espaçamentos entre nós — nós distribuídos uniformemente = alta elegância)
 - [x] GD-10: Onboarding de nós especiais — (a) step 5 no tutorial da Fase 1 apresenta nós especiais com atalhos de teclado; (b) micro-tooltip contextual de 3s na primeira seleção de cada ferramenta especial via botão ou teclado — persiste em `localStorage('cc_seen_tools')`
 - [x] Replay/GIF (MVP): MediaRecorder captura canvas como WebM; preview inline (`<video>`) no modal de resultado para todos os runs (não só crashes); botão "📹 Baixar Replay"; banner "● GRAVANDO CRASH" no descarrilamento; "Trilha de fundo" removido do roadmap
+- [x] Skins + gacha: `skin_ghost` (👻 epic, gacha-only) e `skin_inferno` (🔥 legendary, gacha-only) adicionados a `shop-items.ts` e desenhados em `play.html`; seção Gacha na loja com crate card, rarity percentages (60/25/10/5%), `gacha_pull` RPC (`supabase/migrations/20260520000001_gacha_pull.sql`), reveal card com glow por tier, botão de equipar; `ShopItem.gachaOnly` flag oculta itens gacha da loja normal
 
 ### Pendente (pós-MVP / V2+)
 
 - [ ] Migrar engine para PixiJS
 - [ ] Zustand para state management
-- [ ] Skins e sistema de gacha
 - [ ] Mobile-first (touch events, viewport responsivo)
 - [ ] Creator economy / marketplace
 - [ ] Temporadas e eventos

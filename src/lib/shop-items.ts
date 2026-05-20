@@ -6,6 +6,7 @@ export type ShopItem = {
   category: "badge" | "skin" | "scenario";
   emoji: string;
   color: string;
+  gachaOnly?: boolean; // true = only obtainable via gacha crate
 };
 
 export const SHOP_ITEMS: ShopItem[] = [
@@ -46,7 +47,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     emoji: "🚀",
     color: "#70A1FF",
   },
-  // Skins
+  // Skins (purchasable)
   {
     id: "skin_candy",
     name: "Carrinho Candy",
@@ -73,6 +74,27 @@ export const SHOP_ITEMS: ShopItem[] = [
     category: "skin",
     emoji: "🚀",
     color: "#FF4757",
+  },
+  // Skins (gacha-exclusive)
+  {
+    id: "skin_ghost",
+    name: "Carrinho Fantasma",
+    description: "Exclusivo de cápsula — etéreo e assustador",
+    cost: 0,
+    category: "skin",
+    emoji: "👻",
+    color: "#B3ECFF",
+    gachaOnly: true,
+  },
+  {
+    id: "skin_inferno",
+    name: "Carrinho Inferno",
+    description: "Lendário exclusivo de cápsula — chamas e destruição",
+    cost: 0,
+    category: "skin",
+    emoji: "🔥",
+    color: "#FF4757",
+    gachaOnly: true,
   },
   // Cenários
   {
