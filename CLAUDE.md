@@ -394,8 +394,6 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 ### Pendente (MVP restante)
 
 - [ ] Perfil: animação de ganho de XP/coins ao receber recompensas
-- [ ] Geração de GIF/replay
-- [ ] Trilha de fundo (música)
 
 ### Implementado (sprint recente)
 
@@ -441,6 +439,7 @@ O Worker intercepta todas as requests antes do TanStack SSR:
 - [x] GD-8: Botão "Próxima Fase →" no modal de resultado — aparece quando `currentLevelId !== null` e `stars >= 1`; navega para `?level={id+1}`
 - [x] GD-3: Creativity score rebalanceado com 4 componentes independentes (max 100): gate(10 se ≥4 nós) + variety(0-30: tipos únicos×9) + density(0-20: pico em 50% especiais) + elegance(0-40: coeficiente de variação dos espaçamentos entre nós — nós distribuídos uniformemente = alta elegância)
 - [x] GD-10: Onboarding de nós especiais — (a) step 5 no tutorial da Fase 1 apresenta nós especiais com atalhos de teclado; (b) micro-tooltip contextual de 3s na primeira seleção de cada ferramenta especial via botão ou teclado — persiste em `localStorage('cc_seen_tools')`
+- [x] Replay/GIF (MVP): MediaRecorder captura canvas como WebM; preview inline (`<video>`) no modal de resultado para todos os runs (não só crashes); botão "📹 Baixar Replay"; banner "● GRAVANDO CRASH" no descarrilamento; "Trilha de fundo" removido do roadmap
 
 ### Pendente (pós-MVP / V2+)
 
@@ -536,11 +535,11 @@ npx wrangler deploy
 
 ## 12. Roadmap
 
-| Fase    | Foco                                                                                            |
-| ------- | ----------------------------------------------------------------------------------------------- |
-| **MVP** | ~~Campanha~~ ✅ · ~~Física melhorada~~ ✅ · ~~Navegação SPA~~ ✅ · Replay/GIF · Trilha de fundo |
-| **V2**  | Skins + gacha, PixiJS, temporadas, mobile                                                       |
-| **V3**  | Creator economy, marketplace, desafios especiais                                                |
+| Fase    | Foco                                                                                 |
+| ------- | ------------------------------------------------------------------------------------ |
+| **MVP** | ~~Campanha~~ ✅ · ~~Física melhorada~~ ✅ · ~~Navegação SPA~~ ✅ · ~~Replay/GIF~~ ✅ |
+| **V2**  | Skins + gacha, PixiJS, temporadas, mobile                                            |
+| **V3**  | Creator economy, marketplace, desafios especiais                                     |
 
 ---
 

@@ -2038,7 +2038,7 @@
         <div class="watermark">CRASH<br />COASTER<small>· theme park toy ·</small></div>
 
         <div class="replay" id="replay">
-          <span class="recdot"></span>GIF CAPTURADO · QUASE-ACIDENTE
+          <span class="recdot"></span><span id="replayLabel">● REC</span>
         </div>
         <div class="toast" id="toast">DESCARRILOU!</div>
         <div class="ghostly" id="ghostly">👻 R.I.P.</div>
@@ -2417,6 +2417,11 @@
         <div id="rcReward" style="display:none;text-align:center;margin:6px 0 2px;font-family:'Fredoka',system-ui,sans-serif;font-weight:700;font-size:19px;color:#FFCB6B">
           <span id="rcRewardXP">+0 XP</span>&nbsp;&nbsp;<span id="rcRewardCoins">🪙 +0</span>
         </div>
+        <!-- Replay inline preview -->
+        <div id="rcVideoWrap" style="display:none;margin:10px auto 2px;border-radius:12px;overflow:hidden;max-width:300px;border:2px solid #4a2aa6">
+          <video id="rcVideoPlayer" muted controls playsinline loop
+            style="width:100%;display:block;background:#000;max-height:160px;object-fit:cover"></video>
+        </div>
         <div class="rc-breakdown" id="rcBreakdown"></div>
         <div class="rc-buttons">
           <button class="bbtn share" id="rcShareBtn">
@@ -2441,7 +2446,7 @@
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
               <path d="M12 16l-5-5 1.4-1.4 2.6 2.6V4h2v8.2l2.6-2.6L17 11l-5 5zm-7 4v-2h14v2H5z" />
             </svg>
-            Salvar Vídeo
+            📹 Baixar Replay
           </button>
           <button class="bbtn reset" id="rcBuildBtn">
             <svg
@@ -4770,6 +4775,7 @@
           spawnBolts(state.cart.x, state.cart.y, 6);
           state.scores.chaos = Math.min(100, state.scores.chaos + 30);
           document.getElementById("replay").classList.add("show");
+          document.getElementById("replayLabel").textContent = "● GRAVANDO CRASH";
         }
         if (L === 8 && state.cart) {
           showToast("💥 EXPLOSÃO ESPETACULAR!", "#FF7F50");
@@ -5625,14 +5631,22 @@
 
         modal.classList.add("show");
 
-        // Video download button
+        // Replay: inline preview + download (all runs, not just crashes)
         const downloadBtn = document.getElementById("rcDownloadBtn");
+        const videoWrap = document.getElementById("rcVideoWrap");
+        const videoPlayer = document.getElementById("rcVideoPlayer");
         downloadBtn.style.display = "none";
-        if (crashed && _recordedChunks.length > 0) {
+        videoWrap.style.display = "none";
+        if (_recordedChunks.length > 0) {
           const chunks = [..._recordedChunks];
           _recordedChunks = [];
           const blob = new Blob(chunks, { type: "video/webm" });
           const videoUrl = URL.createObjectURL(blob);
+          // Inline preview
+          videoPlayer.src = videoUrl;
+          videoWrap.style.display = "";
+          videoPlayer.play().catch(() => {});
+          // Download button
           downloadBtn.style.display = "";
           downloadBtn.onclick = () => {
             const a = document.createElement("a");
@@ -6199,11 +6213,12 @@
           })
           .catch(() => {
             const el = document.getElementById("replay");
+            const lbl = document.getElementById("replayLabel");
             el.classList.add("show");
-            el.innerHTML = '<span class="recdot"></span>LINK: ' + url.slice(0, 40) + "...";
+            lbl.textContent = "LINK: " + url.slice(0, 36) + "...";
             setTimeout(() => {
               el.classList.remove("show");
-              el.innerHTML = '<span class="recdot"></span>GIF CAPTURADO';
+              lbl.textContent = "● REC";
             }, 2500);
           });
       });
