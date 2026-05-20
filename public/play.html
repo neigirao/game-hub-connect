@@ -1368,6 +1368,12 @@
         margin-top: 14px;
         flex-wrap: wrap;
       }
+      .bbtn.next-level {
+        background: linear-gradient(180deg, #2ED573, #18a348);
+        border-color: #0a7a2e;
+        color: #0E0726;
+        font-weight: 800;
+      }
       .bbtn.download {
         background: linear-gradient(180deg, #2ed573, #1a8a46);
         border-color: #7fffc4;
@@ -2032,7 +2038,7 @@
         <div class="watermark">CRASH<br />COASTER<small>· theme park toy ·</small></div>
 
         <div class="replay" id="replay">
-          <span class="recdot"></span>GIF CAPTURADO · QUASE-ACIDENTE
+          <span class="recdot"></span><span id="replayLabel">● REC</span>
         </div>
         <div class="toast" id="toast">DESCARRILOU!</div>
         <div class="ghostly" id="ghostly">👻 R.I.P.</div>
@@ -2068,6 +2074,10 @@
             <div class="stat">
               <div class="k">Status</div>
               <div class="v safe" id="statusStat">PRONTO</div>
+            </div>
+            <div class="stat" id="hudStarStat" style="display:none">
+              <div class="k">Score</div>
+              <div class="v" id="hudStarVal" style="font-size:14px">☆☆☆ 0</div>
             </div>
           </div>
         </div>
@@ -2404,6 +2414,14 @@
           <div class="star"></div>
           <div class="star"></div>
         </div>
+        <div id="rcReward" style="display:none;text-align:center;margin:6px 0 2px;font-family:'Fredoka',system-ui,sans-serif;font-weight:700;font-size:19px;color:#FFCB6B">
+          <span id="rcRewardXP">+0 XP</span>&nbsp;&nbsp;<span id="rcRewardCoins">🪙 +0</span>
+        </div>
+        <!-- Replay inline preview -->
+        <div id="rcVideoWrap" style="display:none;margin:10px auto 2px;border-radius:12px;overflow:hidden;max-width:300px;border:2px solid #4a2aa6">
+          <video id="rcVideoPlayer" muted controls playsinline loop
+            style="width:100%;display:block;background:#000;max-height:160px;object-fit:cover"></video>
+        </div>
         <div class="rc-breakdown" id="rcBreakdown"></div>
         <div class="rc-buttons">
           <button class="bbtn share" id="rcShareBtn">
@@ -2428,7 +2446,7 @@
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
               <path d="M12 16l-5-5 1.4-1.4 2.6 2.6V4h2v8.2l2.6-2.6L17 11l-5 5zm-7 4v-2h14v2H5z" />
             </svg>
-            Salvar Vídeo
+            📹 Baixar Replay
           </button>
           <button class="bbtn reset" id="rcBuildBtn">
             <svg
@@ -2459,6 +2477,9 @@
               <path d="M9 4v13M15 7v13" />
             </svg>
             Campanha
+          </button>
+          <button class="bbtn next-level" id="rcNextLevelBtn" style="display:none">
+            Próxima Fase →
           </button>
           <button class="bbtn launch" id="rcPlayAgainBtn">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
@@ -2502,6 +2523,14 @@
       </div>
     </div>
 
+    <!-- GD-10: contextual node tooltip (first-time use) -->
+    <div id="nodeTip" style="display:none;position:fixed;z-index:500;background:rgba(14,7,38,.95);
+      border:1.5px solid #4a2aa6;border-radius:10px;padding:8px 14px;font-size:13px;color:#fff;
+      font-family:'Fredoka',system-ui,sans-serif;max-width:220px;pointer-events:none;
+      box-shadow:0 4px 0 rgba(0,0,0,.4);transition:opacity .25s">
+      <span id="nodeTipText"></span>
+    </div>
+
     <script type="module">
       // ============================================================
       // CRASH COASTER — MVP
@@ -2513,6 +2542,7 @@
       let currentUser = null;
       let currentLevelId = null; // set when loaded via ?level= param
       let levelStar1 = null, levelStar2 = null, levelStar3 = null; // score thresholds for stars
+      let _rewardPromise = null; // Promise<{xp,coins}|null> — resolved after current run reward
       let currentBlueprintId = null; // set when a blueprint is saved or loaded
       let currentDailyDate = null; // set when loaded via ?daily= param
       let _mediaRecorder = null;
@@ -2657,6 +2687,41 @@
         g.connect(ac.destination);
         osc.start();
         osc.stop(ac.currentTime + 0.3);
+      }
+
+      function playLauncherSound() {
+        const ac = getAC();
+        // Low mechanical thud (spring release)
+        const bufSize = Math.floor(ac.sampleRate * 0.12);
+        const buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) {
+          d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 1.5) * 0.6;
+        }
+        const src = ac.createBufferSource();
+        src.buffer = buf;
+        const filter = ac.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.value = 350;
+        const g = ac.createGain();
+        g.gain.setValueAtTime(0.8, ac.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.15);
+        src.connect(filter);
+        filter.connect(g);
+        g.connect(ac.destination);
+        src.start();
+        // Whoosh tail
+        const osc = ac.createOscillator();
+        const og = ac.createGain();
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(550, ac.currentTime + 0.04);
+        osc.frequency.linearRampToValueAtTime(180, ac.currentTime + 0.38);
+        og.gain.setValueAtTime(0.14, ac.currentTime + 0.04);
+        og.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.38);
+        osc.connect(og);
+        og.connect(ac.destination);
+        osc.start(ac.currentTime + 0.04);
+        osc.stop(ac.currentTime + 0.38);
       }
 
       function playFireworkSound() {
@@ -3156,7 +3221,7 @@
       }
 
       async function awardRewards(crashed) {
-        if (!sbClient || !currentUser) return;
+        if (!sbClient || !currentUser) return null;
         const total = Math.round(
           (state.scores.survival +
             state.scores.adrenaline +
@@ -3175,17 +3240,18 @@
           if (data) {
             const xp = data.xp_gained,
               coins = data.coins_gained;
-            showToast(`+${xp} XP  🪙 +${coins}`, "#FF6BD6");
             try {
               sessionStorage.setItem(
                 "cc_last_reward",
                 JSON.stringify({ xp, coins, ts: Date.now() }),
               );
             } catch (_) {}
+            return { xp, coins };
           }
         } catch (e) {
           console.warn("[CC] awardRewards failed:", e);
         }
+        return null;
       }
 
       // Inicializa Supabase em background
@@ -4709,6 +4775,7 @@
           spawnBolts(state.cart.x, state.cart.y, 6);
           state.scores.chaos = Math.min(100, state.scores.chaos + 30);
           document.getElementById("replay").classList.add("show");
+          document.getElementById("replayLabel").textContent = "● GRAVANDO CRASH";
         }
         if (L === 8 && state.cart) {
           showToast("💥 EXPLOSÃO ESPETACULAR!", "#FF7F50");
@@ -4931,13 +4998,39 @@
                 state.scores.smoothness = Math.min(100, state.scores.smoothness + 0.5 * dt);
               }
               state.scores.survival = Math.min(100, state.scores.survival + 8 * dt);
-              const _specials = state.nodes.filter((n) => n.kind !== "normal");
-              const _uniqueKinds = new Set(_specials.map((n) => n.kind)).size;
-              const _diversityBonus = _uniqueKinds >= 3 && _specials.length >= 4 ? 20 : 0;
-              state.scores.creativity = Math.min(
-                100,
-                30 + state.nodes.length * 4 + _specials.length * 5 + _diversityBonus,
-              );
+              // GD-3: Rebalanced creativity — 4 independent components (max 100)
+              {
+                const _N = state.nodes.length;
+                const _sp = state.nodes.filter((n) => n.kind !== "normal");
+                const _uk = new Set(_sp.map((n) => n.kind)).size;
+                // 1. Gate: need ≥4 nodes to score anything meaningful
+                const _gate = _N >= 4 ? 10 : 0;
+                // 2. Variety (0-30): unique special types × 9, capped at 30
+                const _variety = Math.min(30, _uk * 9);
+                // 3. Special density (0-20): peaks at 50% specials — penalizes 0% and 100%
+                const _ratio = _N > 0 ? _sp.length / _N : 0;
+                const _density = Math.round(20 * Math.min(1, 4 * _ratio * (1 - _ratio)));
+                // 4. Elegance (0-40): coefficient of variation of inter-node spacings
+                //    Low CV = evenly spread nodes = high elegance
+                let _elScore = 0;
+                if (_N >= 3) {
+                  let _spacings = [];
+                  for (let _ni = 1; _ni < _N; _ni++) {
+                    _spacings.push(Math.hypot(
+                      state.nodes[_ni].x - state.nodes[_ni - 1].x,
+                      state.nodes[_ni].y - state.nodes[_ni - 1].y,
+                    ));
+                  }
+                  const _mean = _spacings.reduce((a, b) => a + b, 0) / _spacings.length;
+                  if (_mean > 0) {
+                    const _cv = Math.sqrt(
+                      _spacings.reduce((a, b) => a + (b - _mean) ** 2, 0) / _spacings.length,
+                    ) / _mean;
+                    _elScore = Math.round(40 * Math.max(0, 1 - _cv * 0.7));
+                  }
+                }
+                state.scores.creativity = Math.min(100, _gate + _variety + _density + _elScore);
+              }
 
               // Fail level escalation
               let L = 0;
@@ -4972,9 +5065,9 @@
                 c.vx = dir.x * Math.max(Math.abs(c.v), 350) * 1.2;
                 c.vy = -700;
                 spawnSparks(c.x, c.y, 10, "#2ED573");
-                spawnConfetti(c.x, c.y, 12);
-                showToast("🚀 CATAPULTADO!", "#2ED573");
-                playBoostSound();
+                spawnSmoke(c.x - dir.x * 18, c.y, 4);
+                showToast("🚀 CATAPULTADO! +horizontal", "#2ED573");
+                playLauncherSound();
               }
               // Reset launch cooldown when far from launcher zone
               if (c._launchCool && sample.kind !== "launcher") c._launchCool = false;
@@ -5005,13 +5098,15 @@
               if (sample.kind === "spring" && !c._springCool) {
                 c._springCool = true;
                 c.flying = true;
-                const dir = c.lastDir || { x: 1, y: 0 };
-                c.vx = dir.x * Math.abs(c.v) * 0.6;
-                c.vy = -1100;
-                spawnSparks(c.x, c.y, 14, "#A8FF78");
-                spawnConfetti(c.x, c.y, 16);
+                c.vx = 0; // pure vertical — no horizontal carry
+                c.vy = -1200;
+                // Vertical burst of green sparks
+                for (let _si = 0; _si < 6; _si++) {
+                  spawnSparks(c.x + (Math.random() - 0.5) * 12, c.y, 2, "#A8FF78");
+                }
+                spawnConfetti(c.x, c.y, 20);
                 playSpringSound();
-                showToast("🟢 TRAMPOLIM!", "#A8FF78");
+                showToast("🟢 TRAMPOLIM! +altitude", "#A8FF78");
               }
               if (c._springCool && sample.kind !== "spring") c._springCool = false;
 
@@ -5427,6 +5522,19 @@
               `<span style="opacity:${t>=levelStar3?1:0.5}">${s3} ${levelStar3}+</span>`;
           }
         }
+        // GD-2: HUD star indicator (visible in test mode)
+        const _hudStarStat = document.getElementById("hudStarStat");
+        const _hudStarVal = document.getElementById("hudStarVal");
+        if (_hudStarStat && _hudStarVal) {
+          if (state.mode === "test") {
+            _hudStarStat.style.display = "";
+            const t = Math.round(total);
+            const starsStr = t >= 75 ? "⭐⭐⭐" : t >= 55 ? "⭐⭐☆" : t >= 25 ? "⭐☆☆" : "☆☆☆";
+            _hudStarVal.textContent = starsStr + " " + t;
+          } else {
+            _hudStarStat.style.display = "none";
+          }
+        }
 
         document.getElementById("nodeCount").textContent =
           `${state.nodes.length} nós · ${estimateLength() | 0}m`;
@@ -5480,7 +5588,7 @@
           document.getElementById("bestScore").textContent = total + " pts";
         }
         submitScore(currentBlueprintId);
-        awardRewards(crashed);
+        _rewardPromise = awardRewards(crashed);
         setTimeout(() => showRunComplete(crashed), crashed ? 1800 : 600);
       }
 
@@ -5523,14 +5631,22 @@
 
         modal.classList.add("show");
 
-        // Video download button
+        // Replay: inline preview + download (all runs, not just crashes)
         const downloadBtn = document.getElementById("rcDownloadBtn");
+        const videoWrap = document.getElementById("rcVideoWrap");
+        const videoPlayer = document.getElementById("rcVideoPlayer");
         downloadBtn.style.display = "none";
-        if (crashed && _recordedChunks.length > 0) {
+        videoWrap.style.display = "none";
+        if (_recordedChunks.length > 0) {
           const chunks = [..._recordedChunks];
           _recordedChunks = [];
           const blob = new Blob(chunks, { type: "video/webm" });
           const videoUrl = URL.createObjectURL(blob);
+          // Inline preview
+          videoPlayer.src = videoUrl;
+          videoWrap.style.display = "";
+          videoPlayer.play().catch(() => {});
+          // Download button
           downloadBtn.style.display = "";
           downloadBtn.onclick = () => {
             const a = document.createElement("a");
@@ -5567,6 +5683,42 @@
         if (total > 25) setTimeout(() => starEls[0]?.classList.add("on"), 500);
         if (total > 55) setTimeout(() => starEls[1]?.classList.add("on"), 800);
         if (total > 75) setTimeout(() => starEls[2]?.classList.add("on"), 1100);
+
+        // GD-1: show XP/coins reward in modal
+        document.getElementById("rcReward").style.display = "none";
+        if (_rewardPromise) {
+          _rewardPromise.then((r) => {
+            if (r) _applyModalReward(r.xp, r.coins);
+          });
+        }
+
+        // GD-8: "Próxima Fase →" button in campaign mode
+        const nextLvlBtn = document.getElementById("rcNextLevelBtn");
+        const earnedStars = total >= 75 ? 3 : total >= 55 ? 2 : total >= 25 ? 1 : 0;
+        if (currentLevelId !== null && earnedStars >= 1) {
+          nextLvlBtn.style.display = "";
+          nextLvlBtn.onclick = () => {
+            window.location.href = `/play.html?level=${currentLevelId + 1}`;
+          };
+        } else {
+          nextLvlBtn.style.display = "none";
+        }
+      }
+
+      function _applyModalReward(xp, coins) {
+        const el = document.getElementById("rcReward");
+        if (!el) return;
+        el.style.display = "";
+        const xpEl = document.getElementById("rcRewardXP");
+        const coinsEl = document.getElementById("rcRewardCoins");
+        let cx = 0, cc = 0;
+        const iv = setInterval(() => {
+          cx = Math.min(xp, cx + Math.max(1, Math.ceil(xp / 20)));
+          cc = Math.min(coins, cc + Math.max(1, Math.ceil(coins / 20)));
+          xpEl.textContent = `+${cx} XP`;
+          coinsEl.textContent = `🪙 +${cc}`;
+          if (cx >= xp && cc >= coins) clearInterval(iv);
+        }, 40);
       }
 
       // ---------------------------- INPUT
@@ -5781,6 +5933,7 @@
             return;
           }
           state.tool = t;
+          showNodeTip(t);
           document.querySelectorAll("#tools .tool").forEach((x) => {
             if (x.dataset.tool === "loop") return;
             x.classList.remove("active");
@@ -5960,6 +6113,7 @@
         };
         if (map[e.key]) {
           state.tool = map[e.key];
+          showNodeTip(map[e.key]);
           document.querySelectorAll("#tools .tool").forEach((x) => {
             if (x.dataset.tool === "loop") return;
             x.classList.toggle("active", x.dataset.tool === state.tool);
@@ -6059,11 +6213,12 @@
           })
           .catch(() => {
             const el = document.getElementById("replay");
+            const lbl = document.getElementById("replayLabel");
             el.classList.add("show");
-            el.innerHTML = '<span class="recdot"></span>LINK: ' + url.slice(0, 40) + "...";
+            lbl.textContent = "LINK: " + url.slice(0, 36) + "...";
             setTimeout(() => {
               el.classList.remove("show");
-              el.innerHTML = '<span class="recdot"></span>GIF CAPTURADO';
+              lbl.textContent = "● REC";
             }, 2500);
           });
       });
@@ -6175,11 +6330,52 @@
       }
 
       // ---------------------------- TUTORIAL
+      // ======================== GD-10: CONTEXTUAL NODE TOOLTIPS
+      const NODE_TIPS = {
+        booster:    "⚡ Booster — acelera o carrinho ao passar",
+        brake:      "🛑 Freio — desacelera antes de curvas perigosas",
+        launcher:   "🚀 Lançador — catapulta diagonalmente em alta velocidade",
+        "loop-node":"🌀 Looping — precisa de 50+ km/h para completar",
+        spring:     "🟢 Trampolim — lança verticalmente, ganhe altitude",
+        firework:   "🎆 Fogos — explosão de confetes e bônus de caos",
+        ice:        "🧊 Gelo — superfície escorregadia com desvio lateral",
+        inversor:   "🔃 Inversor — inverte a gravidade! Precisa de 50+ km/h",
+        cannon:     "💥 Canhão — disparo horizontal extremamente rápido",
+        portal:     "🌀 Portal — coloque 2 nós portal para teletransportar",
+      };
+      let _seenTools;
+      try { _seenTools = new Set(JSON.parse(localStorage.getItem("cc_seen_tools") || "[]")); }
+      catch (_) { _seenTools = new Set(); }
+      let _nodeTipTimer = null;
+
+      function showNodeTip(tool) {
+        const text = NODE_TIPS[tool];
+        if (!text || _seenTools.has(tool)) return;
+        _seenTools.add(tool);
+        try { localStorage.setItem("cc_seen_tools", JSON.stringify([..._seenTools])); } catch (_) {}
+        const el = document.getElementById("nodeTip");
+        document.getElementById("nodeTipText").textContent = text;
+        const btn = document.querySelector(`[data-tool="${tool}"]`);
+        if (btn) {
+          const r = btn.getBoundingClientRect();
+          el.style.left = (r.right + 10) + "px";
+          el.style.top = Math.max(8, r.top - 4) + "px";
+        }
+        el.style.opacity = "1";
+        el.style.display = "";
+        clearTimeout(_nodeTipTimer);
+        _nodeTipTimer = setTimeout(() => {
+          el.style.opacity = "0";
+          setTimeout(() => { el.style.display = "none"; }, 260);
+        }, 3200);
+      }
+
       const TUT_STEPS = [
-        { icon: '🎢', title: 'Bem-vindo!',       body: 'Você está no editor de pistas. Construa uma montanha-russa e lance o carrinho para conquistar estrelas!' },
-        { icon: '🖱️', title: 'Adicione nós',     body: 'Clique no canvas para adicionar pontos ao traçado. Use <b>A</b> para adicionar e <b>M</b> para mover nós.' },
-        { icon: '🚀', title: 'Teste sua pista',  body: 'Pressione <b>ESPAÇO</b> ou clique em <b>LANÇAR</b> para testar. O carrinho vai percorrer o traçado.' },
-        { icon: '💥', title: 'Cuidado com o G!', body: 'Curvas fechadas geram G-force alta. Acima de <b>5G</b> o carrinho descarrila — quanto mais caótico, mais divertido!' },
+        { icon: '🎢', title: 'Bem-vindo!',           body: 'Você está no editor de pistas. Construa uma montanha-russa e lance o carrinho para conquistar estrelas!' },
+        { icon: '🖱️', title: 'Adicione nós',         body: 'Clique no canvas para adicionar pontos ao traçado. Use <b>A</b> para adicionar e <b>M</b> para mover nós.' },
+        { icon: '🚀', title: 'Teste sua pista',      body: 'Pressione <b>ESPAÇO</b> ou clique em <b>LANÇAR</b> para testar. O carrinho vai percorrer o traçado.' },
+        { icon: '💥', title: 'Cuidado com o G!',     body: 'Curvas fechadas geram G-force alta. Acima de <b>5G</b> o carrinho descarrila — quanto mais caótico, mais divertido!' },
+        { icon: '🛠️', title: 'Nós especiais!',       body: 'Explore os nós da barra lateral: <b>Booster</b> (B), <b>Trampolim</b> (T), <b>Canhão</b> (C), <b>Portal</b> (W) e muito mais — cada um muda o comportamento do carrinho!' },
       ];
       let _tutStep = 0;
 
